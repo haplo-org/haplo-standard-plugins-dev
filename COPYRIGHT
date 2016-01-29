@@ -1,0 +1,15 @@
+
+Haplo is copyright Haplo Services Ltd. The Haplo Platform is licensed to you under
+the terms of the Mozilla Public License Version 2.0, a copy of which is provided
+in the LICENSE file.
+
+Haplo Services Ltd asserts its ownership of the design of Haplo.
+
+------------------------------------------------------------------------------------
+
+This repository contains software by other authors, licensed to you as follows:
+
+Tablesort.js
+std_reporting/static/tablesort.js
+  https://github.com/tristen/tablesort
+  MIT License
