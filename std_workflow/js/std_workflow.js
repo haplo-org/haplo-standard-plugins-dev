@@ -487,14 +487,25 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
     },
 
     $getActionableBy: function(M, actionableBy, target) {
-        return O.group(GROUP[
-             (actionableBy in GROUP) ? actionableBy : "std:group:workflow-fallback"
-        ]);
+        if(actionableBy in GROUP) {
+            return O.group(GROUP[actionableBy]);
+        }
+        if(actionableBy === "object:creator") {
+            if(M.workUnit.ref) {
+                return O.user(M.workUnit.ref.load().creationUid);
+            }
+        }
+        return O.group('std:group:workflow-fallback');
     },
 
     $hasRole: function(M, user, role) {
         if((role in GROUP) && user.isMemberOf(GROUP[role])) {
             return true;
+        }
+        if(role === "object:creator") {
+            if(M.workUnit.ref) {
+                return (user.id === M.workUnit.ref.load().creationUid);
+            }
         }
     }
 
