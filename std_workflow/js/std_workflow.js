@@ -453,12 +453,14 @@ WorkflowInstanceBase.prototype.__defineGetter__("target", function() {
 
 WorkflowInstanceBase.prototype.__defineGetter__("transitions", function() {
     if(this.$transitions) { return this.$transitions; }
-    return (this.$transitions = new Transitions(this));
+    var t = this.$transitions = new Transitions(this);
+    return t;
 });
 
 WorkflowInstanceBase.prototype.__defineGetter__('flags', function() {
     if(this.$flags) { return this.$flags; }
-    return (this.$flags = this._calculateFlags());
+    var f = this.$flags = this._calculateFlags();
+    return f;
 });
 
 WorkflowInstanceBase.prototype.__defineGetter__("$timeline", function() {

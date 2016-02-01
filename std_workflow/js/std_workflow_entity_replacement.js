@@ -128,7 +128,8 @@ var findCurrentlyReplaceable = function(M, specification) {
     _.map(relevant, function(rr) {
         var rep = specification.replacements[rr];
         if(M.selected(rep.assignableWhen)) {
-            return relevantSpec[rr] = rep;
+            relevantSpec[rr] = rep;
+            return rep;
         }
     });
     return relevantSpec;

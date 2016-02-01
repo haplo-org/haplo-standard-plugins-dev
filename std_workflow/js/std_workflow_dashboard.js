@@ -112,7 +112,8 @@ DashboardBase.prototype.__defineGetter__("_displayableTitle", function() {
 
 DashboardBase.prototype.__defineGetter__("query", function() {
     if(this.$query) { return this.$query; }
-    return this.$query = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
+    var q = this.$query = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
+    return q;
 });
 
 DashboardBase.prototype.__defineGetter__("_counts", function() {
