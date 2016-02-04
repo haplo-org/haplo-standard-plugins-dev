@@ -497,7 +497,7 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
                 return O.user(M.workUnit.ref.load().creationUid);
             }
         }
-        return O.group('std:group:workflow-fallback');
+        return O.group(Group.WorkflowFallback);
     },
 
     $hasRole: function(M, user, role) {

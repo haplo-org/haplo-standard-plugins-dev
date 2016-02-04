@@ -6,7 +6,7 @@ group std:group:administrators as Administrators
 group std:group:workflow-override as WorkflowOverride
     title: Workflow override
 
-group std:group:workflow-fallback
+group std:group:workflow-fallback as WorkflowFallback
     title: Workflow fallback
 
 

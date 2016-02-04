@@ -25,7 +25,13 @@
 // actionableBy must always be set by this function to update the dependency information.
 P.WorkflowInstanceBase.prototype._updateWorkUnitActionableBy = function(actionableBy, target) {
     delete this.$entities;
-    var user = this.workUnit.actionableBy = this._call('$getActionableBy', actionableBy, target);
+    var user = this._call('$getActionableBy', actionableBy, target);
+    if(!user) {
+        // If getActionableBy function returns null, function chain will terminate immediately.
+        console.log("WARNING: Workflow getActionableBy() returned null or undefined, using fallback group");
+        user = O.group(Group.WorkflowFallback);
+    }
+    this.workUnit.actionableBy = user;
     // Remove old dependency tags, then add in new ones from the objects in entities
     var tags = this.workUnit.tags;
     this._removeEntityDependencyTags(tags);
