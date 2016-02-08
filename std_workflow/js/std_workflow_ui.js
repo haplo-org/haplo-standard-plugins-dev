@@ -130,8 +130,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                 entries.push(layout.deferredRender({
                     entry: entry,
                     text: text,
-                    special: special,
-                    datetime: (new XDate(entry.datetime)).toString("HH:mm, dd MMM yyyy")
+                    special: special
                 }));
             }
         }
