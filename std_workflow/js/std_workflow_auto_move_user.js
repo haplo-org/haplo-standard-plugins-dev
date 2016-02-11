@@ -103,14 +103,3 @@ P.backgroundCallback("update_actionableby", function(data) {
     });
 });
 
-// --------------------------------------------------------------------------
-
-// Render timeline entries
-// This is a separate function which is hardcoded into the timeline rendering so it's
-// not easy to accidently remove, eg something else updates fallbackImplementation.
-P.WorkflowInstanceBase.prototype._renderTimelineEntryDeferredAutoMove = function(entry) {
-    if(entry.action === "AUTOMOVE") {
-        // Can be overridden with timeline-entry:AUTOMOVE text or renderTimelineEntryDeferred handler
-        return P.template("timeline/automove").deferredRender({});
-    }
-};
