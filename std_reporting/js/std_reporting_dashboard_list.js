@@ -28,7 +28,7 @@ DashboardList.prototype.columns = function(priority, columns) {
     return this;
 };
 
-DashboardList.prototype.respond = function() {
+DashboardList.prototype._makeDashboardView = function() {
     // Make sorted flat list of column objects
     var columns = [];
     var sortedGroups = _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
@@ -55,8 +55,7 @@ DashboardList.prototype.respond = function() {
         });
     });
 
-    this.E.setResponsiblePlugin(P);
-    this.E.render({
+    return {
         pageTitle: this.specification.title,
         backLink: this.specification.backLink,
         backLinkText: this.specification.backLinkText,
@@ -65,8 +64,17 @@ DashboardList.prototype.respond = function() {
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
         columns: columns,
         rowsHTML: rowsHTML
-    }, "dashboard/list/list_dashboard");
+    };
+};
+
+DashboardList.prototype.respond = function() {
+    this.E.setResponsiblePlugin(P);
+    this.E.render(this._makeDashboardView(), "dashboard/list/list_dashboard");
     return this;
+};
+
+DashboardList.prototype.deferredRender = function() {
+    return P.template("dashboard/list/list_dashboard").deferredRender(this._makeDashboardView());
 };
 
 DashboardList.prototype._respondWithExport = function(columns) {
