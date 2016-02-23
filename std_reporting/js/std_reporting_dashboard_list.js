@@ -28,7 +28,7 @@ DashboardList.prototype.columns = function(priority, columns) {
     return this;
 };
 
-DashboardList.prototype._makeDashboardView = function() {
+DashboardList.prototype._makeDashboardView = function(hideExport) {
     // Make sorted flat list of column objects
     var columns = [];
     var sortedGroups = _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
@@ -59,6 +59,7 @@ DashboardList.prototype._makeDashboardView = function() {
         pageTitle: this.specification.title,
         backLink: this.specification.backLink,
         backLinkText: this.specification.backLinkText,
+        hideExport: hideExport,
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
@@ -74,7 +75,7 @@ DashboardList.prototype.respond = function() {
 };
 
 DashboardList.prototype.deferredRender = function() {
-    return P.template("dashboard/list/list_dashboard").deferredRender(this._makeDashboardView());
+    return P.template("dashboard/list/list_dashboard").deferredRender(this._makeDashboardView(true /* Hide Export */));
 };
 
 DashboardList.prototype._respondWithExport = function(columns) {
