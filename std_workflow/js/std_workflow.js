@@ -348,7 +348,7 @@ WorkflowInstanceBase.prototype = {
             for(var n = 0; n < names.length; ++n) {
                 search[0] = names[n];
                 var text = this._call('$text', search.join(':'));
-                if(text) {
+                if(typeof(text) === "string") {
                     return this._applyFunctionListToValue('$textInterpolate', text) || text;
                 }
             }
