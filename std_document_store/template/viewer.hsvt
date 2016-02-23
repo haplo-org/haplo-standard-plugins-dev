@@ -7,7 +7,6 @@ unless(document) {
     if(_uncommittedChangesWarningText) {
       std:ui:notice(_uncommittedChangesWarningText)
     }
-    // std:ui:notice("You've made some changes, but they're not visible to anyone else yet.")
   }
   render(_viewerDocumentDeferred)
 }
