@@ -1,7 +1,7 @@
 std:plugin:resources("viewer.css")
 
 unless(document) {
-  std:ui:notice("The form has not been completed yet.")
+  std:ui:notice("The form has not yet been completed.")
 } else {
   if(showingCurrent) {
     if(_uncommittedChangesWarningText) {
