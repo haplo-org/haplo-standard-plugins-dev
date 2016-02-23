@@ -84,6 +84,12 @@ DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() 
     });
 });
 
+DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
+    return (this.options.uncommittedChangesWarningText === undefined) ?
+        "You've made some changes, but they're not visible to anyone else yet." :
+        this.options.uncommittedChangesWarningText;
+});
+
 DocumentViewer.prototype.__defineGetter__("_versionsView", function() {
     var viewer = this;
     var versions = _.map(viewer.instance.store.versionsTable.select().
