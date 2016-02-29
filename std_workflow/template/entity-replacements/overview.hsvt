@@ -1,24 +1,38 @@
-<table>
-  <tr>
-    <th> "Relevant" </th> <th></th> <th> "Original" </th> <th> "Replacement" </th>
-  </tr>
-  each(data) {
+
+<form method="POST">std:form:token()
+  <table>
     <tr>
-      <td> relevant </td>
-      <td> title </td>
-      <td> std:object:link(original) </td>
-      <td>
-        if(replacement) {
-          std:object:link(replacement)
-        }
-        if(assignable) {
-          if(replacement) {
-            " &nbsp; " <a href=editPath> "change..." </a>
-          } else {
-            <a href=editPath> "set..." </a>
-          }
-        }
-      </td>
+      <th> "Select" </th> <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
     </tr>
-  }
-</table>
+    each(data) {
+      <tr>
+        <td> 
+          <div class="oforms-radio-vertical">
+            <input
+              type="checkbox"
+              name=concat(entityName "[" original "]")
+              checked=if(relevant) { "checked" }
+              disabled=unless(assignable) { "disabled" }
+            >
+          </div>
+        </td>
+        <td> title </td>
+        <td> std:object:link(original) </td>
+        <td>
+          if(replacement) {
+            std:object:link(replacement)
+          }
+          if(assignable) {
+            if(replacement) {
+              " &nbsp; " <a href=editPath> "change..." </a>
+            } else {
+              <a href=editPath> "set..." </a>
+            }
+          }
+        </td>
+      </tr>
+    }
+  </table>
+
+  <input type="submit" value="Apply selection">
+</form>

@@ -35,7 +35,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         workUnitId:     { type:"int", indexed:true },   // which work unit (= instance of workflow)
         name:           { type:"text" },                // name of underlying entity
         entity:         { type:"ref" },                 // ref of entity which is being replaced
-        replacement:    { type:"ref" },                 // ref of entity which should be used instead
+        replacement:    { type:"ref", nullable:true},   // ref of entity which should be used instead
         relevant:       { type:"boolean"}               // boolean for if this entity is relevant for this workflow
     });
 
@@ -113,6 +113,26 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 
 });
 
+var ensureDbRowsCreated = function(workflow, M) {
+    // Ensure database row created for each entity in the list
+    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbQuery = workflow.plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id);
+    // TODO: User spec.listAll here to avoid useless rows?
+    _.each(workflow.$entityReplacementSpecification.replacements, function(info, name) {
+        var unreplacedName = info.entity;
+        _.each(M.entities[unreplacedName+'_refList'], function(ref) {
+            if(!dbQuery.where("entity", "=", ref).where("name", "=", unreplacedName).count()) {
+                workflow.plugin.db[dbName].create({
+                    workUnitId: M.workUnit.id,
+                    name: unreplacedName,
+                    entity: ref,
+                    relevant: true      // Default
+                }).save();
+            }
+        });
+    });
+};
+
 var makeNamesForTypes = function(types) {
     var suffix = types.map(function(t) { return t.toString(); }).join('_');
     return {
@@ -121,9 +141,10 @@ var makeNamesForTypes = function(types) {
     };
 };
 
+// TODO: This needs refactoring as relevance is now stored in the database
 var findCurrentlyReplaceable = function(workflow, M, specification) {
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
-    var relevant = P.db[dbName].select().where("workUnitId", "=", M.workUnit.id).where("relevant", "=", true);
+    var relevant = workflow.plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id).where("relevant", "=", true);
     var relevantSpec = {};
     _.map(relevant, function(rr) {
         var rep = specification.replacements[rr];
@@ -150,36 +171,52 @@ var makeEntityReplacementForm = function(formName, dataSource) {
     });
 };
 
-P.respond("GET", "/do/workflow/entity-replacement", [
+P.respond("GET,POST", "/do/workflow/entity-replacement", [
     {pathElement:0, as:"workUnit"}
 ], function(E, workUnit) {
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
+    ensureDbRowsCreated(workflow, M);
+
     var specification = workflow.$entityReplacementSpecification;
     var data = [];
 
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
 
-    _.each(specification.replacements, function(spec, entityName) {
-        var path = entityName.replace(/([A-Z])/g, function(m) { return '-'+m.toLowerCase(); });
+    if(E.request.method === "POST") {
+        dbQuery.each(function(row) {
+            row.relevant = false;
+            _.each(E.request.parameters, function(value, entity) {
+                if((row.name === entity) && (row.entity.toString() in value)) {
+                    row.relevant = true;
+                }
+            });
+            row.save();
+        });
+        E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
+    }
+
+    _.each(specification.replacements, function(spec, entity) {
+        var originalEntityName = spec.entity;
+        var path = originalEntityName.replace(/([A-Z])/g, function(m) { return '-'+m.toLowerCase(); });
         var suffix = (spec.listAll ? '_refList' : '_ref');
-        _.each([].concat(M.entities[entityName+suffix]), function(ref) {
+        _.each([].concat(M.entities[originalEntityName+suffix]), function(ref) {
             var row = _.find(dbQuery, function(r) {
-                return (r.entity == ref && r.name === entityName);
+                return (r.entity == ref && r.name === originalEntityName);
             });
             data.push({
-                title: M._getText(['entity-replacement:display-name'], [entityName]),
-                original: ref.load(),
-                replacement: row ? row.replacement.load() : undefined,
+                title: M._getText(['entity-replacement:display-name'], [originalEntityName]),
+                original: ref,
+                replacement: (row && row.replacement) ? row.replacement.load() : undefined,
+                entityName: originalEntityName,
                 assignable: M.selected(spec.assignableWhen),
                 relevant: row ? row.relevant : false,
                 editPath: "/do/workflow/replace/"+workUnit.id+"/"+path+"/"+ref.toString()
             });
         });
     });
-
     if("onFinishPage" in specification) {
         var link = specification.onFinishPage(M);
         if(link) {
