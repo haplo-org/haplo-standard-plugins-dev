@@ -10,9 +10,7 @@
 //      entity: underlying entity name
 //      assignableWhen: selector when the actionable user can edit the replacement
 //      replacementTypes: Array of Refs of types of object which can be used to replace this entity
-//  relevantReplacements: (optional) function which returns an array of (replaced) entity names relevant to the current workflow
-//      (depending on previous actions, not all replacements will be relevant)
-//      (if not specified defaults to returning all entity names)
+//      listAll: (optional) Boolean for whether to display full entity_list to replace
 //  onFinishPage: (optional) function returning url of page to transition to when replacements have been chosen
 
 var chooseReplacementForms = {};
@@ -37,7 +35,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         workUnitId:     { type:"int", indexed:true },   // which work unit (= instance of workflow)
         name:           { type:"text" },                // name of underlying entity
         entity:         { type:"ref" },                 // ref of entity which is being replaced
-        replacement:    { type:"ref" }                  // ref of entity which should be used instead
+        replacement:    { type:"ref" },                 // ref of entity which should be used instead
+        relevant:       { type:"boolean"}               // boolean for if this entity is relevant for this workflow
     });
 
     _.each(specification.replacements, function(info, name) {
@@ -81,7 +80,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     //   * get link label from text system
     workflow.actionPanel({}, function(M, builder) {
         // TODO: replace with a selector calculated from the list of non-duplicated assignableWhen selectors
-        if(M.workUnit.isActionableBy(O.currentUser) && (!_.isEmpty(findCurrentlyReplaceable(M, specification)))) {
+        if(M.workUnit.isActionableBy(O.currentUser) && (!_.isEmpty(findCurrentlyReplaceable(workflow, M, specification)))) {
             var label = M._getTextMaybe(['entity-replacement:ui:action-panel-label'], [M.state]) || "Choose replacements";
             builder.link("default", "/do/workflow/entity-replacement/"+M.workUnit.id, label);
         }
@@ -122,8 +121,9 @@ var makeNamesForTypes = function(types) {
     };
 };
 
-var findCurrentlyReplaceable = function(M, specification) {
-    var relevant = ("relevantReplacements" in specification) ? specification.relevantReplacements(M) : _.keys(specification.replacements);
+var findCurrentlyReplaceable = function(workflow, M, specification) {
+    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var relevant = P.db[dbName].select().where("workUnitId", "=", M.workUnit.id).where("relevant", "=", true);
     var relevantSpec = {};
     _.map(relevant, function(rr) {
         var rep = specification.replacements[rr];
@@ -157,15 +157,15 @@ P.respond("GET", "/do/workflow/entity-replacement", [
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
     var specification = workflow.$entityReplacementSpecification;
-    var replaceableEntityNames = _.map(findCurrentlyReplaceable(M, specification), function(r) { return r.entity; });
     var data = [];
 
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
 
-    _.each(replaceableEntityNames, function(entityName) {
+    _.each(specification.replacements, function(spec, entityName) {
         var path = entityName.replace(/([A-Z])/g, function(m) { return '-'+m.toLowerCase(); });
-        _.each(M.entities[entityName+'_refList'], function(ref) {
+        var suffix = (spec.listAll ? '_refList' : '_ref');
+        _.each([].concat(M.entities[entityName+suffix]), function(ref) {
             var row = _.find(dbQuery, function(r) {
                 return (r.entity == ref && r.name === entityName);
             });
@@ -173,6 +173,8 @@ P.respond("GET", "/do/workflow/entity-replacement", [
                 title: M._getText(['entity-replacement:display-name'], [entityName]),
                 original: ref.load(),
                 replacement: row ? row.replacement.load() : undefined,
+                assignable: M.selected(spec.assignableWhen),
+                relevant: row ? row.relevant : false,
                 editPath: "/do/workflow/replace/"+workUnit.id+"/"+path+"/"+ref.toString()
             });
         });
@@ -203,7 +205,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
     var M = workflow.instance(workUnit);
     var entityName = path.replace(/(\-[a-z])/g, function(m) { return m.replace('-', '').toUpperCase(); });
     var replacementEntityName;
-    var info = _.find(findCurrentlyReplaceable(M, workflow.$entityReplacementSpecification), function(value, key) {
+    var info = _.find(findCurrentlyReplaceable(workflow, M, workflow.$entityReplacementSpecification), function(value, key) {
         if(value.entity === entityName) {
             replacementEntityName = key;
             return true;
