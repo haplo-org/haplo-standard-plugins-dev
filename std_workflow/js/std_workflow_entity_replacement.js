@@ -36,7 +36,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         name:           { type:"text" },                // name of underlying entity
         entity:         { type:"ref" },                 // ref of entity which is being replaced
         replacement:    { type:"ref", nullable:true},   // ref of entity which should be used instead
-        relevant:       { type:"boolean"}               // boolean for if this entity is relevant for this workflow
+        selected:       { type:"boolean"}               // boolean for if this entity is selected for this workflow
     });
 
     _.each(specification.replacements, function(info, name) {
@@ -76,7 +76,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     });
 
     // Use workflow functions to set up action panel links,
-    //   * only displaying if there is at least one relevant replacement
+    //   * only displaying if there is at least one selected replacement
     //   * get link label from text system
     workflow.actionPanel({}, function(M, builder) {
         // TODO: replace with a selector calculated from the list of non-duplicated assignableWhen selectors
@@ -88,8 +88,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 
     // Timeline rendering for replacement events: workflow.renderTimelineEntryDeferred(...) - use text system to find name of entity
     workflow.renderTimelineEntryDeferred(function(M, entry) {
+        var data = JSON.parse(entry.json);
         if(entry.action === 'ENTITY_REPLACE') {
-            var data = JSON.parse(entry.json);
             var action = data.replacement ? 'replaced' : 'removed-replacement';
             var actionText = M._getTextMaybe(['entity-replacement:timeline-text'], [action]) || "changed the";
             var n;
@@ -104,6 +104,12 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 replacement: n
             });
         }
+        if(entry.action === 'ENTITY_SELECT') {
+            return P.template("timeline/entity-select").deferredRender({
+                entry: entry,
+                selected: _.map(data.selected, function(entity) { return M._getText(['entity-replacement:display-name'], [entity]); })
+            });
+        }
     });
 
     // Function to get the URL of the replacements UI: M.entityReplacementUserInterfaceURL()
@@ -116,17 +122,19 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 var ensureDbRowsCreated = function(workflow, M) {
     // Ensure database row created for each entity in the list
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
-    var dbQuery = workflow.plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id);
-    // TODO: User spec.listAll here to avoid useless rows?
     _.each(workflow.$entityReplacementSpecification.replacements, function(info, name) {
         var unreplacedName = info.entity;
         _.each(M.entities[unreplacedName+'_refList'], function(ref) {
-            if(!dbQuery.where("entity", "=", ref).where("name", "=", unreplacedName).count()) {
+            var dbQuery = workflow.plugin.db[dbName].select().
+                    where("workUnitId", "=", M.workUnit.id).
+                    where("entity", "=", ref).
+                    where("name", "=", unreplacedName);
+            if(!dbQuery.count()) {
                 workflow.plugin.db[dbName].create({
                     workUnitId: M.workUnit.id,
                     name: unreplacedName,
                     entity: ref,
-                    relevant: true      // Default
+                    selected: true      // Default
                 }).save();
             }
         });
@@ -143,17 +151,21 @@ var makeNamesForTypes = function(types) {
 
 // TODO: This needs refactoring as relevance is now stored in the database
 var findCurrentlyReplaceable = function(workflow, M, specification) {
+    ensureDbRowsCreated(workflow, M);
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
-    var relevant = workflow.plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id).where("relevant", "=", true);
-    var relevantSpec = {};
-    _.map(relevant, function(rr) {
-        var rep = specification.replacements[rr];
+    var selected = workflow.plugin.db[dbName].select().
+            where("workUnitId", "=", M.workUnit.id).
+            where("selected", "=", true);
+    var selectedSpec = {};
+    _.each(selected, function(rr) {
+        var rep = _.find(specification.replacements, function(s) {
+            return (s.entity === rr.name);
+        });
         if(M.selected(rep.assignableWhen)) {
-            relevantSpec[rr] = rep;
-            return rep;
+            selectedSpec[rr] = rep;
         }
     });
-    return relevantSpec;
+    return selectedSpec;
 };
 
 var makeEntityReplacementForm = function(formName, dataSource) {
@@ -186,14 +198,19 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
 
     if(E.request.method === "POST") {
+        var selected = [];
         dbQuery.each(function(row) {
-            row.relevant = false;
+            row.selected = false;
             _.each(E.request.parameters, function(value, entity) {
                 if((row.name === entity) && (row.entity.toString() in value)) {
-                    row.relevant = true;
+                    row.selected = true;
+                    selected.push(row.name);
                 }
             });
             row.save();
+        });
+        M.addTimelineEntry('ENTITY_SELECT', {
+            selected: selected
         });
         E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
@@ -212,7 +229,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
                 replacement: (row && row.replacement) ? row.replacement.load() : undefined,
                 entityName: originalEntityName,
                 assignable: M.selected(spec.assignableWhen),
-                relevant: row ? row.relevant : false,
+                selected: row ? row.selected : false,
                 editPath: "/do/workflow/replace/"+workUnit.id+"/"+path+"/"+ref.toString()
             });
         });

@@ -11,7 +11,7 @@
             <input
               type="checkbox"
               name=concat(entityName "[" original "]")
-              checked=if(relevant) { "checked" }
+              checked=if(selected) { "checked" }
               disabled=unless(assignable) { "disabled" }
             >
           </div>
