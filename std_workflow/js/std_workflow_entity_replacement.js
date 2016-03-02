@@ -117,6 +117,22 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         return "/do/workflow/entity-replacement/"+this.workUnit.id;
     };
 
+    workflow.modifyFlags(function(M, flags) {
+        var set = _.keys(flags);
+        for(var i = 0; i < set.length; i++) {
+            if(set[i].indexOf("entity-replacement:selected") !== -1) {
+                delete flags[set[i]];
+            }
+        }
+        var timelineQuery = M.timelineSelect().where("action", "=", "ENTITY_SELECT").order("datetime","desc");
+        if(timelineQuery.length > 0) {
+            var selected = JSON.parse(timelineQuery[0].json).selected;
+            _.each(selected, function(s) {
+                flags["entity-replacement:selected:"+s] = true;
+            });
+        }
+    });
+
 });
 
 var ensureDbRowsCreated = function(workflow, M) {
@@ -212,6 +228,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         M.addTimelineEntry('ENTITY_SELECT', {
             selected: selected
         });
+        M._calculateFlags();
         E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
 
