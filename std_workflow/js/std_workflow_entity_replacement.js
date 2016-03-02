@@ -100,7 +100,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 entry: entry,
                 set: !!data.replacement,
                 actionText: actionText,
-                entityName: data.entityName,
+                entityName: M._getText(['entity-replacement:display-name'], data.entityName),
                 replacement: n
             });
         }
@@ -243,10 +243,10 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
             data.push({
                 title: M._getText(['entity-replacement:display-name'], [originalEntityName]),
                 original: ref,
-                replacement: (row && row.replacement) ? row.replacement.load() : undefined,
+                replacement: row.replacement ? row.replacement.load() : undefined,
                 entityName: originalEntityName,
                 assignable: M.selected(spec.assignableWhen),
-                selected: row ? row.selected : false,
+                selected: row.selected,
                 editPath: "/do/workflow/replace/"+workUnit.id+"/"+path+"/"+ref.toString()
             });
         });
@@ -274,6 +274,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
+    // Conversion from url scheme to camelcase
     var entityName = path.replace(/(\-[a-z])/g, function(m) { return m.replace('-', '').toUpperCase(); });
     var replacementEntityName;
     var info = _.find(findCurrentlyReplaceable(workflow, M, workflow.$entityReplacementSpecification), function(value, key) {
@@ -285,40 +286,23 @@ P.respond("GET,POST", "/do/workflow/replace", [
     if(!info) { O.stop("Entity "+entityName+" is not replaceable."); }
 
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
-    var dbQuery = workflow.plugin.db[dbName].select().
+    var dbRow = workflow.plugin.db[dbName].select().
             where('workUnitId', '=', workUnit.id).
             where('name', '=', entityName).
-            where('entity', '=', original.ref);
-    var dbRow = (dbQuery.count() > 0) ? dbQuery[0] : null;
-    var entityDisplayName = M._getText(['entity-replacement:display-name'], [entityName]);
-    var document = { replacement: dbRow ? dbRow.replacement : undefined };
+            where('entity', '=', original.ref)[0];
+    var document = { replacement: dbRow.replacement || undefined }; // to prevent calling toString() on null when rendering
 
     var formName = makeNamesForTypes(info.replacementTypes).form;
     var formDesc = chooseReplacementForms[formName];
     var form = formDesc.handle(document, E.request);
     if(E.request.method === "POST") {
-        var ref;
-        if(dbRow) {
-            if(document.replacement) {
-                ref = O.ref(document.replacement);
-                dbRow.replacement = ref;
-                dbRow.save();
-            } else {
-                dbRow.deleteObject();
-            }
-        } else if(document.replacement) {
-            ref = O.ref(document.replacement);
-            workflow.plugin.db[dbName].create({
-                workUnitId: workUnit.id,
-                name: entityName,
-                entity: original.ref,
-                replacement: ref
-            }).save();
-        }
+        dbRow.replacement = document.replacement ? O.ref(document.replacement) : null;
+        dbRow.save();
         M.addTimelineEntry('ENTITY_REPLACE', {
-            entityName: entityDisplayName,
-            replacement: ref ? ref.toString() : undefined
+            entityName: entityName,
+            replacement: document.replacement
         });
+        // Relabel object for permissions
         if(O.serviceImplemented("std:workflow:entities:replacement_changed")) {
             O.service("std:workflow:entities:replacement_changed", M.workUnit.ref.load(), workflow.fullName, replacementEntityName);
         }
@@ -329,7 +313,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
         pageTitle: (M._getTextMaybe(['entity-replacement:ui:page-title'], ['form']) || "Replacement")+
                     ": "+M._getText(['entity-replacement:display-name'], [entityName]),
         backLink: "/do/workflow/entity-replacement/"+workUnit.id,
-        entityDisplayName: entityDisplayName,
+        entityDisplayName: M._getText(['entity-replacement:display-name'], [entityName]),
         originalEntityTitle: original.title,
         form: form
     }, "entity-replacements/form");    
