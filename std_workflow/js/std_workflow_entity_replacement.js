@@ -220,21 +220,22 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
 
     var specification = workflow.$entityReplacementSpecification;
     var data = [];
-
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
-    var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
 
     if(E.request.method === "POST") {
         var selected = [];
-        dbQuery.each(function(row) {
-            row.selected = false;
-            _.each(E.request.parameters, function(value, entity) {
-                if((row.name === entity) && (row.entity.toString() in value)) {
+        _.each(findCurrentlySelectable(M, specification), function(spec) {
+            var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id).
+                    where("name", "=", spec.entity);
+            dbQuery.each(function(row) {
+                row.selected = false;
+                var param = E.request.parameters[spec.entity];
+                if(param && (row.entity.toString() in param)) {
                     row.selected = true;
                     selected.push(row.name);
                 }
+                row.save();
             });
-            row.save();
         });
         M.addTimelineEntry('ENTITY_SELECT', {
             selected: selected
@@ -243,6 +244,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
 
+    var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
     _.each(specification.replacements, function(spec, entity) {
         var originalEntityName = spec.entity;
         var path = originalEntityName.replace(/([A-Z])/g, function(m) { return '-'+m.toLowerCase(); });
