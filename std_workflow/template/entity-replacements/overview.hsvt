@@ -2,7 +2,7 @@
 <form method="POST">std:form:token()
   <table>
     <tr>
-      <th> "Select" </th> <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
+      <th> </th> <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
     </tr>
     each(data) {
       <tr>
@@ -12,7 +12,7 @@
               type="checkbox"
               name=concat(entityName "[" original "]")
               checked=if(selected) { "checked" }
-              disabled=unless(assignable) { "disabled" }
+              disabled=unless(selectable) { "disabled" }
             >
           </div>
         </td>

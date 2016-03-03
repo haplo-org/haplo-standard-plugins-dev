@@ -10,6 +10,7 @@
 //      entity: underlying entity name
 //      assignableWhen: selector when the actionable user can edit the replacement
 //      replacementTypes: Array of Refs of types of object which can be used to replace this entity
+//      selectableWhen: (optional) selector determining when the user can select the entity for the workflow
 //      listAll: (optional) Boolean for whether to display full entity_list to replace
 //  onFinishPage: (optional) function returning url of page to transition to when replacements have been chosen
 
@@ -80,7 +81,9 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     //   * get link label from text system
     workflow.actionPanel({}, function(M, builder) {
         // TODO: replace with a selector calculated from the list of non-duplicated assignableWhen selectors
-        if(M.workUnit.isActionableBy(O.currentUser) && (!_.isEmpty(findCurrentlyReplaceable(workflow, M, specification)))) {
+        if(M.workUnit.isActionableBy(O.currentUser) &&
+                ((!_.isEmpty(findCurrentlyReplaceable(workflow, M, specification))) ||
+                (!_.isEmpty(findCurrentlySelectable(M, specification))))) {
             var label = M._getTextMaybe(['entity-replacement:ui:action-panel-label'], [M.state]) || "Choose replacements";
             builder.link("default", "/do/workflow/entity-replacement/"+M.workUnit.id, label);
         }
@@ -140,6 +143,7 @@ var ensureDbRowsCreated = function(workflow, M) {
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
     _.each(workflow.$entityReplacementSpecification.replacements, function(info, name) {
         var unreplacedName = info.entity;
+        // TODO: use listAll to be more efficient with db space
         _.each(M.entities[unreplacedName+'_refList'], function(ref) {
             var dbQuery = workflow.plugin.db[dbName].select().
                     where("workUnitId", "=", M.workUnit.id).
@@ -166,6 +170,7 @@ var makeNamesForTypes = function(types) {
 };
 
 // TODO: This needs refactoring as relevance is now stored in the database
+// Return an array?
 var findCurrentlyReplaceable = function(workflow, M, specification) {
     ensureDbRowsCreated(workflow, M);
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
@@ -178,10 +183,16 @@ var findCurrentlyReplaceable = function(workflow, M, specification) {
             return (s.entity === rr.name);
         });
         if(M.selected(rep.assignableWhen)) {
-            selectedSpec[rr] = rep;
+            selectedSpec[rr.name] = rep;
         }
     });
     return selectedSpec;
+};
+
+var findCurrentlySelectable = function(M, specification) {
+    return _.filter(specification.replacements, function(spec) {
+        return (spec.selectableWhen && M.selected(spec.selectableWhen));
+    });
 };
 
 var makeEntityReplacementForm = function(formName, dataSource) {
@@ -246,6 +257,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
                 replacement: row.replacement ? row.replacement.load() : undefined,
                 entityName: originalEntityName,
                 assignable: M.selected(spec.assignableWhen),
+                selectable: (spec.selectableWhen && M.selected(spec.selectableWhen)),
                 selected: row.selected,
                 editPath: "/do/workflow/replace/"+workUnit.id+"/"+path+"/"+ref.toString()
             });
