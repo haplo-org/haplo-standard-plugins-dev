@@ -36,8 +36,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         workUnitId:     { type:"int", indexed:true },   // which work unit (= instance of workflow)
         name:           { type:"text" },                // name of underlying entity
         entity:         { type:"ref" },                 // ref of entity which is being replaced
-        replacement:    { type:"ref", nullable:true},   // ref of entity which should be used instead
-        selected:       { type:"boolean"}               // boolean for if this entity is selected for this workflow
+        replacement:    { type:"ref", nullable:true },  // ref of entity which should be used instead
+        selected:       { type:"boolean" }              // boolean for if this entity is selected for this workflow
     });
 
     _.each(specification.replacements, function(info, name) {
@@ -53,7 +53,11 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                     where("name", "=", unreplacedName).
                     stableOrder();
                 _.each(query, function(row) {
-                    replacements.set(row.entity, row.replacement);
+                    if(row.replacement) {
+                        replacements.set(row.entity, row.replacement);
+                    } else {
+                        replacements.remove(row.entity);
+                    }
                 });
             }
             // Return mapped entities
@@ -154,7 +158,7 @@ var ensureDbRowsCreated = function(workflow, M) {
                     workUnitId: M.workUnit.id,
                     name: unreplacedName,
                     entity: ref,
-                    selected: true      // Default
+                    selected: true      // TODO: Default value in specification?
                 }).save();
             }
         });
@@ -178,12 +182,14 @@ var findCurrentlyReplaceable = function(workflow, M, specification) {
             where("workUnitId", "=", M.workUnit.id).
             where("selected", "=", true);
     var selectedSpec = {};
-    _.each(selected, function(rr) {
-        var rep = _.find(specification.replacements, function(s) {
-            return (s.entity === rr.name);
+    _.each(selected, function(s) {
+        var replacementName;
+        var rep = _.find(specification.replacements, function(rr, key) {
+            replacementName = key;
+            return (rr.entity === s.name);
         });
         if(M.selected(rep.assignableWhen)) {
-            selectedSpec[rr.name] = rep;
+            selectedSpec[replacementName] = rep;
         }
     });
     return selectedSpec;
