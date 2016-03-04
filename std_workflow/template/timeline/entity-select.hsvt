@@ -1,9 +1,4 @@
 std:plugin:resources("w.css")
 <div>
-  <i> entry.user.name </i>
-  if(selected.length) {
-    " selected as required for the workflow:" each(selected) { concat(" " . ".") }
-  } else {
-    " removed all selected roles from the workflow."
-  }
+  <i> entry.user.name </i> " changed the selected roles for the workflow."
 </div>

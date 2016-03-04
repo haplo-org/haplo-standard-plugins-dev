@@ -113,8 +113,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         }
         if(entry.action === 'ENTITY_SELECT') {
             return P.template("timeline/entity-select").deferredRender({
-                entry: entry,
-                selected: _.map(data.selected, function(entity) { return M._getText(['entity-replacement:display-name'], [entity]); })
+                entry: entry
             });
         }
     });
@@ -131,13 +130,10 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 delete flags[set[i]];
             }
         }
-        var timelineQuery = M.timelineSelect().where("action", "=", "ENTITY_SELECT").order("datetime","desc");
-        if(timelineQuery.length > 0) {
-            var selected = JSON.parse(timelineQuery[0].json).selected;
-            _.each(selected, function(s) {
-                flags["entity-replacement:selected:"+s] = true;
-            });
-        }
+        plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id)
+                .where("selected", "=", true).each(function(row) {
+            flags["entity-selected:"+row.name+":"+row.entity.toString()] = true;
+        });
     });
 
 });
@@ -173,8 +169,6 @@ var makeNamesForTypes = function(types) {
     };
 };
 
-// TODO: This needs refactoring as relevance is now stored in the database
-// Return an array?
 var findCurrentlyReplaceable = function(workflow, M, specification) {
     ensureDbRowsCreated(workflow, M);
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
@@ -217,7 +211,7 @@ var makeEntityReplacementForm = function(formName, dataSource) {
 };
 
 P.respond("GET,POST", "/do/workflow/entity-replacement", [
-    {pathElement:0, as:"workUnit"}
+    {pathElement:0, as:"workUnit", allUsers:true}
 ], function(E, workUnit) {
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
@@ -229,7 +223,6 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
     var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
 
     if(E.request.method === "POST") {
-        var selected = [];
         _.each(findCurrentlySelectable(M, specification), function(spec) {
             var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id).
                     where("name", "=", spec.entity);
@@ -238,14 +231,11 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
                 var param = E.request.parameters[spec.entity];
                 if(param && (row.entity.toString() in param)) {
                     row.selected = true;
-                    selected.push(row.name);
                 }
                 row.save();
             });
         });
-        M.addTimelineEntry('ENTITY_SELECT', {
-            selected: selected
-        });
+        M.addTimelineEntry('ENTITY_SELECT', {});
         M._calculateFlags();
         E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
