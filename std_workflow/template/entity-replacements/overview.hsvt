@@ -1,4 +1,6 @@
 
+std:plugin:resources("replacements-overview.js")
+
 <form method="POST">std:form:token()
   <table>
     <tr>
@@ -10,6 +12,7 @@
           <div class="oforms-radio-vertical">
             <input
               type="checkbox"
+              class="selected"
               name=concat(entityName "[" original "]")
               checked=if(selected) { "checked" }
               disabled=unless(selectable) { "disabled" }
@@ -24,9 +27,9 @@
           }
           if(assignable) {
             if(replacement) {
-              " &nbsp; " <a href=editPath> "change..." </a>
+              " &nbsp; " <a class="replace" href=editPath> "change..." </a>
             } else {
-              <a href=editPath> "set..." </a>
+              <a class="replace" href=editPath> "set..." </a>
             }
           }
         </td>
@@ -34,5 +37,5 @@
     }
   </table>
 
-  <input type="submit" value="Apply selection">
+  <input type="submit" value="Apply selection" id="applySelection">
 </form>
