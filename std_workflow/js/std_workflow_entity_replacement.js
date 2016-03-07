@@ -31,7 +31,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 
     var plugin = workflow.plugin;
 
-    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbName = getDbName(workflow);
     plugin.db.table(dbName, {
         workUnitId:     { type:"int", indexed:true },   // which work unit (= instance of workflow)
         name:           { type:"text" },                // name of underlying entity
@@ -95,14 +95,11 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 
     // Timeline rendering for replacement events: workflow.renderTimelineEntryDeferred(...) - use text system to find name of entity
     workflow.renderTimelineEntryDeferred(function(M, entry) {
-        var data = JSON.parse(entry.json);
+        var data = entry.data;
         if(entry.action === 'ENTITY_REPLACE') {
             var action = data.replacement ? 'replaced' : 'removed-replacement';
             var actionText = M._getTextMaybe(['entity-replacement:timeline-text'], [action]) || "changed the";
-            var n;
-            if(data.replacement) {
-                n = O.ref(data.replacement).load().title;
-            }
+            var n = data.replacement ? O.ref(data.replacement).load().title : undefined;
             return P.template("timeline/entity-replace").deferredRender({
                 entry: entry,
                 set: !!data.replacement,
@@ -110,8 +107,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 entityName: M._getText(['entity-replacement:display-name'], data.entityName),
                 replacement: n
             });
-        }
-        if(entry.action === 'ENTITY_SELECT') {
+        } else if(entry.action === 'ENTITY_SELECT') {
             return P.template("timeline/entity-select").deferredRender({
                 entry: entry
             });
@@ -125,26 +121,28 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
 
     workflow.modifyFlags(function(M, flags) {
         var set = _.keys(flags);
-        for(var i = 0; i < set.length; i++) {
-            if(set[i].indexOf("entity-replacement:selected") !== -1) {
-                delete flags[set[i]];
+        plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id).each(function(row) {
+            if(row.selected) {
+                flags["entity-selected_"+row.name+"_"+row.entity.toString()] = true;
+            } else {
+                delete flags["entity-selected_"+row.name+"_"+row.entity.toString()];
             }
-        }
-        plugin.db[dbName].select().where("workUnitId", "=", M.workUnit.id)
-                .where("selected", "=", true).each(function(row) {
-            flags["entity-selected:"+row.name+":"+row.entity.toString()] = true;
         });
     });
 
 });
 
+var getDbName = function(workflow) {
+    return 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+};
+
 var ensureDbRowsCreated = function(workflow, M) {
     // Ensure database row created for each entity in the list
-    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbName = getDbName(workflow);
     _.each(workflow.$entityReplacementSpecification.replacements, function(info, name) {
         var unreplacedName = info.entity;
-        // TODO: use listAll to be more efficient with db space
-        _.each(M.entities[unreplacedName+'_refList'], function(ref) {
+        var suffix = (info.listAll ? '_refList' : '_ref');
+        _.each([].concat(M.entities[unreplacedName+suffix]), function(ref) {
             var dbQuery = workflow.plugin.db[dbName].select().
                     where("workUnitId", "=", M.workUnit.id).
                     where("entity", "=", ref).
@@ -171,7 +169,7 @@ var makeNamesForTypes = function(types) {
 
 var findCurrentlyReplaceable = function(workflow, M, specification) {
     ensureDbRowsCreated(workflow, M);
-    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbName = getDbName(workflow);
     var selected = workflow.plugin.db[dbName].select().
             where("workUnitId", "=", M.workUnit.id).
             where("selected", "=", true);
@@ -213,6 +211,7 @@ var makeEntityReplacementForm = function(formName, dataSource) {
 P.respond("GET,POST", "/do/workflow/entity-replacement", [
     {pathElement:0, as:"workUnit", allUsers:true}
 ], function(E, workUnit) {
+    workUnit.ref.load();    // Implicit security check. Checks user can read object, which will have all information from this page displayed in the timeline
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
@@ -220,7 +219,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
 
     var specification = workflow.$entityReplacementSpecification;
     var data = [];
-    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbName = getDbName(workflow);
 
     if(E.request.method === "POST") {
         _.each(findCurrentlySelectable(M, specification), function(spec) {
@@ -241,6 +240,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
     }
 
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
+    var neverSelectable = true;
     _.each(specification.replacements, function(spec, entity) {
         var originalEntityName = spec.entity;
         var path = originalEntityName.replace(/([A-Z])/g, function(m) { return '-'+m.toLowerCase(); });
@@ -249,6 +249,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
             var row = _.find(dbQuery, function(r) {
                 return (r.entity == ref && r.name === originalEntityName);
             });
+            if(spec.selectableWhen) { neverSelectable = false; }
             data.push({
                 title: M._getText(['entity-replacement:display-name'], [originalEntityName]),
                 original: ref,
@@ -272,7 +273,8 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
     E.render({
         pageTitle: M._getTextMaybe(['entity-replacement:ui:page-title'], ['summary']) || "Replacements summary",
         backLink: M.entities.object.url(),
-        data: data
+        data: data,
+        neverSelectable: neverSelectable
     }, "entity-replacements/overview");
 });
 
@@ -284,6 +286,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
+    ensureDbRowsCreated(workflow, M);
     // Conversion from url scheme to camelcase
     var entityName = path.replace(/(\-[a-z])/g, function(m) { return m.replace('-', '').toUpperCase(); });
     var replacementEntityName;
@@ -295,7 +298,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
     });
     if(!info) { O.stop("Entity "+entityName+" is not replaceable."); }
 
-    var dbName = 'stdworkflowEr'+P.workflowNameToDatabaseTableFragment(workflow.name);
+    var dbName = getDbName(workflow);
     var dbRow = workflow.plugin.db[dbName].select().
             where('workUnitId', '=', workUnit.id).
             where('name', '=', entityName).
@@ -312,7 +315,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
             entityName: entityName,
             replacement: document.replacement
         });
-        // Relabel object for permissions
+        // Notifying other plugins that entities have changed
         if(O.serviceImplemented("std:workflow:entities:replacement_changed")) {
             O.service("std:workflow:entities:replacement_changed", M.workUnit.ref.load(), workflow.fullName, replacementEntityName);
         }

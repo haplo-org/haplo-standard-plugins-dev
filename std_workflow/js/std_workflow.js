@@ -35,7 +35,7 @@ var defineTimelineDatabase = function(plugin, workflowName) {
         previousState:  { type:"text", nullable:true }, // previous state the workflow was in (transitions only)
         target:         { type:"text", nullable:true }, // value of the target tag when this entry was created
         state:          { type:"text" },                // which state the workflow is in
-        json:           { type:"text",  nullable:true } // json encoded data
+        json:           { type:"text",  nullable:true } // json encoded data (use data property to read)
     }, function(prototype) {
         prototype.__defineGetter__('data', timelineRowDataGetter);
     });

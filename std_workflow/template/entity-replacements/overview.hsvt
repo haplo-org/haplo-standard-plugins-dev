@@ -1,24 +1,26 @@
 
 std:plugin:resources("replacements-overview.js")
 
-<form method="POST">std:form:token()
+<form method="POST"> std:form:token()
   <table>
     <tr>
-      <th> </th> <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
+      unless(neverSelectable) { <th> </th> } <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
     </tr>
     each(data) {
       <tr>
-        <td> 
-          <div class="oforms-radio-vertical">
-            <input
-              type="checkbox"
-              class="selected"
-              name=concat(entityName "[" original "]")
-              checked=if(selected) { "checked" }
-              disabled=unless(selectable) { "disabled" }
-            >
-          </div>
-        </td>
+        unless(^{neverSelectable}) {
+          <td>
+            <div>
+              <input
+                type="checkbox"
+                class="selected"
+                name=concat(entityName "[" original "]")
+                checked=if(selected) { "checked" }
+                disabled=unless(selectable) { "disabled" }
+              >
+            </div>
+          </td>
+        }
         <td> title </td>
         <td> std:object:link(original) </td>
         <td>
