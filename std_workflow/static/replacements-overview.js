@@ -8,7 +8,7 @@
 (function($) {
 
     var setSelected = function(checkBox) {
-        var setLink = checkBox.parents('tr').find('.replace');
+        var setLink = checkBox.parents('tr').find('.z__replace');
         if(checkBox.is(':checked')) {
             setLink.show();
         } else {
@@ -18,13 +18,13 @@
 
     $(document).ready(function() {
 
-        $('#applySelection').hide();
-        $('.selected').each(function() {
+        $('#z__applySelection').hide();
+        $('.z__selected').each(function() {
             setSelected($(this));
         });
 
-        $('.selected').on('change', function() {
-            $('#applySelection').show();
+        $('.z__selected').on('change', function() {
+            $('#z__applySelection').show();
             setSelected($(this));
         });
 

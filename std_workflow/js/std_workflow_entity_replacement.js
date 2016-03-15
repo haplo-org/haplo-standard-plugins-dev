@@ -104,7 +104,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 entry: entry,
                 set: !!data.replacement,
                 actionText: actionText,
-                entityName: M._getText(['entity-replacement:display-name'], data.entityName),
+                displayName: M._getText(['entity-replacement:display-name'], [data.entityName]),
                 replacement: n
             });
         } else if(entry.action === 'ENTITY_SELECT') {
