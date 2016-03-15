@@ -8,7 +8,7 @@
 (function($) {
 
     var setSelected = function(checkBox) {
-        var setLink = checkBox.parents('tr').find('.z__replace');
+        var setLink = checkBox.parents('tr').find('.z__workflow_replace');
         if(checkBox.is(':checked')) {
             setLink.show();
         } else {
@@ -18,13 +18,13 @@
 
     $(document).ready(function() {
 
-        $('#z__applySelection').hide();
-        $('.z__selected').each(function() {
+        $('#z__workflow_apply_selection').hide();
+        $('.z__workflow_selected').each(function() {
             setSelected($(this));
         });
 
-        $('.z__selected').on('change', function() {
-            $('#z__applySelection').show();
+        $('.z__workflow_selected').on('change', function() {
+            $('#z__workflow_apply_selection').show();
             setSelected($(this));
         });
 

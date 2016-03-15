@@ -13,7 +13,7 @@ std:plugin:resources("replacements-overview.js")
             <div>
               <input
                 type="checkbox"
-                class="z__selected"
+                class="z__workflow_selected"
                 name=concat(entityName "[" original "]")
                 checked=if(selected) { "checked" }
                 disabled=unless(selectable) { "disabled" }
@@ -29,9 +29,9 @@ std:plugin:resources("replacements-overview.js")
           }
           if(assignable) {
             if(replacement) {
-              " &nbsp; " <a class="z__replace" href=editPath> "change..." </a>
+              " &nbsp; " <a class="z__workflow_replace" href=editPath> "change..." </a>
             } else {
-              <a class="z__replace" href=editPath> "set..." </a>
+              <a class="z__workflow_replace" href=editPath> "set..." </a>
             }
           }
         </td>
@@ -39,5 +39,5 @@ std:plugin:resources("replacements-overview.js")
     }
   </table>
 
-  <input type="submit" value="Apply selection" id="z__applySelection">
+  <input type="submit" value="Apply selection" id="z__workflow_apply_selection">
 </form>
