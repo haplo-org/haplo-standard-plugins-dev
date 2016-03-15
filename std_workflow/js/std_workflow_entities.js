@@ -77,7 +77,7 @@ EntitiesBase.prototype.__entityNotDefined = function(name) {
 };
 EntitiesBase.prototype.__lookupFailure = function(name) {
     // TODO: Better error reporting when entities aren't found?
-    throw new Error("Can't find entity "+name);
+    O.stop("Can't find "+name);
 };
 
 // --------------------------------------------------------------------------
