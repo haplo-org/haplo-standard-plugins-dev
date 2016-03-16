@@ -15,6 +15,7 @@ var GenericDeferredRender = $GenericDeferredRender;
 //    showVersions - true to allow user to select a version to view
 //    showCurrent - allow the user to see the current version
 //    hideFormNavigation - hide the interform links from the sidebar
+//    uncommittedChangesWarningText - specify (or disable) the uncommitted changes warning text
 
 var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     this.instance = instance;
