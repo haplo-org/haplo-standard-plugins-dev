@@ -83,7 +83,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     // Use workflow functions to set up action panel links,
     //   * only displaying if there is at least one selected replacement
     //   * get link label from text system
-    workflow.actionPanel({}, function(M, builder) {
+    workflow.actionPanelTransitionUI({}, function(M, builder) {
         // TODO: replace with a selector calculated from the list of non-duplicated assignableWhen selectors
         if(M.workUnit.isActionableBy(O.currentUser) &&
                 ((!_.isEmpty(findCurrentlyReplaceable(workflow, M, specification))) ||
