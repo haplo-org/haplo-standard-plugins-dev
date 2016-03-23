@@ -176,6 +176,9 @@ WorkflowInstanceBase.prototype = {
             previousTarget = this.target,
             destination, destinationTarget, stateDefinition;
         this._setPendingTransition(transition);
+        // Select the handlers for transitionComplete based on the initial state of transition.
+        // (if it were done on the post transition state, it'd be quite hard to use)
+        var transitionComplete = this._callHandlerDeferred('$transitionComplete', transition, previousState);
         try {
             var props = this.transitions.properties(transition);
             if(!props) {
@@ -216,6 +219,7 @@ WorkflowInstanceBase.prototype = {
         };
         if(data) { timelineRow.json = JSON.stringify(data); }
         this.$timeline.create(timelineRow).save();
+        transitionComplete(); // Handlers selected before anything changed
         return this;
     },
 
@@ -300,6 +304,36 @@ WorkflowInstanceBase.prototype = {
                 }
             }
         }
+    },
+
+    // Create a function which will call handlers with the arguments.
+    // The handlers to call are selected using the current state of the
+    // workflow, but called with M in the state after the transition.
+    _callHandlerDeferred: function(list /* arguments */) {
+        // Copy arguments, replace first with this
+        var handlerArguments = Array.prototype.slice.call(arguments, 0);
+        handlerArguments[0] = this;
+        // Choose handlers
+        var handlers = this[list];
+        if(!handlers) { return function() {}; }
+        var selectedHandlers = [];
+        for(var i = (handlers.length - 1); i >= 0; --i) {
+            var h = handlers[i];
+            if(this.selected(h.selector)) {
+                selectedHandlers.push(h);
+            }
+        }
+        // Return function which will call the selected handler later
+        var M = this; // for scope
+        return function() {
+            // selectedHandlers is in reverse order to the list, so called in order
+            selectedHandlers.forEach(function(h) {
+                var r = h.handler.apply(M, handlerArguments);
+                if(r !== undefined) {
+                    return r;
+                }
+            });
+        };
     },
 
     // Called to start a new workflow
@@ -632,6 +666,7 @@ implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
 implementHandlerList('observeEnter');
 implementHandlerList('observeExit');
+implementHandlerList('transitionComplete');
 implementHandlerList('renderWork');
 implementHandlerList('renderWorkList');
 implementHandlerList('workListFullInfo');
