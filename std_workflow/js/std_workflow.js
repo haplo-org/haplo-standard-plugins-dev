@@ -35,7 +35,7 @@ var defineTimelineDatabase = function(plugin, workflowName) {
         previousState:  { type:"text", nullable:true }, // previous state the workflow was in (transitions only)
         target:         { type:"text", nullable:true }, // value of the target tag when this entry was created
         state:          { type:"text" },                // which state the workflow is in
-        json:           { type:"text",  nullable:true } // json encoded data
+        json:           { type:"text",  nullable:true } // json encoded data (use data property to read)
     }, function(prototype) {
         prototype.__defineGetter__('data', timelineRowDataGetter);
     });
@@ -368,6 +368,7 @@ WorkflowInstanceBase.prototype = {
         }
         // Transitions may need to be recalculated as different selectors will match
         delete this.$transitions;
+        delete this.$flags;
     },
 
     _saveWorkUnit: function() {
@@ -459,6 +460,8 @@ WorkflowInstanceBase.prototype = {
         }
         // Flags from current state (stateDefinition is left set from loop unless there are no flags at all)
         if(stateDefinition) { change('flags', true); }
+        // For setting flags calculated from workflow data, not state
+        this._call('$modifyFlags', flags);
         return flags;
     },
 
@@ -657,6 +660,7 @@ implementFunctionList('getActionableBy');
 implementFunctionList('hasRole');
 implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
+implementFunctionList('modifyFlags');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
