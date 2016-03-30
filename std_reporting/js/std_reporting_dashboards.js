@@ -155,6 +155,19 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
     });
 };
 
+P.Dashboard.prototype.display = function(where, deferred) {
+    if(!deferred) { return; }
+    if(!where) { where = "above"; }
+    if(!O.isDeferredRender(deferred)) {
+        throw new Error("Second argument to where() must be a deferred render.");
+    }
+    var displays = this.$displays;
+    if(!displays) { displays = this.$displays = {}; }
+    if(!(where in displays)) { displays[where] = []; }
+    displays[where].push(deferred);
+    return this;
+};
+
 P.Dashboard.prototype.summaryStatistic = function(sort, statistic, displayOptions) {
     return this.summaryDisplay(sort, function(dashboard) {
         var calculated = dashboard.calculateStatistic(statistic, displayOptions);
