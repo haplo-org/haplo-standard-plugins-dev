@@ -137,7 +137,10 @@ Collection.prototype._ensureSpecGathered = function() {
         description: this.description,
         calculate: function(select) { return select.count(); }
     }};
-    var serviceNames = ["std:reporting:collection:"+this.name+":setup"];
+    var serviceNames = [
+        "std:reporting:collection:*:setup",
+        "std:reporting:collection:"+this.name+":setup"
+    ];
     this.$categories.forEach(function(category) {
         serviceNames.push("std:reporting:collection_category:"+category+":setup");
     });
