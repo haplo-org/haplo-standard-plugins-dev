@@ -128,23 +128,25 @@ DocumentInstance.prototype.commit = function(user) {
 // ----------------------------------------------------------------------------
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document) {
+DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
+    var sections = [];
     _.each(this.forms, function(form) {
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }
-        html.push(
-            '<div id="', _.escape(form.specification.formId), '">',
-                '<h2>', form.specification.formTitle, '</h2>',
-                instance.renderDocument(),
-            '</div>'
-        );
+        sections.push({
+            unsafeId: form.specification.formId,
+            title: form.specification.formTitle,
+            instance: instance
+        });
     });
-    return html.join('');
+    var view = {sections:sections};
+    var t = P.template("all_form_documents");
+    return deferred ? t.deferredRender(view) : t.render(view);
 };
 
 DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId) {
