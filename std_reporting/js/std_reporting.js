@@ -412,13 +412,16 @@ var updateFacts = function(collection, object, existingRow, timeNow) {
         xImplValidFrom: timeNow
     });
     // Ask other plugins to update the values
-    var serviceNames = ["std:reporting:collection:"+collection.name+":get_facts_for_object"];
+    var serviceNames = [
+        "std:reporting:collection:*:get_facts_for_object",
+        "std:reporting:collection:"+collection.name+":get_facts_for_object"
+    ];
     collection.$categories.forEach(function(category) {
         serviceNames.push("std:reporting:collection_category:"+category+":get_facts_for_object");
     });
     serviceNames.forEach(function(serviceName) {
         if(O.serviceImplemented(serviceName)) {
-            O.service(serviceName, object, row);
+            O.service(serviceName, object, row, collection);
         }
     });
     // New rows are just saved, updates checked to see if they actually need updating
