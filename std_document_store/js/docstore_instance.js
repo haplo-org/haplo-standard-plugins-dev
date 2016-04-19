@@ -9,10 +9,14 @@ var DocumentInstance = P.DocumentInstance = function(store, key) {
     this.store = store;
     this.key = key;
     this.keyId = store._keyToKeyId(key);
-    this.forms = store._formsForKey(key);
 };
 
 // ----------------------------------------------------------------------------
+
+DocumentInstance.prototype.__defineGetter__("forms", function() {
+    // Don't cache the forms, so they can change as forms are committed
+    return this.store._formsForKey(this.key, this);
+});
 
 DocumentInstance.prototype.__defineGetter__("currentDocument", function() {
     // Try current version first
