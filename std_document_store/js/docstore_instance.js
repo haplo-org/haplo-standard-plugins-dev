@@ -19,13 +19,21 @@ DocumentInstance.prototype.__defineGetter__("forms", function() {
 });
 
 DocumentInstance.prototype.__defineGetter__("currentDocument", function() {
+    // Cached?
+    var document = this.$currentDocument;
+    if(document) { return document; }
     // Try current version first
     var current = this.store.currentTable.select().where("keyId","=",this.keyId);
     if(current.length > 0) {
-        return JSON.parse(current[0].json);
+        document = JSON.parse(current[0].json);
     }
     // Fall back to last committed version or a blank document
-    return this.lastCommittedDocument;
+    if(document === undefined) {
+        document = this.lastCommittedDocument;
+    }
+    // Cache found document
+    this.$currentDocument = document;
+    return document;
 });
 
 // Are there some edits outstanding?
@@ -72,6 +80,8 @@ DocumentInstance.prototype.setCurrentDocument = function(document, isComplete) {
     row.json = json;
     row.complete = isComplete;
     row.save();
+    // Invalidate cached current document (don't store given document because we don't own it)
+    delete this.$currentDocument;
 };
 
 DocumentInstance.prototype.__defineSetter__("currentDocument", function(document) {
@@ -113,6 +123,8 @@ DocumentInstance.prototype.getAllVersions = function() {
 // Commit the editing version, maybe duplicating the last version or committing
 // a blank document
 DocumentInstance.prototype.commit = function(user) {
+    // Invalidate current document cache
+    delete this.$currentDocument;
     // Get JSON directly from current version?
     var current = this.store.currentTable.select().where("keyId","=",this.keyId);
     var json  = (current.length > 0) ? current[0].json : undefined;
