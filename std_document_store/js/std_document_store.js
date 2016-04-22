@@ -23,6 +23,8 @@
 //    prepareFormInstance(key, form, instance, context) - prepare a form instance for "form" or "document" (optional)
 //    shouldEditForm(key, form) - return booleans about whether to edit this form
 //    alwaysShowNavigation(key, instance, document) - return true to always show navigation, regardless of whether the editor thinks it's useful
+//    onSetCurrentDocument(instance, document, isComplete) - called when current document is set
+//    onCommit(instance, user) - called when a new version is committed
 
 P.provideFeature("std:document_store", function(plugin) {
     var DocumentStore = P.DocumentStore;
