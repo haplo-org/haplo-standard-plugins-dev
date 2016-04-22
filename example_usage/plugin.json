@@ -1,0 +1,21 @@
+{
+  "pluginName": "example_usage",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Example Usage",
+  "displayDescription": "Example usage of standard workflow plugins",
+  "apiVersion": 4,
+  "privilegesRequired": ["pDatabase"],
+  "use": [
+      "std:workflow",
+      "std:reporting"
+    ],
+  "load": [
+      "js/example_usage.js",
+      "js/egu_workflow.js",
+      "js/egu_forms.js",
+      "js/egu_text.js",
+      "js/egu_reporting.js"
+    ],
+  "respond": ["/do/example-usage"]
+}

@@ -11,6 +11,12 @@ Note that these plugins use private platform APIs, and those APIs may change wit
 
 Use `haplo-plugin` to push this to a Haplo server with development enabled. This version will override the built-in plugin.
 
+To try the examples in an application, create one with
+
+    db/init_app.sh haplo teststandard.haplodev00.local "Test Standard" minimal_with_common_permissions 123456
+
+and create a user with a representative object for testing.
+
 ### License
 
 Haplo is licensed under the Mozilla Public License Version 2.0. See the LICENSE file for full details.

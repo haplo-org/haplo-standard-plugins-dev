@@ -1,0 +1,12 @@
+
+feature std:page:home
+    element: std:group:everyone right std:action_panel {"panel":"example_reporting"}
+
+type std:type:file as File
+    attribute dc:attribute:author
+    element: std:group:everyone right std:action_panel {"panel": "example_file"}
+
+# --------- Attributes ---------------------------------
+
+attribute dc:attribute:author as Author
+
