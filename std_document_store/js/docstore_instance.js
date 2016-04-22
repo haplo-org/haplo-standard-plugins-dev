@@ -226,9 +226,9 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
-            if(!delegate.shouldEditForm || delegate.shouldEditForm(this.key, form)) {
+            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form)) {
                 if(delegate.prepareFormInstance) {
-                    delegate.prepareFormInstance(this.key, form, formInstance, "form");
+                    delegate.prepareFormInstance(instance.key, form, formInstance, "form");
                 }
                 pages.push({
                     index: j,
