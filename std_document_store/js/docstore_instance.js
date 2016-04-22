@@ -61,6 +61,15 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
     }
 });
 
+DocumentInstance.prototype._notifyDelegate = function(fn) {
+    var delegate = this.store.delegate;
+    if(fn in delegate) {
+        var functionArguments = Array.prototype.slice.call(arguments, 0);
+        functionArguments[0] = this;
+        delegate[fn].apply(delegate, functionArguments);
+    }
+};
+
 // ----------------------------------------------------------------------------
 
 DocumentInstance.prototype.setCurrentDocument = function(document, isComplete) {
@@ -71,6 +80,7 @@ DocumentInstance.prototype.setCurrentDocument = function(document, isComplete) {
     row.json = json;
     row.complete = isComplete;
     row.save();
+    this._notifyDelegate('onSetCurrentDocument', document, isComplete);
 };
 
 DocumentInstance.prototype.__defineSetter__("currentDocument", function(document) {
@@ -127,6 +137,7 @@ DocumentInstance.prototype.commit = function(user) {
     if(current.length > 0) {
         current[0].deleteObject();
     }
+    this._notifyDelegate('onCommit', user);
 };
 
 // ----------------------------------------------------------------------------
