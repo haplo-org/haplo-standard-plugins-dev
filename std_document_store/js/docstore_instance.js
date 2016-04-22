@@ -150,7 +150,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var delegate = this.store.delegate;
     var key = this.key;
     var sections = [];
-    var forms = this.forms;
+    var forms = this.store._formsForKey(key, this, document);
     _.each(forms, function(form) {
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
