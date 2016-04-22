@@ -465,6 +465,11 @@ WorkflowInstanceBase.prototype = {
         return flags;
     },
 
+    recalculateFlags: function() {
+        var f = this.$flags = this._calculateFlags();
+        return f;
+    },
+
     getStateDefinition: function(state) {
         return this.$states[state];
     }
