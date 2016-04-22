@@ -16,12 +16,13 @@
 //    name - of store (short string) - REQUIRED
 //    keyIdType - type of keyId, if not "int"
 // Delegate has methods:
-//    formsForKey(key) - return an array of forms - REQUIRED
+//    formsForKey(key, instance, document) - return an array of forms - REQUIRED
 //    keyToKeyId(key) - convert key to a keyId
 //    blankDocumentForKey(key) - create a blank document for a key
 //    formIdFromRequest(request) - given a request, return a form ID (default just takes the second extraPathElements)
 //    prepareFormInstance(key, form, instance, context) - prepare a form instance for "form" or "document" (optional)
 //    shouldEditForm(key, form) - return booleans about whether to edit this form
+//    alwaysShowNavigation(key, instance, document) - return true to always show navigation, regardless of whether the editor thinks it's useful
 
 P.provideFeature("std:document_store", function(plugin) {
     var DocumentStore = P.DocumentStore;
