@@ -15,17 +15,25 @@ var DocumentInstance = P.DocumentInstance = function(store, key) {
 
 DocumentInstance.prototype.__defineGetter__("forms", function() {
     // Don't cache the forms, so they can change as forms are committed
-    return this.store._formsForKey(this.key, this);
+    return this.store._formsForKey(this.key, this, this.$proposedCurrentDocument);
 });
 
 DocumentInstance.prototype.__defineGetter__("currentDocument", function() {
+    // Cached?
+    var document = this.$currentDocument;
+    if(document) { return document; }
     // Try current version first
     var current = this.store.currentTable.select().where("keyId","=",this.keyId);
     if(current.length > 0) {
-        return JSON.parse(current[0].json);
+        document = JSON.parse(current[0].json);
     }
     // Fall back to last committed version or a blank document
-    return this.lastCommittedDocument;
+    if(document === undefined) {
+        document = this.lastCommittedDocument;
+    }
+    // Cache found document
+    this.$currentDocument = document;
+    return document;
 });
 
 // Are there some edits outstanding?
@@ -81,6 +89,8 @@ DocumentInstance.prototype.setCurrentDocument = function(document, isComplete) {
     row.json = json;
     row.complete = isComplete;
     row.save();
+    // Invalidate cached current document (don't store given document because we don't own it)
+    delete this.$currentDocument;
     this._notifyDelegate('onSetCurrentDocument', document, isComplete);
 };
 
@@ -123,6 +133,8 @@ DocumentInstance.prototype.getAllVersions = function() {
 // Commit the editing version, maybe duplicating the last version or committing
 // a blank document
 DocumentInstance.prototype.commit = function(user) {
+    // Invalidate current document cache
+    delete this.$currentDocument;
     // Get JSON directly from current version?
     var current = this.store.currentTable.select().where("keyId","=",this.keyId);
     var json  = (current.length > 0) ? current[0].json : undefined;
@@ -149,7 +161,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var delegate = this.store.delegate;
     var key = this.key;
     var sections = [];
-    var forms = this.forms;
+    var forms = this.store._formsForKey(key, this, document);
     _.each(forms, function(form) {
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
@@ -199,35 +211,41 @@ DocumentInstance.prototype.__defineGetter__("currentDocumentHTML",       functio
 DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     // The form ID is encoded into the request somehow
     var untrustedRequestedFormId = this.store._formIdFromRequest(E.request);
-    var activePage; // filled in later
     // Set up information about the pages
-    var cdocument = this.currentDocument;
-    var forms = this.forms;
-    if(forms.length === 0) { throw new Error("No form definitions"); }
-    var pages = [];
-    var delegate = this.store.delegate;
-    var j = 0; // pages indexes no longer match forms indexes
-    for(var i = 0; i < forms.length; ++i) {
-        var form = forms[i],
-            instance = form.instance(cdocument);
-        if(!delegate.shouldEditForm || delegate.shouldEditForm(this.key, form)) {
-            if(delegate.prepareFormInstance) {
-                delegate.prepareFormInstance(this.key, form, instance, "form");
+    var instance = this,
+        delegate = this.store.delegate,
+        cdocument = this.currentDocument,
+        forms,
+        pages, isSinglePage,
+        activePage;
+    var updatePages = function() {
+        forms = instance.forms;
+        if(forms.length === 0) { throw new Error("No form definitions"); }
+        pages = [];
+        var j = 0; // pages indexes no longer match forms indexes
+        for(var i = 0; i < forms.length; ++i) {
+            var form = forms[i],
+                formInstance = form.instance(cdocument);
+            if(!delegate.shouldEditForm || delegate.shouldEditForm(this.key, form)) {
+                if(delegate.prepareFormInstance) {
+                    delegate.prepareFormInstance(this.key, form, formInstance, "form");
+                }
+                pages.push({
+                    index: j,
+                    form: form,
+                    instance: formInstance,
+                    complete: formInstance.documentWouldValidate()
+                });
+                if(form.specification.formId === untrustedRequestedFormId) {
+                    activePage = pages[j];
+                }
+                j++;
             }
-            pages.push({
-                index: j,
-                form: form,
-                instance: instance,
-                complete: instance.documentWouldValidate()
-            });
-            if(form.specification.formId === untrustedRequestedFormId) {
-                activePage = pages[j];
-            }
-            j++;
         }
-    }
-    pages[pages.length - 1].isLastPage = true;
-    var isSinglePage = (pages.length === 1);
+        pages[pages.length - 1].isLastPage = true;
+        isSinglePage = (pages.length === 1);
+    };
+    updatePages();
     // Default the active page to the first page
     if(!activePage) { activePage = pages[0]; }
     activePage.active = true;
@@ -237,6 +255,11 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         // Update from the active form
         activePage.instance.update(E.request);
         activePage.complete = activePage.instance.complete;
+        if(activePage.complete) {
+            this.$proposedCurrentDocument = cdocument;
+            updatePages();  // delegate formsForKey() may valid forms
+            delete this.$proposedCurrentDocument;
+        }
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
         // Goto another form?
@@ -251,12 +274,20 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                 return actions.finishEditing(this, E, false /* not complete */);
             }
             // If the form is complete, go to the next form, or finish
-            if(activePage.instance.complete) {
-                if(activePage.isLastPage) {
+            if(activePage.complete) {
+                // Find next page, remembering indexes might have changed
+                var nextIndex = -1, activeFormId = activePage.form.specification.formId;
+                for(var l = 0; l < pages.length; ++l) {
+                    if(pages[l].form.specification.formId === activeFormId) {
+                        nextIndex = l+1;
+                        break;
+                    }
+                }
+                if(nextIndex >= 0 && nextIndex >= forms.length) {
                     return actions.finishEditing(this, E, true /* everything complete */);
                 } else {
                     return actions.gotoPage(this, E,
-                        pages[activePage.index+1].form.specification.formId);
+                        pages[nextIndex].form.specification.formId);
                 }
             } else {
                 showFormError = true;
@@ -264,10 +295,13 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         }
     }
     // Render the form
+    var navigation = null;
+    if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
+        navigation = P.template("navigation").deferredRender({pages:pages});
+    }
     actions.render(this, E, P.template("edit").deferredRender({
         isSinglePage: isSinglePage,
-        navigation: isSinglePage ? null :
-            P.template("navigation").deferredRender({pages:pages}),
+        navigation: navigation,
         pages: pages,
         showFormError: showFormError,
         activePage: activePage

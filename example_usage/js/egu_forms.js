@@ -9,6 +9,11 @@ var form0 = P.form({
             path:"description",
             label:"Description",
             required:true
+        },
+        {
+            type:"boolean",
+            path:"secondForm",
+            label:"Use second form?"
         }
     ]
 });
@@ -33,8 +38,15 @@ P.ExampleUsageWorkflow.use("std:document_store", {
     title: "Workflow form",
     path: "/do/example-usage/document-store",
     panel: 200,
-    formsForKey: function(key) {
-        return [form0, form1]; 
+    formsForKey: function(key, instance, document) {
+        var forms = [form0];
+        if(document.secondForm) {
+            forms.push(form1);
+        }
+        return forms;
+    },
+    alwaysShowNavigation: function(key, instance, document) {
+        return true;
     },
     view: [{}],
     edit: [{roles:["user"], selector:{state:"wait_submit"}}]
