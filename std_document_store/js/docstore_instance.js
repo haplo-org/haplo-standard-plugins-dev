@@ -49,7 +49,8 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         var record = committed[0];
         var document = JSON.parse(record.json);
         var isComplete = true;
-        _.each(this.forms, function(form) {
+        var forms = this.forms;
+        _.each(forms, function(form) {
             var instance = form.instance(document);
             if(!instance.documentWouldValidate()) {
                 isComplete = false;
@@ -143,35 +144,38 @@ DocumentInstance.prototype.commit = function(user) {
 // ----------------------------------------------------------------------------
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document) {
+DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
-    _.each(this.forms, function(form) {
+    var sections = [];
+    var forms = this.forms;
+    _.each(forms, function(form) {
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }
-        html.push(
-            '<div id="', _.escape(form.specification.formId), '">',
-                '<h2>', form.specification.formTitle, '</h2>',
-                instance.renderDocument(),
-            '</div>'
-        );
+        sections.push({
+            unsafeId: form.specification.formId,
+            title: form.specification.formTitle,
+            instance: instance
+        });
     });
-    return html.join('');
+    var view = {sections:sections};
+    var t = P.template("all_form_documents");
+    return deferred ? t.deferredRender(view) : t.render(view);
 };
 
 DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId) {
     var delegate = this.store.delegate;
     var key = this.key;
-    var form;
+    var forms = this.forms, form;
     if(selectedFormId) {
-        form = _.find(this.forms, function(form) {
+        form = _.find(forms, function(form) {
             return selectedFormId === form.specification.formId;
         });
     }
-    if(!form) { form = this.forms[0]; }
+    if(!form) { form = forms[0]; }
     var instance = form.instance(document);
     if(delegate.prepareFormInstance) {
         delegate.prepareFormInstance(key, form, instance, "document");
@@ -198,12 +202,13 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     var activePage; // filled in later
     // Set up information about the pages
     var cdocument = this.currentDocument;
-    if(this.forms.length === 0) { throw new Error("No form definitions"); }
+    var forms = this.forms;
+    if(forms.length === 0) { throw new Error("No form definitions"); }
     var pages = [];
     var delegate = this.store.delegate;
     var j = 0; // pages indexes no longer match forms indexes
-    for(var i = 0; i < this.forms.length; ++i) {
-        var form = this.forms[i],
+    for(var i = 0; i < forms.length; ++i) {
+        var form = forms[i],
             instance = form.instance(cdocument);
         if(!delegate.shouldEditForm || delegate.shouldEditForm(this.key, form)) {
             if(delegate.prepareFormInstance) {
