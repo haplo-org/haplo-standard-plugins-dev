@@ -15,7 +15,7 @@ var DocumentInstance = P.DocumentInstance = function(store, key) {
 
 DocumentInstance.prototype.__defineGetter__("forms", function() {
     // Don't cache the forms, so they can change as forms are committed
-    return this.store._formsForKey(this.key, this, this.$proposedCurrentDocument);
+    return this.store._formsForKey(this.key, this);
 });
 
 DocumentInstance.prototype.__defineGetter__("currentDocument", function() {
@@ -219,7 +219,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         pages, isSinglePage,
         activePage;
     var updatePages = function() {
-        forms = instance.forms;
+        forms = instance.store._formsForKey(this.key, this, cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
         pages = [];
         var j = 0; // pages indexes no longer match forms indexes
@@ -256,9 +256,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         activePage.instance.update(E.request);
         activePage.complete = activePage.instance.complete;
         if(activePage.complete) {
-            this.$proposedCurrentDocument = cdocument;
             updatePages();  // delegate formsForKey() may valid forms
-            delete this.$proposedCurrentDocument;
         }
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
