@@ -219,7 +219,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         pages, isSinglePage,
         activePage;
     var updatePages = function() {
-        forms = instance.store._formsForKey(this.key, this, cdocument);
+        forms = instance.store._formsForKey(instance.key, instance, cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
         pages = [];
         var j = 0; // pages indexes no longer match forms indexes
