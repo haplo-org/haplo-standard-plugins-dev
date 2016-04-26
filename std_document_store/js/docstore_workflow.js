@@ -172,13 +172,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(can(M, O.currentUser, spec.edit)) {
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
+            var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
+            var isDone = isOptional(M, O.currentUser, spec.edit) || instance.currentDocumentIsComplete;
             builder.
                 link(spec.editPriority || "default",
                         spec.path+'/form/'+M.workUnit.id,
-                        M.getTextMaybe(searchPath+":"+M.state, searchPath) ||
-                            "Edit "+spec.title.toLowerCase(),
-                            (isOptional(M, O.currentUser, spec.edit) ||
-                            instance.currentDocumentIsComplete) ?"standard" : "primary");
+                        label,
+                        isDone ? "standard" : "primary");
         }
     });
 
