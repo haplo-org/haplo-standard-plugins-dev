@@ -51,8 +51,10 @@ DocumentInstance.prototype.__defineGetter__("currentDocumentIsComplete", functio
 });
 
 DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", function() {
-    var committed = this.store.versionsTable.select().where("keyId","=",this.keyId).
-        order("version", true);
+    var committed = this.store.versionsTable.select().
+        where("keyId","=",this.keyId).
+        order("version", true).
+        limit(1);
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
