@@ -113,7 +113,7 @@ P.respond("GET", "/do/reporting/admin/collection-fact-lookup", [
             } else if(typeof(value) === "object") {
                 try {
                     e.pre = JSON.stringify(value, undefined, 2);
-                } catch(e) {
+                } catch(_) {
                     e.pre = 'ERROR JSON ENCODING';
                 }
             } else {
