@@ -256,7 +256,8 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         activePage.instance.update(E.request);
         activePage.complete = activePage.instance.complete;
         if(activePage.complete) {
-            updatePages();  // delegate formsForKey() may valid forms
+            // delegate.formsForKey() may return different forms now document has changed
+            updatePages();
         }
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
@@ -281,7 +282,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                         break;
                     }
                 }
-                if(nextIndex >= 0 && nextIndex >= forms.length) {
+                if(nextIndex >= 0 && nextIndex >= pages.length) {
                     return actions.finishEditing(this, E, true /* everything complete */);
                 } else {
                     return actions.gotoPage(this, E,
