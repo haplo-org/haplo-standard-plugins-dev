@@ -381,6 +381,7 @@ var dateToDayPart = function(f) {
 var factValueComparisonFunctions = {
     "ref": function(a,b) { return a == b; }, // Refs can't be compared with === or !== .
     "labelList": function(a,b) { return a == b; }, // LabelLists can't be compared with === or !== .
+    "json": function(a,b) { return _.isEqual(a,b); }, // deep comparison of nested JS objects
     "datetime": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch
     "date": function(a,b) { return dateToDayPart(a).getTime() === dateToDayPart(b).getTime(); }, // compare adjusted dates
     "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch
