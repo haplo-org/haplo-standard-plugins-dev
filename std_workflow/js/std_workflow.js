@@ -530,6 +530,12 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
         return M.$textLookup[key];
     },
 
+    $textInterpolate: function(M, text) {
+        return text.replace(/\bNAME\(([a-zA-Z0-9 ]+)\)/g, function(match, name) {
+            return NAME(name);
+        });
+    },
+
     $getActionableBy: function(M, actionableBy, target) {
         if(actionableBy in GROUP) {
             return O.group(GROUP[actionableBy]);
