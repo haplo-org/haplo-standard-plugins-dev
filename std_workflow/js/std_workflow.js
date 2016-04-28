@@ -697,14 +697,18 @@ P.workflowFeatureFunctions = {
     // More functions added in other files.
 };
 
+var implementWorkflow = function(plugin) {
+    return function(name, description) {
+        var workflow = new Workflow(plugin, name, description);
+        P.allWorkflows[workflow.fullName] = workflow;
+        return workflow;
+    }
+};
+
 P.provideFeature("std:workflow", function(plugin) {
     plugin.workflow = _.extend({
 
-        implement: function(name, description) {
-            var workflow = new Workflow(plugin, name, description);
-            P.allWorkflows[workflow.fullName] = workflow;
-            return workflow;
-        }
+        implement: implementWorkflow(plugin)
 
     }, P.workflowFeatureFunctions);
 });
