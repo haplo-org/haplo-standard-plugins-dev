@@ -531,7 +531,7 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
     },
 
     $textInterpolate: function(M, text) {
-        return text.replace(/\bNAME\(([a-zA-Z0-9 ]+)\)/g, function(match, name) {
+        return text.replace(/\bNAME\(([^\)]+?)\)/g, function(match, name) {
             return NAME(name);
         });
     },
