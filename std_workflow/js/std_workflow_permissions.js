@@ -28,15 +28,14 @@ P.registerWorkflowFeature("std:permissions", function(workflow, spec) {
     var eps = {};
     var saps = {};
     _.each(spec, function(rule) {
-        if (rule.hasOwnProperty("entity") &&
-            rule.hasOwnProperty("hasPermission")) {
+        if ("entity" in rule &&
+            "hasPermission" in rule) {
             eps[rule.entity] = rule.hasPermission;
-        }
-    });
-    _.each(spec, function(rule) {
-        if (rule.hasOwnProperty("inState") &&
-            rule.hasOwnProperty("actionableByHasPermission")) {
+        } else if ("inState" in rule &&
+            "actionableByHasPermission" in rule) {
             saps[rule.inState] = rule.actionableByHasPermission;
+        } else {
+            throw "Invalid workflow permissions rule " + JSON.stringify(rule);
         }
     });
     workflowPermissionRules[workflow.fullName] = {
@@ -47,19 +46,26 @@ P.registerWorkflowFeature("std:permissions", function(workflow, spec) {
 
 // As actionableBy might be a group, what we return is a list
 // of user objects AND groups. Don't assume it's just users.
-var checkPermissionsForObject = function(objectRef, checkFunction) {
+var checkPermissionsForObject = function(object, checkFunction) {
     var results = [];
+    var objectRef = object.ref;
     _.each(workflowPermissionRules, function(rules, workUnitType) {
+        console.log("objectRef=", objectRef);
         var units = O.work.query(workUnitType).ref(objectRef);
 
         _.each(units, function(unit) {
+            console.log("unit:", unit, unit.workType);
+//            console.log("workflow type:", P.allWorkflows[unit.workType]);
             if(P.allWorkflows[unit.workType]) {
                 var M = P.allWorkflows[unit.workType].instance(unit);
-
+                console.log("M:", M);
+                console.log("rules:",rules);
                 // Entity permissions
                 for(var entityName in rules.entityPermissions) {
+                    console.log("Entity name:", entityName, rules.entityPermissions[entityName]);
                     if(checkFunction(rules.entityPermissions[entityName])) {
                         var entities = M.entities[entityName + "_list"];
+                        console.log("entities:", entities);
                         if(entities) {
                             results = results.concat(entities);
                         }
@@ -82,23 +88,33 @@ var checkPermissionsForObject = function(objectRef, checkFunction) {
 
 P.implementService("std:workflow:get_additional_readers_for_object", function(objectRef) {
     return checkPermissionsForObject(objectRef, function(perm) {
-        return perm==="read" || perm==="read-write";
+        console.log("perm(read|read-edit)", perm);
+        return perm==="read" || perm==="read-edit";
     });
 });
 
 P.implementService("std:workflow:get_additional_writers_for_object", function(objectRef) {
     return checkPermissionsForObject(objectRef, function(perm) {
-        return perm==="read-write";
+        console.log("perm(read-edit)", perm);
+        return perm==="read-edit";
     });
 });
 
 // Change notification handlers
 
 P.implementService("std:workflow:entities:replacement_changed", function(workUnit, workflow, entityName) {
-    if(workflowPermissionRules[workUnit.workType]) {
-        if(workUnit.ref) {
-            O.service("std:workflow:permissions:permissions_changed_for_object",
-                      workUnit.ref);
+    // FIXME: Be fussier. This only affects read permissions in practice, as
+    // write perms are not cached. See about computing before/after read perms for
+    // the object and see if they are actually changed, and do nothing
+    // otherwise.
+    if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
+        if(workflowPermissionRules[workUnit.workType]) {
+            if(workUnit.ref) {
+                O.service("std:workflow:permissions:permissions_changed_for_object",
+                          workUnit.ref);
+            }
         }
     }
 });
+
+// FIXME: Workflow state change handler, in case user has an actionableBy read permissions rule?
