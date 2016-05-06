@@ -41,8 +41,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     });
 
     _.each(specification.replacements, function(info, name) {
-        var unreplacedName = info.entity;
 
+        var unreplacedName = info.entity;
         entityDefinitions[name] = function(context) {
             // Build replacements map
             var replacements = O.refdict();
@@ -283,6 +283,7 @@ P.respond("GET,POST", "/do/workflow/replace", [
     {pathElement:1, as:"string"},
     {pathElement:2, as:"object"}
 ], function(E, workUnit, path, original) {
+    console.log("WORKFLOW REPLACE");
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);

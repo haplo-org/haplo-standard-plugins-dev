@@ -220,6 +220,9 @@ WorkflowInstanceBase.prototype = {
         if(data) { timelineRow.json = JSON.stringify(data); }
         this.$timeline.create(timelineRow).save();
         transitionComplete(); // Handlers selected before anything changed
+        if(O.serviceImplemented("std:workflow:transition")) {
+            O.service("std:workflow:transition", this, transition, previousState);
+        }
         return this;
     },
 
@@ -702,7 +705,7 @@ var implementWorkflow = function(plugin) {
         var workflow = new Workflow(plugin, name, description);
         P.allWorkflows[workflow.fullName] = workflow;
         return workflow;
-    }
+    };
 };
 
 P.provideFeature("std:workflow", function(plugin) {
@@ -722,3 +725,4 @@ P.implementService("std:workflow:for_ref", function(fullName, ref) {
     }
     return workflow.instanceForRef(ref);
 });
+

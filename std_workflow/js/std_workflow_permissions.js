@@ -45,32 +45,29 @@ P.registerWorkflowFeature("std:permissions", function(workflow, spec) {
 });
 
 // As actionableBy might be a group, what we return is a list
-// of user objects AND groups. Don't assume it's just users.
+// of users AND groups. Don't assume it's just users.
 var checkPermissionsForObject = function(object, checkFunction) {
     var results = [];
     var objectRef = object.ref;
     _.each(workflowPermissionRules, function(rules, workUnitType) {
-        console.log("objectRef=", objectRef);
         var units = O.work.query(workUnitType).ref(objectRef);
-
         _.each(units, function(unit) {
-            console.log("unit:", unit, unit.workType);
-//            console.log("workflow type:", P.allWorkflows[unit.workType]);
             if(P.allWorkflows[unit.workType]) {
                 var M = P.allWorkflows[unit.workType].instance(unit);
-                console.log("M:", M);
-                console.log("rules:",rules);
                 // Entity permissions
-                for(var entityName in rules.entityPermissions) {
-                    console.log("Entity name:", entityName, rules.entityPermissions[entityName]);
-                    if(checkFunction(rules.entityPermissions[entityName])) {
+                _.each(rules.entityPermissions, function(perms, entityName) {
+                    if(checkFunction(perms)) {
                         var entities = M.entities[entityName + "_list"];
-                        console.log("entities:", entities);
                         if(entities) {
-                            results = results.concat(entities);
+                            _.each(entities, function(entity) {
+                                var user = O.user(entity.ref);
+                                if(user) {
+                                    results.push(user);
+                                }
+                            });
                         }
                     }
-                }
+                });
 
                 // actionableBy permissions
                 if(rules.stateActionPermissions[M.state]) {
@@ -81,32 +78,35 @@ var checkPermissionsForObject = function(object, checkFunction) {
             }
         });
     });
+
+    results = _.unique(results, false, function(user) {return user.id;});
     return results;
 };
 
 // API to permissions system
 
 P.implementService("std:workflow:get_additional_readers_for_object", function(objectRef) {
-    return checkPermissionsForObject(objectRef, function(perm) {
-        console.log("perm(read|read-edit)", perm);
+    var result = checkPermissionsForObject(objectRef, function(perm) {
         return perm==="read" || perm==="read-edit";
     });
+    return result;
 });
 
 P.implementService("std:workflow:get_additional_writers_for_object", function(objectRef) {
-    return checkPermissionsForObject(objectRef, function(perm) {
-        console.log("perm(read-edit)", perm);
+    var result = checkPermissionsForObject(objectRef, function(perm) {
         return perm==="read-edit";
     });
+    return result;
 });
 
 // Change notification handlers
 
 P.implementService("std:workflow:entities:replacement_changed", function(workUnit, workflow, entityName) {
-    // FIXME: Be fussier. This only affects read permissions in practice, as
+    // TODO: Be fussier. This only affects read permissions in practice, as
     // write perms are not cached. See about computing before/after read perms for
     // the object and see if they are actually changed, and do nothing
     // otherwise.
+    console.log("Entity replacement occurs!");
     if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
         if(workflowPermissionRules[workUnit.workType]) {
             if(workUnit.ref) {
@@ -117,4 +117,14 @@ P.implementService("std:workflow:entities:replacement_changed", function(workUni
     }
 });
 
-// FIXME: Workflow state change handler, in case user has an actionableBy read permissions rule?
+P.implementService("std:workflow:transition", function(M, transition, previousState) {
+    console.log("Transition occurs!");
+    if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
+        if(workflowPermissionRules[M.workUnit.workType]) {
+            if(M.workUnit.ref) {
+                O.service("std:workflow:permissions:permissions_changed_for_object",
+                          M.workUnit.ref);
+            }
+        }
+    }
+});
