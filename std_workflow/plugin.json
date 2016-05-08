@@ -5,6 +5,7 @@
   "displayName": "Workflow",
   "displayDescription": "Standard Workflow support for use by other plugins.",
   "apiVersion": 4,
+  "depend": ["std_action_panel"],
   "privilegesRequired": ["pBackgroundProcessing"],
   "loadPriority": 1001,
   "load": [
