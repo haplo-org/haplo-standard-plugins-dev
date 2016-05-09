@@ -106,7 +106,6 @@ P.implementService("std:workflow:entities:replacement_changed", function(workUni
     // write perms are not cached. See about computing before/after read perms for
     // the object and see if they are actually changed, and do nothing
     // otherwise.
-    console.log("Entity replacement occurs!");
     if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
         if(workflowPermissionRules[workUnit.workType]) {
             if(workUnit.ref) {
@@ -118,7 +117,6 @@ P.implementService("std:workflow:entities:replacement_changed", function(workUni
 });
 
 P.implementService("std:workflow:transition", function(M, transition, previousState) {
-    console.log("Transition occurs!");
     if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
         if(workflowPermissionRules[M.workUnit.workType]) {
             if(M.workUnit.ref) {

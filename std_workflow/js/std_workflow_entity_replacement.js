@@ -237,6 +237,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         M.addTimelineEntry('ENTITY_SELECT', {});
         M._calculateFlags();
         E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
+        return;
     }
 
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
@@ -283,7 +284,6 @@ P.respond("GET,POST", "/do/workflow/replace", [
     {pathElement:1, as:"string"},
     {pathElement:2, as:"object"}
 ], function(E, workUnit, path, original) {
-    console.log("WORKFLOW REPLACE");
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
@@ -330,6 +330,5 @@ P.respond("GET,POST", "/do/workflow/replace", [
         entityDisplayName: M._getText(['entity-replacement:display-name'], [entityName]),
         originalEntityTitle: original.title,
         form: form
-    }, "entity-replacements/form");    
+    }, "entity-replacements/form");
 });
-
