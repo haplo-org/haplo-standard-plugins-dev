@@ -25,13 +25,17 @@ var workflowPermissionRules = {};
 // { inState: NAME, actionableByHasPermission: PERM }
 
 P.registerWorkflowFeature("std:permissions", function(workflow, spec) {
+    if(workflow.fullName in workflowPermissionRules) {
+        throw "Permissions have already been configured for this workflow";
+    }
+
     var eps = {};
     var saps = {};
     _.each(spec, function(rule) {
-        if ("entity" in rule &&
+        if("entity" in rule &&
             "hasPermission" in rule) {
             eps[rule.entity] = rule.hasPermission;
-        } else if ("inState" in rule &&
+        } else if("inState" in rule &&
             "actionableByHasPermission" in rule) {
             saps[rule.inState] = rule.actionableByHasPermission;
         } else {
@@ -87,7 +91,7 @@ var checkPermissionsForObject = function(object, checkFunction) {
 
 P.implementService("std:workflow:get_additional_readers_for_object", function(objectRef) {
     var result = checkPermissionsForObject(objectRef, function(perm) {
-        return perm==="read" || perm==="read-edit";
+        return (perm==="read") || (perm==="read-edit");
     });
     return result;
 });
