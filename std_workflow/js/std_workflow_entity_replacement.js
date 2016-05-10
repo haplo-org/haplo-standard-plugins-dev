@@ -200,6 +200,7 @@ var makeEntityReplacementForm = function(formName, dataSource) {
         formTitle: "Entity Replacement",
         elements: [
             {
+                name: "replacement",
                 type: "lookup",
                 path: "replacement",
                 dataSource: dataSource
