@@ -12,6 +12,8 @@ group std:group:workflow-visibility as WorkflowVisibility
 group std:group:workflow-fallback as WorkflowFallback
     title: Workflow fallback
 
+group std:group:workflow-on-hold as WorkflowOnHold
+	title: Workflow on hold
 
 # -------- Email templates -------------------------
 
