@@ -629,3 +629,30 @@ JsonColumn.prototype.exportCell = function(row, xls) {
     var obj = row[this.fact];
     xls.cell((obj === null) ? null : obj[this.valueProperty]);
 };
+
+// --------------------------------------------------------------------------
+
+var LookupColumn = makeColumnType({
+    type:"lookup",
+    construct: function(collection, colspec) {
+        var lookup = colspec.lookup;
+        switch(typeof(lookup)) {
+            case "function":   this.lookup = lookup;                                break;
+            case "object":     this.lookup = function(v) { return lookup[v]; };     break;
+            default: throw new Error("Bad lookup passed to lookup column; must be function or object to use as dictionary");
+        }
+    }
+});
+
+LookupColumn.prototype.renderCellInner = function(row) {
+    var value = this.lookup(row[this.fact]);
+    if((value === null) || (value === undefined)) {
+        return '';
+    } else {
+        return _.escape(""+value);
+    }
+};
+
+LookupColumn.prototype.exportCell = function(row, xls) {
+    xls.cell(this.lookup(row[this.fact]));
+};
