@@ -602,6 +602,36 @@ var JsonColumn = makeColumnType({
     type:"json",
     construct: function(collection, colspec) {
         this.valueProperty = colspec.valueProperty;
+        // Does this JSON column delegate to another column for display?
+        if("column" in colspec) {
+            if(typeof(colspec.column.type) !== "string") {
+                throw new Error("When using the column property for json columns, you must specify a column type");
+            }
+            var innerColspec = _.clone(colspec.column);
+            innerColspec.fact = "_FAKEFACTVALUE";
+            var column = makeColumn(collection, innerColspec);
+            // Values need converting
+            var valueConversion = function(v) { return (v === undefined) ? null : v; };
+            // Dates need special handling
+            if(colspec.column.type.indexOf("date") !== -1) {
+                valueConversion = function(v) {
+                    return v ? (new XDate(v, true)).toDate() : null;
+                };
+            } else if(column instanceof NumberColumn) {
+                // Paranoid about numbers
+                valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
+            }
+            // Delegate this object to the column
+            this.renderCell = function(row) {
+                var obj = row[this.fact];
+                return column.renderCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)});
+            };
+            this.exportCell = function(row, xls) {
+                var obj = row[this.fact];
+                column.exportCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)}, xls);
+            };
+            this.__defineGetter__("exportWidth", function() { return column.exportWidth; });
+        }
     }
 });
 
