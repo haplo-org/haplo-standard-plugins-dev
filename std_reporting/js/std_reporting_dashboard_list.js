@@ -248,20 +248,10 @@ var SimpleColumn = makeColumnType({type:"simple"});
 
 // --------------------------------------------------------------------------
 
-var REF_COLUMN_LOAD_TITLE_FN = function(r) {
-    return _.escape(r.load().title);
-};
-var REF_COLUMN_LOAD_SHORTEST_TITLE_FN = function(r) {
-    var obj = r.load();
-    if(!obj) { return ''; }
-    var title;
-    obj.everyTitle(function(t) {
-        t = t.toString();
-        if(!title || (t.length < title.length)) {
-            title = t;
-        }
-    });
-    return _.escape(title);
+var refColumnEscapedTitleFn = function(property) {
+    return function(r) {
+        return _.escape(r.load()[property]);
+    };
 };
 
 var RefColumn = makeColumnType({
@@ -269,7 +259,7 @@ var RefColumn = makeColumnType({
     construct: function(collection, colspec) {
         this.link = colspec.link;
         this.escapedTitles = O.refdict(
-            colspec.shortestTitle ? REF_COLUMN_LOAD_SHORTEST_TITLE_FN : REF_COLUMN_LOAD_TITLE_FN
+            refColumnEscapedTitleFn(colspec.shortestTitle ? "shortestTitle" : "title")
         );
     }
 });
