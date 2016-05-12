@@ -114,7 +114,12 @@ DashboardBase.prototype = {
                 var countsForState = _.map(columns, function(column) {
                     var count = rowCounts[column.value] || 0;
                     total += count;
-                    var countParams = {}; countParams[columnTag] = column.value;
+                    var countParams = {};
+                    if(column.value) {
+                        countParams[columnTag] = column.value;
+                    } else {
+                        countParams.__empty_tag = "1";
+                    }
                     return {
                         count: count,
                         countParams: countParams
@@ -229,7 +234,12 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
             query.tag("state", queryState);
             if("columnTag" in spec) {
                 var columnTagValue = E.request.parameters[spec.columnTag];
-                if(columnTagValue) { query.tag(spec.columnTag, columnTagValue); }
+                if(columnTagValue) {
+                    query.tag(spec.columnTag, columnTagValue);
+                } else if(E.request.parameters.__empty_tag) {
+                    // Empty column values have a special URL parameter
+                    query.tag(spec.columnTag, null);
+                }
             }
             // Get information about each work unit matching the criteria
             _.each(query, function(workUnit) {
