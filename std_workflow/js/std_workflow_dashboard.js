@@ -53,6 +53,38 @@ DashboardBase.prototype = {
         return P.interpolateNAME(undefined, text);
     },
 
+    _mergeStatesInCounts: function(counts) {
+        var mergeStates = this.spec.mergeStates;
+        if(!mergeStates) { return; }
+        _.each(mergeStates, function(sourceStates, destState) {
+            if(!(destState in counts)) { counts[destState] = 0; }
+            sourceStates.forEach(function(s) {
+                if(s in counts) {
+                    counts[destState] = counts[destState] + counts[s];
+                    delete counts[s];
+                }
+            });
+        });
+    },
+
+    _mergeStatesInCountsWithColumnTag: function(counts) {
+        var mergeStates = this.spec.mergeStates;
+        if(!mergeStates) { return; }
+        _.each(mergeStates, function(sourceStates, destState) {
+            if(!(destState in counts)) { counts[destState] = {}; }
+            var d = counts[destState];
+            sourceStates.forEach(function(s) {
+                if(s in counts) {
+                    _.each(counts[s], function(v,col) {
+                        if(!(col in d)) { d[col] = 0; }
+                        d[col] += v;
+                    });
+                    delete counts[s];
+                }
+            });
+        });
+    },
+
     _generateCounts: function() {
         var dashboard = this;
         var counts, columns, rows = [];
@@ -61,6 +93,7 @@ DashboardBase.prototype = {
             // Break down counts by a particular tag
             var columnTag = this.spec.columnTag;
             counts = this.query.countByTags("state", columnTag);
+            dashboard._mergeStatesInCountsWithColumnTag(counts);
             var columnTagValues = {};
             _.each(counts, function(counts, state) {
                 _.each(counts, function(value, key) {
@@ -98,6 +131,7 @@ DashboardBase.prototype = {
         } else {
             // Just the total for each state
             counts = this.query.countByTags("state");
+            this._mergeStatesInCounts(counts);
             this.spec.states.forEach(function(state) {
                 rows.push({
                     state: state,
@@ -185,17 +219,23 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         E.setResponsiblePlugin(P);  // template source etc
         var dashboard = (new Dashboard()).setup(E);
         // Filter work units
-        dashboard.query.tag("state", state);
-        if("columnTag" in spec) {
-            var columnTagValue = E.request.parameters[spec.columnTag];
-            if(columnTagValue) { dashboard.query.tag(spec.columnTag, columnTagValue); }
+        var states = [state];
+        if(dashboard.spec.mergeStates && (state in dashboard.spec.mergeStates)) {
+            states = states.concat(dashboard.spec.mergeStates[state]);
         }
-        // Get information about each work unit matching the criteria
-        var list = _.map(dashboard.query, function(workUnit) {
-            var M = workflow.instance(workUnit);
-            return {
-                M: M
-            };
+        var list = [];
+        states.forEach(function(queryState) {
+            var query = O.work.query(dashboard.workflow.fullName).isEitherOpenOrClosed();
+            query.tag("state", queryState);
+            if("columnTag" in spec) {
+                var columnTagValue = E.request.parameters[spec.columnTag];
+                if(columnTagValue) { query.tag(spec.columnTag, columnTagValue); }
+            }
+            // Get information about each work unit matching the criteria
+            _.each(query, function(workUnit) {
+                var M = workflow.instance(workUnit);
+                if(M) { list.push(M); }
+            });
         });
         E.render({
             stateName: dashboard._displayableStateName(state),
