@@ -4,13 +4,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
+var CanViewAllDashboards = O.action("std:workflow:admin:view-all-dashboards").
+    title("Workflow: View all dashboards").
+    allow("group", Group.Administrators);
+
+// --------------------------------------------------------------------------
 
 var DashboardBase = function() { };
 DashboardBase.prototype = {
 
     setup: function(E) {
         // Permissions
-        var canView = O.currentUser.isMemberOf(Group.Administrators);
+        var canView = O.currentUser.allowed(CanViewAllDashboards);
         if(!canView && this.spec.canViewDashboard) {
             if(this.spec.canViewDashboard(this, O.currentUser)) { canView = true; }
         }
