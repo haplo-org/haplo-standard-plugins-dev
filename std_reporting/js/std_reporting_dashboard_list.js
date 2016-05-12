@@ -675,7 +675,7 @@ var LookupColumn = makeColumnType({
 });
 
 LookupColumn.prototype.renderCellInner = function(row) {
-    var value = this.lookup(row[this.fact]);
+    var value = this.lookup(row[this.fact], row);
     if((value === null) || (value === undefined)) {
         return '';
     } else {
@@ -684,5 +684,5 @@ LookupColumn.prototype.renderCellInner = function(row) {
 };
 
 LookupColumn.prototype.exportCell = function(row, xls) {
-    xls.cell(this.lookup(row[this.fact]));
+    xls.cell(this.lookup(row[this.fact], row));
 };
