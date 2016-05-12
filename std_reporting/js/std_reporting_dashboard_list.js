@@ -423,7 +423,7 @@ NumberColumn.prototype.renderCell = function(row) {
     } else if(value === 0) {
         return '<td class="z__std_reporting_value_0"></td>';
     } else {
-        return '<td>'+this.renderCellInner(row)+'</td>';
+        return '<td>'+value+'</td>';
     }
 };
 
@@ -443,14 +443,26 @@ var CurrencyColumn = makeColumnType({
     }
 });
 
-CurrencyColumn.prototype.renderCell = NumberColumn.prototype.renderCell;
+CurrencyColumn.prototype.renderCell = function(row) {
+    var value = row[this.fact];
+    if(value === null) {
+        return '<td></td>';
+    } else if(value === 0) {
+        return '<td data-sort="0" class="z__std_reporting_value_0"></td>';
+    } else {
+        return '<td data-sort="'+value+'">'+this.renderCellInner(row)+'</td>';
+    }
+};
 
 CurrencyColumn.prototype.renderCellInner = function(row) {
     var value = row[this.fact];
-    var decimals = this.centesimal ? 2 : 0;
-    var str = value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, this.separator);
+    if(!value) { return ''; }
+    var str = "";
+    if(this.centesimal) { str = parseFloat(value/100).toFixed(2); }
+    else { str = value.toFixed(0); }
+    str = str.replace(/\B(?=(\d{3})+(?!\d))/g, this.separator);
     if(value < 0) { return str.substr(0, 1) + this.symbol + str.substr(1); }
-    return this.symbol + str;
+    else { return this.symbol + str; }
 };
 
 // --------------------------------------------------------------------------
