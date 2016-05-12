@@ -423,13 +423,34 @@ NumberColumn.prototype.renderCell = function(row) {
     } else if(value === 0) {
         return '<td class="z__std_reporting_value_0"></td>';
     } else {
-        return '<td>'+value+'</td>';
+        return '<td>'+this.renderCellInner(row)+'</td>';
     }
 };
 
 NumberColumn.prototype.renderCellInner = function(row) {
     var value = row[this.fact];
     return (value === null) ? '' : value;
+};
+
+// --------------------------------------------------------------------------
+
+var CurrencyColumn = makeColumnType({
+    type:"currency",
+    construct: function(collection, colspec) {
+        this.centesimal = colspec.centesimal || true;
+        this.symbol = colspec.symbol || "£";
+        this.separator = colspec.separator || ",";
+    }
+});
+
+CurrencyColumn.prototype.renderCell = NumberColumn.prototype.renderCell;
+
+CurrencyColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    var decimals = this.centesimal ? 2 : 0;
+    var str = value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, this.separator);
+    if(value < 0) { return str.substr(0, 1) + this.symbol + str.substr(1); }
+    return this.symbol + str;
 };
 
 // --------------------------------------------------------------------------
