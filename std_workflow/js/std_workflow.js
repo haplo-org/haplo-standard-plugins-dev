@@ -442,17 +442,23 @@ WorkflowInstanceBase.prototype = {
         };
         // Get state changes from timeline, which all have non-null previousState.
         var timeline = this.timelineSelect().where("previousState", "!=", null);
-        var timelineLength = timeline.length;
-        var entry;
-        for(var i = 0; i < timelineLength; ++ i) {
-            entry = timeline[i];
-            stateDefinition = this.$states[entry.state];
+        var states = _.map(timeline, function(row) { return row.state; });
+        // Make sure the current state is the last entry (eg if in the middle of a transition)
+        if((states.length === 0) || (states[states.length-1] !== this.state)) {
+            states.push(this.state);
+        }
+        // Iterate through states
+        var statesLength = states.length;
+        var state;
+        for(var i = 0; i < statesLength; ++ i) {
+            state = states[i];
+            stateDefinition = this.$states[state];
             if(stateDefinition) { // to be tolerant of code changing and states no longer existing
                 // Enter flags
                 change('flagsSetOnEnter', true);
                 change('flagsUnsetOnEnter', false);
                 // Exit flags, if entry doesn't refer to the current state
-                if(i < (timelineLength - 1)) {
+                if(i < (statesLength - 1)) {
                     change('flagsSetOnExit', true);
                     change('flagsUnsetOnExit', false);
                 }
