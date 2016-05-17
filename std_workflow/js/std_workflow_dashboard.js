@@ -14,6 +14,13 @@ var DashboardBase = function() { };
 DashboardBase.prototype = {
 
     setup: function(E) {
+        this._queryFilters = [];
+        // Update spec?
+        if(this.spec.configurationService) {
+            var configuredSpec = _.clone(this.spec);
+            O.service(this.spec.configurationService, configuredSpec);
+            this.spec = configuredSpec;
+        }
         // Permissions
         var canView = O.currentUser.allowed(CanViewAllDashboards);
         if(!canView && this.spec.canViewDashboard) {
@@ -36,6 +43,11 @@ DashboardBase.prototype = {
     addLinkParameter: function(key, value) {
         if(!("_linkParameters" in this)) { this._linkParameters = {}; }
         this._linkParameters[key] = value;
+        return this;
+    },
+
+    addQueryFilter: function(fn) {
+        this._queryFilters.push(fn);
         return this;
     },
 
@@ -92,7 +104,7 @@ DashboardBase.prototype = {
         if("columnTag" in this.spec) {
             // Break down counts by a particular tag
             var columnTag = this.spec.columnTag;
-            counts = this.query.countByTags("state", columnTag);
+            counts = this._makeQuery().countByTags("state", columnTag);
             dashboard._mergeStatesInCountsWithColumnTag(counts);
             var columnTagValues = {};
             _.each(counts, function(counts, state) {
@@ -100,11 +112,10 @@ DashboardBase.prototype = {
                     columnTagValues[key] = true;
                 });
             });
-            var columnTagToName = this.spec.columnTagToName ? this.spec.columnTagToName : function(v) { return v; };
             columns = _.map(_.keys(columnTagValues), function(value) {
                 return {
                     value: value,
-                    name: columnTagToName(value)
+                    name: dashboard._columnTagToName(value)
                 };
             });
             columns = view.columns = _.sortBy(columns, "name");
@@ -135,7 +146,7 @@ DashboardBase.prototype = {
             view.hasHeaderRow = true; // can't just rely on columns being non-empty
         } else {
             // Just the total for each state
-            counts = this.query.countByTags("state");
+            counts = this._makeQuery().countByTags("state");
             this._mergeStatesInCounts(counts);
             this.spec.states.forEach(function(state) {
                 rows.push({
@@ -148,18 +159,27 @@ DashboardBase.prototype = {
             });
         }
         return view;
-    }
+    },
 
+    _columnTagToName: function(tagValue) {
+        return this.spec.columnTagToName ? this.spec.columnTagToName(tagValue) : tagValue;
+    },
+
+    _makeQuery: function() {
+        var q = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
+        this._queryFilters.forEach(function(fn) { fn(q); });
+        return q;
+    }
 };
 
 DashboardBase.prototype.__defineGetter__("_displayableTitle", function() {
     return this.$instanceTitle || this.spec.title;
 });
 
+// TODO: Remove query property when we're sure it's not used
 DashboardBase.prototype.__defineGetter__("query", function() {
-    if(this.$query) { return this.$query; }
-    var q = this.$query = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
-    return q;
+    console.log("Warning: Dashboard query property is deprecated");
+    return this._makeQuery();
 });
 
 DashboardBase.prototype.__defineGetter__("_counts", function() {
@@ -229,13 +249,15 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
             states = states.concat(dashboard.spec.mergeStates[state]);
         }
         var list = [];
+        var tagDisplayableName;
         states.forEach(function(queryState) {
-            var query = O.work.query(dashboard.workflow.fullName).isEitherOpenOrClosed();
+            var query = dashboard._makeQuery();
             query.tag("state", queryState);
             if("columnTag" in spec) {
                 var columnTagValue = E.request.parameters[spec.columnTag];
                 if(columnTagValue) {
                     query.tag(spec.columnTag, columnTagValue);
+                    if(!tagDisplayableName) { tagDisplayableName = dashboard._columnTagToName(columnTagValue); }
                 } else if(E.request.parameters.__empty_tag) {
                     // Empty column values have a special URL parameter
                     query.tag(spec.columnTag, null);
@@ -249,6 +271,7 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         });
         E.render({
             stateName: dashboard._displayableStateName(state),
+            tagDisplayableName: tagDisplayableName,
             spec: spec,
             dashboard: dashboard,
             list: list
