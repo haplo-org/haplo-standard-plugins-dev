@@ -224,14 +224,19 @@ WorkflowInstanceBase.prototype = {
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry) {
-        this.workUnit.tags.state = entry.state;
-        if(entry.target === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = entry.target; }
-        var stateDefinition = this.$states[entry.state];
-        if("actionableBy" in stateDefinition) {
-            this._updateWorkUnitActionableBy(stateDefinition.actionableBy, entry.target);
+        this._setPendingTransition(entry.action);
+        try {
+            this.workUnit.tags.state = entry.state;
+            if(entry.target === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = entry.target; }
+            var stateDefinition = this.$states[entry.state];
+            if("actionableBy" in stateDefinition) {
+                this._updateWorkUnitActionableBy(stateDefinition.actionableBy, entry.target);
+            }
+            if(this.workUnit.closed) { this.workUnit.reopen(O.currentUser); }
+        } finally {
+            this._setPendingTransition(undefined);
         }
-        if(this.workUnit.closed) { this.workUnit.reopen(O.currentUser); }
-        this._callHandler('$observeEnter', entry.transition, entry.previousState);
+        this._callHandler('$observeEnter', entry.action, entry.previousState);
         this._saveWorkUnit();
         this.$timeline.create({
             workUnitId: this.workUnit.id,
