@@ -24,7 +24,7 @@ var workflowPermissionRules = {};
 // { entity: NAME, hasPermission: PERM }
 // { inState: NAME, actionableByHasPermission: PERM }
 
-P.registerWorkflowFeature("std:permissions", function(workflow, spec) {
+P.registerWorkflowFeature("std:integration:rules_for_permission_implementation", function(workflow, spec) {
     if(workflow.fullName in workflowPermissionRules) {
         throw "Permissions have already been configured for this workflow";
     }
