@@ -98,7 +98,7 @@ P.implementService("std:workflow:get_additional_readers_for_object", function(ob
 
 P.implementService("std:workflow:get_additional_writers_for_object", function(objectRef) {
     var result = checkPermissionsForObject(objectRef, function(perm) {
-        return perm==="read-edit";
+        return (perm==="read-edit");
     });
     return result;
 });
@@ -120,7 +120,7 @@ P.implementService("std:workflow:entities:replacement_changed", function(workUni
     }
 });
 
-P.implementService("std:workflow:transition", function(M, transition, previousState) {
+P.implementService("std:workflow:notify:transition", function(M, transition, previousState) {
     if(O.serviceImplemented("std:workflow:permissions:permissions_changed_for_object")) {
         if(workflowPermissionRules[M.workUnit.workType]) {
             if(M.workUnit.ref) {

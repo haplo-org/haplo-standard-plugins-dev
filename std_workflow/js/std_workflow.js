@@ -220,8 +220,8 @@ WorkflowInstanceBase.prototype = {
         if(data) { timelineRow.json = JSON.stringify(data); }
         this.$timeline.create(timelineRow).save();
         transitionComplete(); // Handlers selected before anything changed
-        if(O.serviceImplemented("std:workflow:transition")) {
-            O.service("std:workflow:transition", this, transition, previousState);
+        if(O.serviceImplemented("std:workflow:notify:transition")) {
+            O.service("std:workflow:notify:transition", this, transition, previousState);
         }
         return this;
     },

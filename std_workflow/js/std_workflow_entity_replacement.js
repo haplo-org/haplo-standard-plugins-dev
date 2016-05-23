@@ -237,8 +237,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         });
         M.addTimelineEntry('ENTITY_SELECT', {});
         M._calculateFlags();
-        E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
-        return;
+        return E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
 
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
