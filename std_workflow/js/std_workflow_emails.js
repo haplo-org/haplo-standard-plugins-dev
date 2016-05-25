@@ -41,7 +41,7 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     var except = this._generateEmailRecipientList(specification.except, []).map(function(u) { return u.id; });
     var to =     this._generateEmailRecipientList(specification.to,     except);
-    var cc =     this._generateEmailRecipientList(specification.cc,     except);
+    var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(function(u) { return u.id; })));
 
     // Obtain the message template
     var template = specification.template;
