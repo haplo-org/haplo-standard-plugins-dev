@@ -38,10 +38,12 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 //
 // Email subject should be set in view as emailSubject, or preferably use the emailSubject() template function
 
+var toId = function(u) { return u.id; };
+
 P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
-    var except = this._generateEmailRecipientList(specification.except, []).map(function(u) { return u.id; });
+    var except = this._generateEmailRecipientList(specification.except, []).map(toId);
     var to =     this._generateEmailRecipientList(specification.to,     except);
-    var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(function(u) { return u.id; })));
+    var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)));
 
     // Obtain the message template
     var template = specification.template;
