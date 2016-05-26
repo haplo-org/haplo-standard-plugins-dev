@@ -41,8 +41,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     });
 
     _.each(specification.replacements, function(info, name) {
-        var unreplacedName = info.entity;
 
+        var unreplacedName = info.entity;
         entityDefinitions[name] = function(context) {
             // Build replacements map
             var replacements = O.refdict();
@@ -200,6 +200,7 @@ var makeEntityReplacementForm = function(formName, dataSource) {
         formTitle: "Entity Replacement",
         elements: [
             {
+                name: "replacement",
                 type: "lookup",
                 path: "replacement",
                 dataSource: dataSource
@@ -329,6 +330,5 @@ P.respond("GET,POST", "/do/workflow/replace", [
         entityDisplayName: M._getText(['entity-replacement:display-name'], [entityName]),
         originalEntityTitle: original.title,
         form: form
-    }, "entity-replacements/form");    
+    }, "entity-replacements/form");
 });
-
