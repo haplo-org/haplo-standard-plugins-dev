@@ -263,19 +263,23 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
             });
         });
     });
-    if("onFinishPage" in specification) {
-        var link = specification.onFinishPage(M);
-        if(link) {
-            E.renderIntoSidebar({
-                elements: [{ href: link, label: "Continue", indicator: "primary" }]
-            }, "std:ui:panel");
-        }
+    var deferredRenders = [];
+    if("onRenderUI" in specification) {
+        specification.onRenderUI(M, {
+            addDeferredRender: function(deferred) { deferredRenders.push(deferred); },
+            addSidebarButton: function(link, label, indicator) {
+                E.renderIntoSidebar({
+                    elements: [{ href: link, label: label || "Continue", indicator: indicator || "primary" }]
+                }, "std:ui:panel");
+            }
+        });
     }
     E.render({
         pageTitle: M._getTextMaybe(['entity-replacement:ui:page-title'], ['summary']) || "Replacements summary",
         backLink: M.entities.object.url(),
         data: data,
-        neverSelectable: neverSelectable
+        neverSelectable: neverSelectable,
+        deferredRenders: deferredRenders
     }, "entity-replacements/overview");
 });
 
