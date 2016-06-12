@@ -277,6 +277,52 @@ RefColumn.prototype.renderCellInner = function(row) {
 
 // --------------------------------------------------------------------------
 
+var refPersonNameColumnFieldsFn = function(r) {
+    var object = r.load();
+    if(!object) { return null; }
+    var title = object.firstTitle();
+    if(O.typecode(title) === O.T_TEXT_PERSON_NAME) {
+        var fields = title.toFields();
+        fields.url = object.url();
+        return fields;
+    } else {
+        return {url:object.url(), last:title.toString()};
+    }
+};
+
+var RefPersonNameColumn = makeColumnType({
+    type: "ref-person-name",
+    construct: function(collection, colspec) {
+        this.link = colspec.link;
+        this.objectFields = O.refdict(refPersonNameColumnFieldsFn);
+    }
+});
+
+RefPersonNameColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    if(value) {
+        var fields = this.objectFields.get(value);
+        var escapedName = _.escape(fields.first ? (''+fields.last+', '+fields.first) : fields.last);
+        return this.link ? '<a href="'+_.escape(fields.url)+'">'+escapedName+'</a>' : escapedName;
+    } else {
+        return '';
+    }
+};
+
+RefPersonNameColumn.prototype.exportWidth = 3;
+
+RefPersonNameColumn.prototype.exportCell = function(row, xls) {
+    var value = row[this.fact];
+    if(value) {
+        var fields = this.objectFields.get(value);
+        xls.cell(fields.last).cell(fields.first).cell(fields.title);
+    } else {
+        xls.cell().cell().cell();
+    }
+};
+
+// --------------------------------------------------------------------------
+
 var DATE_FORMAT_DATETIME = "dd MMM yyyy HH:mm";
 var DATE_FORMAT_DATE = "dd MMM yyyy";
 
