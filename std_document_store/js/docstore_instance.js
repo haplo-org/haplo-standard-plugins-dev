@@ -170,8 +170,8 @@ DocumentInstance.prototype._renderDocument = function(document, deferred) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }
         sections.push({
-            unsafeId: form.specification.formId,
-            title: form.specification.formTitle,
+            unsafeId: form.formId,
+            title: form.formTitle,
             instance: instance
         });
     });
@@ -186,7 +186,7 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     var forms = this.forms, form;
     if(selectedFormId) {
         form = _.find(forms, function(form) {
-            return selectedFormId === form.specification.formId;
+            return selectedFormId === form.formId;
         });
     }
     if(!form) { form = forms[0]; }
@@ -195,7 +195,7 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
         delegate.prepareFormInstance(key, form, instance, "document");
     }
     return {
-        title: form.specification.formTitle,
+        title: form.formTitle,
         instance: instance
     };
 };
@@ -238,7 +238,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                     instance: formInstance,
                     complete: formInstance.documentWouldValidate()
                 });
-                if(form.specification.formId === untrustedRequestedFormId) {
+                if(form.formId === untrustedRequestedFormId) {
                     activePage = pages[j];
                 }
                 j++;
@@ -265,10 +265,10 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
         // Goto another form?
         var gotoPage = _.find(pages, function(p) {
-            return p.form.specification.formId === E.request.parameters.__goto;
+            return p.form.formId === E.request.parameters.__goto;
         });
         if(gotoPage) {
-            return actions.gotoPage(this, E, gotoPage.form.specification.formId);
+            return actions.gotoPage(this, E, gotoPage.form.formId);
         } else {
             // If user clicked 'save for later', stop now
             if(E.request.parameters.__later === "s") {
@@ -277,9 +277,9 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             // If the form is complete, go to the next form, or finish
             if(activePage.complete) {
                 // Find next page, remembering indexes might have changed
-                var nextIndex = -1, activeFormId = activePage.form.specification.formId;
+                var nextIndex = -1, activeFormId = activePage.form.formId;
                 for(var l = 0; l < pages.length; ++l) {
-                    if(pages[l].form.specification.formId === activeFormId) {
+                    if(pages[l].form.formId === activeFormId) {
                         nextIndex = l+1;
                         break;
                     }
@@ -288,7 +288,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                     return actions.finishEditing(this, E, true /* everything complete */);
                 } else {
                     return actions.gotoPage(this, E,
-                        pages[nextIndex].form.specification.formId);
+                        pages[nextIndex].form.formId);
                 }
             } else {
                 showFormError = true;
