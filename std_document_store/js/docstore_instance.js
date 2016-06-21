@@ -165,6 +165,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var sections = [];
     var forms = this.store._formsForKey(key, this, document);
     _.each(forms, function(form) {
+        if(delegate.shouldDisplayForm && !delegate.shouldDisplayForm(key, form, document)) { return; }
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -203,9 +204,16 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
 DocumentInstance.prototype.__defineGetter__("lastCommittedDocumentHTML", function() {
     return this._renderDocument(this.lastCommittedDocument);
 });
+DocumentInstance.prototype.deferredRenderLastCommittedDocument = function() {
+    return this._renderDocument(this.lastCommittedDocument, true);
+};
+
 DocumentInstance.prototype.__defineGetter__("currentDocumentHTML",       function() {
     return this._renderDocument(this.currentDocument);
 });
+DocumentInstance.prototype.deferredRenderCurrentDocument = function() {
+    return this._renderDocument(this.currentDocument, true);
+};
 
 // ----------------------------------------------------------------------------
 
@@ -228,7 +236,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
-            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form)) {
+            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, cdocument)) {
                 if(delegate.prepareFormInstance) {
                     delegate.prepareFormInstance(instance.key, form, formInstance, "form");
                 }
