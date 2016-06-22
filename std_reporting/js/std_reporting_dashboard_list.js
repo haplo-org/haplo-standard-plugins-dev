@@ -89,7 +89,7 @@ DashboardList.prototype._respondWithExport = function() {
     var xls = O.generate.table.xlsx(this.specification.title);
     xls.newSheet(this.specification.title, true);
     _.each(columns, function(c) {
-        xls.cell(c.heading);
+        xls.cell(c.exportHeading);
         // Blank heading cells required?
         var w = c.exportWidth;
         while((--w) > 0) { xls.cell(''); }
@@ -212,6 +212,7 @@ var makeColumnType = function(info) {
     var t = function(collection, colspec) {
         this.fact = colspec.fact;
         this.heading = colspec.heading || '????';
+        this.exportHeading = colspec.exportHeading || this.heading;
         this.columnStyle = colspec.style;
         if(info.construct) { info.construct.call(this, collection, colspec); }
     };
