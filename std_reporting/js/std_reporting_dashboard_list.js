@@ -42,6 +42,36 @@ DashboardList.prototype._makeRenderableColumnList = function() {
 DashboardList.prototype._makeDashboardView = function(hideExport) {
     var columns = this._makeRenderableColumnList();
 
+    // Generate grouping header rows
+    var groupHeaderRows = [];
+    var groupIndex = 0;
+    while(groupIndex < 32) {
+        var lastCell = {colspan:0};
+        var cells = [lastCell];
+        var haveGroup = false;
+        for(var c = 0; c < columns.length; ++c) {
+            // Attempt to find a group ID and title of this column.
+            // groups property of column is array of two element arrays, each of which is [id,title]
+            var col = columns[c];
+            var gs = col.groups;
+            var ginfo = gs ? gs[groupIndex] : undefined;
+            if(ginfo) { haveGroup = true; } else { ginfo = []; }
+            var gid = ginfo[0];
+            var gtitle = ginfo[1];
+            // If ID is the same, extend previous group, otherwise create a new cell
+            if(gid === lastCell.gid) {
+                lastCell.colspan++;
+            } else {
+                lastCell = {gid:gid, title:gtitle, colspan:1};
+                cells.push(lastCell);
+            }
+        }
+        if(!haveGroup) { break; }
+        if(cells[0].colspan === 0) { cells.shift(); } // delete zero width column if first was in group
+        groupHeaderRows.unshift(cells);
+        groupIndex++;
+    }
+
     // Locally scoped copy of row attribute generator functions
     var rowAttributeFns = this.$rowAttributeFns;
 
@@ -67,6 +97,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
+        groupHeaderRows: groupHeaderRows,
         columns: columns,
         rowsHTML: rowsHTML
     };
@@ -213,6 +244,7 @@ var makeColumnType = function(info) {
         this.fact = colspec.fact;
         this.heading = colspec.heading || '????';
         this.exportHeading = colspec.exportHeading || this.heading;
+        this.groups = colspec.groups;
         this.columnStyle = colspec.style;
         if(info.construct) { info.construct.call(this, collection, colspec); }
     };
