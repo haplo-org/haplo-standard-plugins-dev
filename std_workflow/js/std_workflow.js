@@ -62,10 +62,6 @@ Transition.prototype.__defineGetter__('indicator', function() {
 Transition.prototype.__defineGetter__('confirmText', function() {
     return this.M._getTextMaybe(['transition-confirm', 'transition-notes'], [this.name, this.M.state]);
 });
-// The 'action' property makes this compatible with the std:ui:choose template
-Transition.prototype.__defineGetter__('action', function() {
-    return '?transition='+this.name;
-});
 
 // --------------------------------------------------------------------------
 
@@ -171,7 +167,7 @@ WorkflowInstanceBase.prototype = {
     },
 
     // Move state
-    transition: function(transition, data) {
+    transition: function(transition, data, overrideTarget) {
         var previousState = this.state,
             previousTarget = this.target,
             destination, destinationTarget, stateDefinition;
@@ -187,6 +183,7 @@ WorkflowInstanceBase.prototype = {
             }
             destination = props.destination;
             destinationTarget = props.destinationTarget;
+            if(overrideTarget) { destinationTarget = overrideTarget; }
             stateDefinition = this.$states[destination];
             if(!stateDefinition) {
                 throw new Error("Workflow does not have destination state: "+destination);
@@ -707,6 +704,7 @@ implementHandlerList('filterTransition');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
+implementHandlerList('transitionUIValidateTarget');
 
 // --------------------------------------------------------------------------
 
