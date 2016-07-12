@@ -160,8 +160,9 @@ DocumentInstance.prototype.commit = function(user) {
 DocumentInstance.prototype._displayForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
-    if(!delegate.shouldDisplayForm) { return this.store._formsForKey(this.key, this); }
-    return _.filter(this.store._formsForKey(this.key, this), function(form) {
+    var unfilteredForms = this.store._formsForKey(this.key, this);
+    if(!delegate.shouldDisplayForm) { return unfilteredForms; }
+    return _.filter(unfilteredForms, function(form) {
         return (delegate.shouldDisplayForm(key, form, document));
     });
 };
