@@ -157,15 +157,23 @@ DocumentInstance.prototype.commit = function(user) {
 
 // ----------------------------------------------------------------------------
 
+DocumentInstance.prototype._displayForms = function(document) {
+    var delegate = this.store.delegate;
+    var key = this.key;
+    if(!delegate.shouldDisplayForm) { return this.store._formsForKey(this.key, this); }
+    return _.filter(this.store._formsForKey(this.key, this), function(form) {
+        return (delegate.shouldDisplayForm(key, form, document));
+    });
+};
+
 // Render as document
 DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
     var sections = [];
-    var forms = this.store._formsForKey(key, this, document);
+    var forms = this._displayForms(document);
     _.each(forms, function(form) {
-        if(delegate.shouldDisplayForm && !delegate.shouldDisplayForm(key, form, document)) { return; }
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");

@@ -98,6 +98,10 @@ DocumentViewer.prototype.__defineGetter__("sidebarHTML", function() {
 
 // ----------------------------------------------------------------------------
 
+DocumentViewer.prototype.__defineGetter__("_viewerForms", function() {
+    return this.instance._displayForms(this.document);
+});
+
 DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
     var viewerBodyTemplate = this.style ? "viewer_body_"+this.style : "viewer_body";
     return P.template(viewerBodyTemplate).deferredRender(this);
