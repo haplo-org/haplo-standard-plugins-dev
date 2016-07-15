@@ -62,10 +62,6 @@ Transition.prototype.__defineGetter__('indicator', function() {
 Transition.prototype.__defineGetter__('confirmText', function() {
     return this.M._getTextMaybe(['transition-confirm', 'transition-notes'], [this.name, this.M.state]);
 });
-// The 'action' property makes this compatible with the std:ui:choose template
-Transition.prototype.__defineGetter__('action', function() {
-    return '?transition='+this.name;
-});
 
 // --------------------------------------------------------------------------
 
@@ -171,7 +167,7 @@ WorkflowInstanceBase.prototype = {
     },
 
     // Move state
-    transition: function(transition, data) {
+    transition: function(transition, data, overrideTarget) {
         var previousState = this.state,
             previousTarget = this.target,
             destination, destinationTarget, stateDefinition;
@@ -187,6 +183,7 @@ WorkflowInstanceBase.prototype = {
             }
             destination = props.destination;
             destinationTarget = props.destinationTarget;
+            if(overrideTarget) { destinationTarget = overrideTarget; }
             stateDefinition = this.$states[destination];
             if(!stateDefinition) {
                 throw new Error("Workflow does not have destination state: "+destination);
@@ -194,6 +191,24 @@ WorkflowInstanceBase.prototype = {
             this._callHandler('$observeExit', transition);
             this.workUnit.tags.state = destination;
             this.workUnit.tags.target = destinationTarget;
+
+            // Dispatch states are used to make decisions which skip other states
+            var safety = 256;
+            while((--safety > 0) && ("dispatch" in stateDefinition)) {
+                if("transitions" in stateDefinition) {
+                    throw new Error("State definition with 'dispatch' property may not also have 'transitions' property.");
+                }
+                var possibleDestinations = stateDefinition.dispatch;
+                var dispatchedDestination = this._callHandler("$resolveDispatchDestination", transition, destination, destinationTarget, possibleDestinations) || possibleDestinations[0];
+                if(!dispatchedDestination) { throw new Error("Can't resolve dispatch destination for "+destination); }
+                if(-1 === possibleDestinations.indexOf(dispatchedDestination)) { throw new Error("Not a valid dispatch destination for state: "+destination); }
+                destination = dispatchedDestination;
+                stateDefinition = this.$states[destination];
+                if(!stateDefinition) { throw new Error("Workflow does not have destination state after dispatch: "+destination); }
+                this.workUnit.tags.state = destination;
+            }
+            if(safety <= 0) { throw new Error("Went through too many dispatch states when attempting transition (possible loop)"); }
+
             this._callHandler('$setWorkUnitProperties', transition);
             if(stateDefinition.finish === true) {
                 this.workUnit.close(O.currentUser);
@@ -702,11 +717,13 @@ implementHandlerList('notification');
 implementHandlerList('actionPanel');
 implementHandlerList('actionPanelStatusUI');
 implementHandlerList('actionPanelTransitionUI');
+implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
+implementHandlerList('transitionUIValidateTarget');
 
 // --------------------------------------------------------------------------
 
