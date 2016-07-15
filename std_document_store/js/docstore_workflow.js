@@ -159,9 +159,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     if("panel" in spec) {
         workflow.actionPanel({}, function(M, builder) {
             var instance = docstore.instance(M);
-            var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
             var haveDocument = instance.hasCommittedDocument;
             if(haveDocument && can(M, O.currentUser, spec.view)) {
+                var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
             }
