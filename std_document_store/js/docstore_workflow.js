@@ -165,6 +165,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
             }
+
+            if(can(M, O.currentUser, spec.viewDraft)) {
+                if(!haveDocument && instance.currentDocumentIsEdited) {
+                    var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
+                    builder.panel(spec.panel).
+                        link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
+                }
+            }
         });
     }
 
@@ -295,6 +303,31 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             options: options,
             ui: ui
         }, "workflow/review_changes");
+    });
+
+    // ----------------------------------------------------------------------
+
+    plugin.respond("GET", spec.path+"/draft", [
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+    ], function(E, workUnit) {
+        E.setResponsiblePlugin(P);  // take over as source of templates, etc
+        var M = workflow.instance(workUnit);
+        if(!can(M, O.currentUser, spec.viewDraft)) {
+            O.stop("Not permitted.");
+        }
+        var instance = docstore.instance(M);
+        var ui = instance.makeViewerUI(E, {
+            showVersions: spec.history ? can(M, O.currentUser, spec.history) : true,
+            showCurrent: true,
+            uncommittedChangesWarningText: M.getTextMaybe("docstore-draft-warning-text:"+
+                spec.name) || "This is a draft version"
+        });
+        E.appendSidebarHTML(ui.sidebarHTML);
+        E.render({
+            pageTitle: M.title+': '+(spec.title || '????'),
+            backLink: M.url,
+            ui: ui
+        }, "workflow/view");
     });
 
     // ----------------------------------------------------------------------
