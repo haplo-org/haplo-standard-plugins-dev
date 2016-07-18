@@ -241,14 +241,14 @@ WorkflowInstanceBase.prototype = {
         return this;
     },
 
-    _forceMoveToStateFromTimelineEntry: function(entry) {
+    _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {
         this._setPendingTransition(entry.action);
         try {
             this.workUnit.tags.state = entry.state;
-            if(entry.target === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = entry.target; }
+            if(forceTarget === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = forceTarget; }
             var stateDefinition = this.$states[entry.state];
             if("actionableBy" in stateDefinition) {
-                this._updateWorkUnitActionableBy(stateDefinition.actionableBy, entry.target);
+                this._updateWorkUnitActionableBy(stateDefinition.actionableBy, forceTarget);
             }
             if(this.workUnit.closed) { this.workUnit.reopen(O.currentUser); }
         } finally {
@@ -262,7 +262,7 @@ WorkflowInstanceBase.prototype = {
             user: O.currentUser,
             action: "MOVE",
             previousState: entry.previousState,
-            target: entry.target,
+            target: forceTarget || null,
             state: entry.state,
             json: entry.json
         }).save();
