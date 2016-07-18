@@ -317,11 +317,16 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
         navigation = P.template("navigation").deferredRender({pages:pages});
     }
+    var additionalUI;
+    if(delegate.getAdditionalUIForEditor) {
+        additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
+    }
     actions.render(this, E, P.template("edit").deferredRender({
         isSinglePage: isSinglePage,
         navigation: navigation,
         pages: pages,
         showFormError: showFormError,
+        additionalUI: additionalUI,
         activePage: activePage
     }));
 };

@@ -76,6 +76,12 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             this.version = requestedVersion[0].version;
         }
     }
+
+    // Get any additional UI to display
+    var delegate = this.instance.store.delegate;
+    if(delegate.getAdditionalUIForViewer) {
+        this.additionalUI = delegate.getAdditionalUIForViewer(this.instance.key, this.instance, this.document);
+    }
 };
 
 // ----------------------------------------------------------------------------
