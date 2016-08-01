@@ -74,7 +74,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
 
 DocumentInstance.prototype._notifyDelegate = function(fn) {
     var delegate = this.store.delegate;
-    if(fn in delegate) {
+    if(delegate[fn]) {
         var functionArguments = Array.prototype.slice.call(arguments, 0);
         functionArguments[0] = this;
         delegate[fn].apply(delegate, functionArguments);
