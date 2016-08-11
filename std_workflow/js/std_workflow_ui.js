@@ -273,8 +273,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
 
                     M._callHandler('$transitionFormPreTransition', E, ui);
                     M.transition(transition, ui._getTransitionDataMaybe(), overrideTarget);
-                    var redirectTo = ui._redirect || M._call('$taskUrl');
-                    return E.response.redirect(redirectTo);
+                    var redirectTo = ui._redirect;
+                    if(!redirectTo && M.workUnit.isActionableBy(O.currentUser)) {
+                        redirectTo = M._callHandler('$transitionUIPostTransitionRedirectForActionableUser', M, ui);
+                    }
+                    return E.response.redirect(redirectTo || M._call('$taskUrl'));
                 }
             }
 

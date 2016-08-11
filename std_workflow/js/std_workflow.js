@@ -724,6 +724,7 @@ implementHandlerList('transitionUI');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
+implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
 
 // --------------------------------------------------------------------------
 
