@@ -7,6 +7,9 @@ ExampleUsageWorkflow.use("std:entities", {
     user: ["object", A.Author]
 });
 ExampleUsageWorkflow.use("std:entities:roles");
+ExampleUsageWorkflow.use("std:entities:entity_shared_roles", {
+    entities: ["user"]
+});
 
 ExampleUsageWorkflow.start(function(M, initial, properties) {
     initial.state = "wait_submit";
