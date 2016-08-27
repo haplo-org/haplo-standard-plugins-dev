@@ -28,6 +28,10 @@
 
 // --------------------------------------------------------------------------
 
+var REPORT_UNEXPECTED_CHANGES = !!(O.application.config["std_reporting:report_unexpected_changes"]);
+
+// --------------------------------------------------------------------------
+
 P.REPORTING_API = {}; // appears as P.reporting in plugins using the std:reporting feature
 
 // --------------------------------------------------------------------------
@@ -515,9 +519,11 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
             }
         });
         if(!changesExpected && (updated > 0)) {
-            O.reportHealthEvent("Unexpected update in std_reporting collection: "+collectionName,
-                "Expected 0 updated, got "+updated+". This implies that plugins are not updating facts when they should.\n\nObjects updated: "+
-                _.map(updatedRefs, function(r) { return r.toString(); }).join(' '));
+            if(REPORT_UNEXPECTED_CHANGES) {
+                O.reportHealthEvent("Unexpected update in std_reporting collection: "+collectionName,
+                    "Expected 0 updated, got "+updated+". This implies that plugins are not updating facts when they should.\n\nObjects updated: "+
+                    _.map(updatedRefs, function(r) { return r.toString(); }).join(' '));
+            }
         }
         console.log("Updated:", updated);
     });
