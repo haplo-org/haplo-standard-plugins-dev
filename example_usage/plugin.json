@@ -6,6 +6,10 @@
   "displayDescription": "Example usage of standard workflow plugins",
   "apiVersion": 4,
   "privilegesRequired": ["pDatabase"],
+  "depend": [
+      "std_workflow",
+      "std_reporting"
+    ],
   "use": [
       "std:workflow",
       "std:reporting"
