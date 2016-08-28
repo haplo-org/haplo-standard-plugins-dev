@@ -27,10 +27,12 @@ P.implementService("std:reporting:discover_collections", function(discover) {
 P.implementService("std:reporting:collection:example:setup", function(collection) {
     collection.
         currentObjectsOfType(T.File).
+        fact("firstAuthor", "ref", "First author").
         fact("numberOfAuthors", "int", "Number of authors");
 });
 
 P.implementService("std:reporting:collection:example:get_facts_for_object", function(object, row) {
+    row.firstAuthor = object.first(A.Author);
     row.numberOfAuthors = object.every(A.Author).length;
 });
 
