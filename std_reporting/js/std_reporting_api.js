@@ -85,9 +85,15 @@ P.respond("GET", "/api/reporting/v0/collection-data", [
         });
         return r;
     });
-    var refLookup = {};
+    var objects = {};
     relevantRefs.each(function(ref,v) {
-        refLookup[ref.toString()] = ref.load().title;
+        var object = ref.load();
+        var info = { title: object.title };
+        var parent = object.firstParent();
+        if(parent) { info.parent = parent.toString(); }
+        var behaviour = object.first(A.ConfiguredBehaviour);
+        if(behaviour) { info.behaviour = behaviour.toString(); }
+        objects[ref.toString()] = info;
     });
     sendJSON(E, {
         name: collection.name,
@@ -95,6 +101,6 @@ P.respond("GET", "/api/reporting/v0/collection-data", [
         at: (new XDate(dataAtTime || new Date())).toISOString(),
         columns: ['ref','objectTitle'].concat(columns),
         rows: rows,
-        refs: refLookup
+        objects: objects
     });
 });
