@@ -52,8 +52,6 @@ Delegate.prototype = {
 var can = function(M, user, spec, action) {
     var list = spec[action];
     if(!list) { return false; }
-    // Edit also needs the work unit to be actionable by the current user
-    if((action === 'edit') && !(M.workUnit.isActionableBy(user))) { return false; }
     var allow = false, deny = false;
     for(var i = (list.length - 1); i >= 0; --i) {
         var t = list[i];
