@@ -43,11 +43,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
     $renderWorkList: {selector:{}, handler:function(M, W) {
         var view = {status:M._getText(['status-list', 'status'], [M.state])};
         M.setWorkListFullInfoInView(W, view);
-        if(M.workUnit.ref) {
-            view.object = M.workUnit.ref.load();
-        } else {
-            view.taskTitle = M._call('$taskTitle');
-        }
+        view.taskTitle = M._call('$taskTitle');
         W.render(view, P.template("default-work-list"));
         return true;
     }},
