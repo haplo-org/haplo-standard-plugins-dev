@@ -196,7 +196,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     var editor = {
         finishEditing: function(instance, E, complete) {
             if(complete && spec.onFinishPage) {
-                return E.response.redirect(spec.onFinishPage(instance.key));
+                var redirectUrl = spec.onFinishPage(instance.key);
+                if(redirectUrl) { return E.response.redirect(redirectUrl); }
             }
             if(complete && !(instance.key.transitions.empty) && instance.key.workUnit.isActionableBy(O.currentUser)) {
                 E.response.redirect("/do/workflow/transition/"+instance.key.workUnit.id);
