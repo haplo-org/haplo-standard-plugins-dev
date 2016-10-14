@@ -237,6 +237,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         forms,
         pages, isSinglePage,
         activePage;
+    instance.store._updateDocumentBeforeEdit(instance.key, instance, cdocument);
     var updatePages = function() {
         forms = instance.store._formsForKey(instance.key, instance, cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
