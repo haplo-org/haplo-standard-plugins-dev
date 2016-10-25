@@ -72,6 +72,14 @@ P.respond("GET,POST", "/do/workflow/administration/full-info", [
         workUnit.save();
         return E.response.redirect("/do/workflow/administration/full-info/"+workUnit.id);
     }
+    if(M.entities) {
+        E.renderIntoSidebar({
+            elements: [{
+                label: "Entities",
+                href: "/do/workflow/administration/entities/"+workUnit.id
+            }]
+        }, "std:ui:panel");
+    }
     E.render({
         M: M,
         workUnit: M.workUnit,
@@ -92,6 +100,35 @@ P.respond("GET", "/do/workflow/administration/timeline", [
         M: M,
         timeline: M.timelineSelect()
     }, "admin/timeline");
+});
+
+// --------------------------------------------------------------------------
+
+P.respond("GET", "/do/workflow/administration/entities", [
+    {pathElement:0, as:"workUnit", allUsers:true}  // Security check below
+], function(E, workUnit) {
+    var M = getCheckedInstanceForAdmin(workUnit);
+    var entities = M.entities;
+    if(!entities) { O.stop("Workflow doesn't use entities"); }
+    var usedAsActionableBy = {};
+    _.each(M.$states, function(defn,name) {
+        if(defn.actionableBy) {
+            usedAsActionableBy[defn.actionableBy] = true;
+        }
+    });
+    var display = [];
+    _.each(entities.$entityDefinitions, function(v,name) {
+        var i = {
+            name: name,
+            objects: entities[name+'_list'],
+            usedAsActionableBy: usedAsActionableBy[name]
+        };
+        if(i.usedAsActionableBy) { display.unshift(i); } else { display.push(i); }
+    });
+    E.render({
+        M: M,
+        display: display
+    }, "admin/entities");
 });
 
 // --------------------------------------------------------------------------
