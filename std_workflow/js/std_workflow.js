@@ -732,6 +732,12 @@ implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
 
 // --------------------------------------------------------------------------
 
+// Temporary handlers & functions -- use for other std_* plugins only.
+implementHandlerList('_preferStrictActionableBy');
+WorkflowInstanceBase.prototype._shouldPreferStrictActionableBy = function() { return this._callHandler("$_preferStrictActionableBy"); };
+
+// --------------------------------------------------------------------------
+
 P.registerWorkflowFeature = function(name, feature) {
     if(name in P.workflowFeatures) { throw new Error("Feature '"+name+"' already registered"); }
     P.workflowFeatures[name] = feature;

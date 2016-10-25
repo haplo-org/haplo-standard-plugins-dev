@@ -75,6 +75,14 @@ var can = function(M, user, spec, action) {
                 break;
         }
     }
+    // TODO: Reconsider this special integration between workflow and docstore. Perhaps it would be better to tweak the permissions model? See HAPLO-80
+    if(allow && (action === 'edit')) {
+        if(true === M._shouldPreferStrictActionableBy()) {
+            if(!M.workUnit.isActionableBy(user)) {
+                deny = true;
+            }
+        }
+    }
     return allow && !deny;
 };
 

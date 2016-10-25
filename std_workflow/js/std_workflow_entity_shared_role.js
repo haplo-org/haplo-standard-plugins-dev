@@ -64,6 +64,19 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
 
     // ----------------------------------------------------------------------
 
+    // If shared roles are active, we'd prefer that anything checking on roles
+    // would use strict actionable by checks.
+    workflow._preferStrictActionableBy({}, function(M) {
+        var stateDefinition = this.$states[M.state];
+        if(stateDefinition &&
+                stateDefinition.actionableBy &&
+                (-1 !== sharedEntities.indexOf(stateDefinition.actionableBy))) {
+            return true;
+        }
+    });
+
+    // ----------------------------------------------------------------------
+
     // User interface for push/pull. Only displayed if the current user is
     // in the list of entities.
     workflow.actionPanelStatusUI({}, function(M, builder) {
