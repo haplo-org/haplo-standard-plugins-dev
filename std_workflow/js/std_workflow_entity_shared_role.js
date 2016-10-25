@@ -13,6 +13,15 @@
 
 var sharedEntitiesForWorkflow = {};
 
+// Database table to store the last selected entity
+P.db.table("sharedRoles", {
+    workUnitId:     { type:"int",   indexed:true }, // which work unit (= instance of workflow)
+    entityName:     { type:"text" },                // entity name
+    ref:            { type:"ref" }                  // which ref was last used
+});
+
+// --------------------------------------------------------------------------
+
 P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow, specification) {
     if(!(workflow.$stdEntitiesRolesInUse)) {
         throw new Error('You must use("std:entities:roles") before using the std:entities:entity_shared_roles workflow feature');
@@ -32,20 +41,12 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     // doesn't revert to the original user. But if the underlying entities change
     // it mustn't select user not in the list.
 
-    // Database table to store the last selected entity
-    workflow.plugin.db.table("stdworkflowSharedRoles", {
-        workUnitId:     { type:"int",   indexed:true }, // which work unit (= instance of workflow)
-        entityName:     { type:"text" },                // entity name
-        ref:            { type:"ref" }                  // which ref was last used
-    });
-    var dbSharedRoles = workflow.plugin.db.stdworkflowSharedRoles;
-
     // Override std:entities:roles' getActionableBy() (the other handlers work
     // with shared roles and don't need to be overriden)
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }
         if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
-        var q = dbSharedRoles.select().
+        var q = P.db.sharedRoles.select().
             where("workUnitId","=",M.workUnit.id).
             where("entityName","=",actionableBy).
             limit(1).stableOrder();
@@ -123,14 +124,13 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
         var user = O.user(changeRefTo);
         if(!user) { O.stop("User doesn't have an account."); }
         // Store changed ref so the role change is sticky
-        var dbSharedRoles = workflow.plugin.db.stdworkflowSharedRoles;
-        var row = dbSharedRoles.create({
+        var row = P.db.sharedRoles.create({
             workUnitId: workUnit.id,
             entityName: actionableBy,
             ref: changeRefTo
         });
         row.save();
-        dbSharedRoles.select().
+        P.db.sharedRoles.select().
             where("workUnitId","=",workUnit.id).
             where("entityName","=",actionableBy).
             where("id","!=",row.id).
