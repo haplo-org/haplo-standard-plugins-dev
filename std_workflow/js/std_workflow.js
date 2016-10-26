@@ -766,6 +766,10 @@ P.provideFeature("std:workflow", function(plugin) {
 
 // --------------------------------------------------------------------------
 
+P.implementService("std:workflow:definition_for_name", function(fullName) {
+    return P.allWorkflows[fullName];
+});
+
 P.implementService("std:workflow:for_ref", function(fullName, ref) {
     var workflow = P.allWorkflows[fullName];
     if(!workflow) {
