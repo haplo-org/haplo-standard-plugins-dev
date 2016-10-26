@@ -49,6 +49,12 @@ Delegate.prototype = {
     keyToKeyId: function(key) { return key.workUnit.id; }
 };
 
+P.implementService("std:document_store:workflow:form_action_allowed", function(M, form, user, action) {
+    var workflow = O.service("std:workflow:definition_for_name", M.workUnit.workType);
+    var spec = workflow.documentStore[form].delegate;
+    return can(M, user, spec, action);
+});
+
 var can = function(M, user, spec, action) {
     var list = spec[action];
     if(!list) { return false; }
