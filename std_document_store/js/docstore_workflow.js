@@ -14,8 +14,6 @@ P.use("std:workflow");
 // where spec is an object with properties:
 //    name: document store name
 //    title: Title of this form
-//    titleLowerCase: Title to use when the lower case version of title is to be
-//              displayed but acryonyms or proper nouns need to be preserved 
 //    path: URL path where the handlers should be implemented
 //    panel: Which panel the view link should appear in
 //    priority: The priority within the panel, defaulting to "default"
