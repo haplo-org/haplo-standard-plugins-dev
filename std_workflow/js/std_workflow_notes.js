@@ -47,20 +47,16 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
         if(notes) { notify.addEndHTML(notes); }
     });
 
-    // Show explanation, can be overridden by workflow
-    workflow.text({
-        "notes-explanation-everyone:transition-ui": "Notes can be seen by the applicant and all staff reviewing this application.",
-        "notes-explanation-private:transition-ui": "Seen only by staff reviewing this application, not seen by the applicant."
-    });
-
     // Display the notes forms on the transition page
     workflow.transitionUI({}, function(M, E, ui) {
         var userCanSeePrivateNotes = canSeePrivateNotes(M, O.currentUser);
         var parameters = E.request.parameters;
         ui.addFormDeferred("bottom", P.template("notes/transition-notes-form").deferredRender({
             canSeePrivateNotes: userCanSeePrivateNotes,
-            everyoneNoteExplaination: M._getTextMaybe(['notes-explanation-everyone'], ['transition-ui']),
-            privateNoteExplaination: M._getTextMaybe(['notes-explanation-private'], ['transition-ui']),
+            everyoneNoteExplaination: M._getTextMaybe(['notes-explanation-everyone'], ['transition-ui']) ||
+                NAME("std:workflow:notes-explanation-everyone", "Notes can be seen by the applicant and all staff reviewing this application."),
+            privateNoteExplaination: M._getTextMaybe(['notes-explanation-private'], ['transition-ui']) ||
+                NAME("std:workflow:notes-explanation-private", "Seen only by staff reviewing this application, not seen by the applicant."),
             notes: parameters['notes'],
             privateNotes: parameters['privateNotes']
         }));
