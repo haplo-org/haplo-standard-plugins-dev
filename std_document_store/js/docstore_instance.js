@@ -131,18 +131,7 @@ DocumentInstance.prototype.__defineGetter__("history", function() {
 });
 
 // DEPRECATED: use instance.history
-DocumentInstance.prototype.getAllVersions = function() {
-    return _.map(this.store.versionsTable.select().where("keyId","=",this.keyId).
-        order("version"), function(row) {
-            return {
-                version: row.version,
-                date: new Date(row.version),
-                user: row.user,
-                document: JSON.parse(row.json)
-            };
-        }
-    );
-};
+DocumentInstance.prototype.getAllVersions = function() { return this.history; };
 
 // ----------------------------------------------------------------------------
 
