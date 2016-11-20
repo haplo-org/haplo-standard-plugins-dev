@@ -697,6 +697,19 @@ Workflow.prototype = {
         }
         var instance = new (this.$instanceClass)(workUnit);
         return instance._initialise(properties);
+    },
+
+    // ----------------------------------------------------------------------
+
+    // Implement special purpose functions, rather than allowing access to
+    // all state information, to avoid consumers doing things they shouldn't
+    // or encouraging hacky implementations of things.
+    getUsedActionableBy: function() {
+        var a = [];
+        _.each(this.$instanceClass.prototype.$states, function(state) {
+            a.push(state.actionableBy);
+        });
+        return _.uniq(_.compact(a));
     }
 };
 implementFunctionList('start');
@@ -738,12 +751,42 @@ WorkflowInstanceBase.prototype._shouldPreferStrictActionableBy = function() { re
 
 // --------------------------------------------------------------------------
 
+// onLoad callbacks enable plugins to observe all workflows in the application,
+// and (carefully) make system wide modifications to workflows. The latter use
+// is discouraged for anything other than truly system wide policy that does not
+// affect the behaviour of workflows.
+var onLoadCallbacks = [];
+
+var AllWorkflows = function() {
+    this.list = _.values(P.allWorkflows);
+};
+AllWorkflows.prototype.forEach = function(f) { this.list.forEach(f); };
+AllWorkflows.prototype.getWorkflow = function(name) {
+    return P.allWorkflows[name];
+};
+
+// Use onLoad so that observing plugins see all the workflows when they're
+// fully configured by the implementing plugins.
+P.onLoad = function() {
+    if(onLoadCallbacks.length) {
+        var workflows = new AllWorkflows();
+        onLoadCallbacks.forEach(function(callback) {
+            callback(workflows);
+        });
+    }
+};
+
+// --------------------------------------------------------------------------
+
 P.registerWorkflowFeature = function(name, feature) {
     if(name in P.workflowFeatures) { throw new Error("Feature '"+name+"' already registered"); }
     P.workflowFeatures[name] = feature;
 };
 
 P.workflowFeatureFunctions = {
+    registerOnLoadCallback: function(callback) { // last resort API, see notes above
+        onLoadCallbacks.push(callback);
+    },
     registerWorkflowFeature: P.registerWorkflowFeature
     // More functions added in other files.
 };
