@@ -205,7 +205,7 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         var dashboard = (new Dashboard()).setup(E);
         E.render({
             layout: spec.layout,
-            spec: spec,
+            spec: dashboard.spec,
             dashboard: dashboard
         }, "dashboard/dashboard-states");
     });
@@ -245,22 +245,24 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         var dashboard = (new Dashboard()).setup(E);
         // Filter work units
         var states = [state];
-        if(dashboard.spec.mergeStates && (state in dashboard.spec.mergeStates)) {
-            states = states.concat(dashboard.spec.mergeStates[state]);
+        var mergeStates = dashboard.spec.mergeStates;
+        if(mergeStates && (state in mergeStates)) {
+            states = states.concat(mergeStates[state]);
         }
         var list = [];
         var tagDisplayableName;
+        var columnTag = dashboard.spec.columnTag;
         states.forEach(function(queryState) {
             var query = dashboard._makeQuery();
             query.tag("state", queryState);
-            if("columnTag" in spec) {
-                var columnTagValue = E.request.parameters[spec.columnTag];
+            if(columnTag) {
+                var columnTagValue = E.request.parameters[columnTag];
                 if(columnTagValue) {
-                    query.tag(spec.columnTag, columnTagValue);
+                    query.tag(columnTag, columnTagValue);
                     if(!tagDisplayableName) { tagDisplayableName = dashboard._columnTagToName(columnTagValue); }
                 } else if(E.request.parameters.__empty_tag) {
                     // Empty column values have a special URL parameter
-                    query.tag(spec.columnTag, null);
+                    query.tag(columnTag, null);
                 }
             }
             // Get information about each work unit matching the criteria
@@ -272,7 +274,6 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         E.render({
             stateName: dashboard._displayableStateName(state),
             tagDisplayableName: tagDisplayableName,
-            spec: spec,
             dashboard: dashboard,
             list: list
         }, "dashboard/dashboard-listing");
