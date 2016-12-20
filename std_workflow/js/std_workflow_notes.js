@@ -39,12 +39,12 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
     });
 
     // Provide access to notification note rendering to workflows
-    workflow.$instanceClass.prototype.notesRenderForNotificationEmail = notesRenderForNotificationEmail;
+    workflow.$instanceClass.prototype.notesDeferredRenderForNotificationEmail = notesDeferredRenderForNotificationEmail;
 
     // Include the latest notes in the notification emails
     workflow.notification({}, function(M, notify) {
-        var notes = M.notesRenderForNotificationEmail(M.workUnit.actionableBy);
-        if(notes) { notify.addEndHTML(notes); }
+        var notes = M.notesDeferredRenderForNotificationEmail(M.workUnit.actionableBy);
+        if(notes) { notify.addEndDeferred(notes); }
     });
 
     // Display the notes forms on the transition page
@@ -82,7 +82,7 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
 
 // --------------------------------------------------------------------------
 
-var notesRenderForNotificationEmail = function(toUser) {
+var notesDeferredRenderForNotificationEmail = function(toUser) {
     var noteSpec = allNoteSpec[this.workUnit.workType];
     if(!noteSpec) { return; }
     var userCanSeePrivateNotes = noteSpec.canSeePrivateNotes(this, toUser);
@@ -104,7 +104,7 @@ var notesRenderForNotificationEmail = function(toUser) {
     });
 
     if(notesForEmail.length === 0) { return; }
-    return P.template("email/notes").render({
+    return P.template("email/notes").deferredRender({
         maxAge: MAX_NOTIFICATION_NOTE_AGE_IN_HOURS,
         notes: notesForEmail
     });

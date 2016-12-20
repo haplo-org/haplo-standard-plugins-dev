@@ -5,6 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+// Generic email sending mechanism for workflows, also used for generic notifications
+// on transitions when prompted by the platform.
+
+
 // Set a template for sending emails
 P.Workflow.prototype.emailTemplate = function(template) {
     this.$instanceClass.prototype.$emailTemplate = template;
@@ -29,7 +33,8 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 //          as above.
 //      ccExternal - external CC list, objects as toExternal
 //
-// view is copied and additional properties added:
+// Object is created with view as a prototype. This new view is passed to the
+// template with additional properties:
 //      M - workflow instance
 //      toUser - the user the email is being sent to
 //
@@ -61,6 +66,9 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     if("toExternal" in specification) { to = to.concat(this._externalEmailRecipients(specification.toExternal)); }
     if("ccExternal" in specification) { cc = cc.concat(this._externalEmailRecipients(specification.ccExternal)); }
 
+    // NOTE: If any additional properties are added, initialise them to something easy
+    // to use in std_workflow_notifications.js
+
     // Obtain the message template
     var template = specification.template;
     if(!template) { throw new Error("No template specified to sendEmail()"); }
@@ -69,7 +77,7 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     }
 
     // Set up the initial template
-    var view = _.clone(specification.view || {});
+    var view = Object.create(specification.view);
     view.M = this;
 
     // Get the email template
@@ -107,7 +115,7 @@ P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenLis
     }
     var outputList = [];
     var pushRecipient = function(r) {
-        if(r && (-1 === except.indexOf(r.id)) && r.email) {
+        if(r && (-1 === except.indexOf(r.id)) && r.email && r.isActive) {
             for(var l = 0; l < outputList.length; ++l) {
                 if(outputList[l].id === r.id) { return; }
             }
@@ -126,7 +134,9 @@ P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenLis
                 default:
                     if(O.isRef(recipient)) {
                         pushRecipient(O.user(recipient));
-                    } else if("ref" in recipient) {
+                    } else if(recipient instanceof $User) {
+                        pushRecipient(recipient);
+                    } else if(("ref" in recipient) && recipient.ref) {
                         pushRecipient(O.user(recipient.ref));
                     } else {
                         throw new Error("Unknown recipient kind " + recipient);

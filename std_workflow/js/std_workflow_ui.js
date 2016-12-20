@@ -163,62 +163,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             (W.context === "list") ? '$renderWorkList' : '$renderWork',
             W
         );
-    },
-
-    _workUnitNotify: function(workUnit) {
-        var notify = new NotificationView();
-        if(false === this._callHandler('$notification', notify)) {
-            return null; // notification cancelled
-        }
-        return notify._finalise(this);
     }
 });
-
-// --------------------------------------------------------------------------
-
-var NotificationView = function() {
-    this.$notesHTML = [];
-    this.$endHTML = [];
-};
-NotificationView.prototype = {
-    addNoteText: function(notes) {
-        this.$notesHTML.push(P.template('email/status-notes-text').render({notes:notes}));
-        return this;
-    },
-    addNoteHTML: function(html) {
-        this.$notesHTML.push(html);
-        return this;
-    },
-    addEndHTML: function(html) {
-        this.$endHTML.push(html);
-        return this;
-    },
-    _finalise: function(M) {
-        // Basic defaults have slightly different logic to platform
-        if(!this.title)     { this.title = M._call('$taskTitle'); }
-        if(!this.subject)   { this.subject = this.title; }
-        if(!this.action)    { this.action = M._call('$taskUrl'); }
-        if(!this.template)  { this.template = M.$emailTemplate; }
-        if(!this.status) {
-            var statusText = M._getTextMaybe(['notification-status', 'status'], [M.state]);
-            if(statusText) { this.status = statusText; }
-        }
-        if(!this.button) {
-            var buttonLabel = M._getTextMaybe(['notification-action-label', 'action-label'], [M.state]);
-            if(buttonLabel) { this.button = buttonLabel; }
-        }
-        if(0 === this.$notesHTML.length) {
-            // If there aren't any notes, use the workflow text system to find some 
-            var notesText = M._getTextMaybe(['notification-notes'], [M.state]);
-            if(notesText) { this.addNoteText(notesText); }
-        }
-        if(0 !== this.$notesHTML.length) { this.notesHTML = this.$notesHTML.join(''); }
-        if(0 !== this.$endHTML.length)   { this.endHTML = this.$endHTML.join(''); }
-        delete this.$notesHTML;
-        delete this.$endHTML;
-        return this;
-    }
-};
 
 // --------------------------------------------------------------------------
 

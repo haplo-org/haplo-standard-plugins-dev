@@ -731,6 +731,7 @@ implementHandlerList('renderWork');
 implementHandlerList('renderWorkList');
 implementHandlerList('workListFullInfo');
 implementHandlerList('notification');
+implementHandlerList('notificationModifySendEmail');
 implementHandlerList('actionPanel');
 implementHandlerList('actionPanelStatusUI');
 implementHandlerList('actionPanelTransitionUI');
