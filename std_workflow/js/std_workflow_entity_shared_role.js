@@ -150,7 +150,7 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
             deleteAll();
         // Change actionable by of underlying work unit to user
         workUnit.actionableBy = user;
-        workUnit.save();
+        M._saveWorkUnit();
 
         E.response.redirect(M.url);
     }
