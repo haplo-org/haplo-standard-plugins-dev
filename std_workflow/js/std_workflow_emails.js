@@ -77,7 +77,7 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     }
 
     // Set up the initial template
-    var view = Object.create(specification.view);
+    var view = Object.create(specification.view || {});
     view.M = this;
 
     // Get the email template
