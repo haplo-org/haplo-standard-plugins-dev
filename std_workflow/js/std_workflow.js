@@ -720,6 +720,7 @@ implementFunctionList('hasRole');
 implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
 implementFunctionList('modifyFlags');
+implementFunctionList('modifySendEmail');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');

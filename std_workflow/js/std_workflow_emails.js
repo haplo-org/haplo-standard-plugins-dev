@@ -58,6 +58,11 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 var toId = function(u) { return u.id; };
 
 P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
+    // Allow global changes (which have to be quite carefully written)
+    var modify = {specification:specification};
+    this._call('$modifySendEmail', modify);
+    specification = modify.specification;
+
     var except = this._generateEmailRecipientList(specification.except, []).map(toId);
     var to =     this._generateEmailRecipientList(specification.to,     except);
     var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)));
