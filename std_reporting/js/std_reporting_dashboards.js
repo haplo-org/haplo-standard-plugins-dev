@@ -158,6 +158,7 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
     statistic = this.collection.statisticDefinition(statistic);
     displayOptions = displayOptions || statistic.defaultDisplayOptions || {};
     return this.collection.calculateStatistic(statistic, {
+        context: dashboard,
         $select: function() {
             // Mustn't add order() clauses as it'll mess up statistic groupBy.
             return dashboard.selectWithoutOrder();
