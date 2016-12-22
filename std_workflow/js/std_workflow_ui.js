@@ -56,13 +56,22 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
     }},
 
     $actionPanelStatusUI: {selector:{}, handler:function(M, builder) {
-        builder.status("top", this._getText(['status'], [this.state]));
+        var state = this.state;
+        builder.status("top", this._getText(['status'], [state]));
         if(!this.workUnit.closed) {
             var user = this.workUnit.actionableBy;
             if(user && user.name) {
+                var stateDefn = this.$states[state],
+                    displayedName = user.name;
+                if(stateDefn && stateDefn.actionableBy) {
+                    var currentlyWithNameAnnotation = this._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
+                    if(currentlyWithNameAnnotation) {
+                        displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
+                    }
+                }
                 builder.element("top", {
-                    title: this._getTextMaybe(['status-ui-currently-with'], [this.state]) || 'Currently with',
-                    label: user.name
+                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
+                    label: displayedName
                 });
             }
         }
