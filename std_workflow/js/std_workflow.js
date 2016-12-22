@@ -5,6 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+// Use platform private API
+var interpolateNAMEinString = O.$private.$interpolateNAMEinString;
+
+// --------------------------------------------------------------------------
+
 P.allWorkflows = {}; // workType -> workflow object
 
 P.workflowFeatures = {}; // name -> function(workflow)
@@ -543,13 +548,6 @@ WorkflowInstanceBase.prototype.__defineGetter__("$timeline", function() {
 
 // --------------------------------------------------------------------------
 
-var interpolateNAMEmatch = function(_, name) { return NAME(name); };
-P.interpolateNAME = function(_, text) { // must ignore first argument
-    return text.replace(/\bNAME\(([^\)]+?)\)/g, interpolateNAMEmatch);
-};
-
-// --------------------------------------------------------------------------
-
 // Other files add more fallback implementations of functions and handlers
 WorkflowInstanceBase.prototype.$fallbackImplementations = {
 
@@ -569,7 +567,9 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
         return M.$textLookup[key];
     },
 
-    $textInterpolate: P.interpolateNAME,
+    $textInterpolate: function(M, text) {
+        return interpolateNAMEinString(text);
+    },
 
     $getActionableBy: function(M, actionableBy, target) {
         if(actionableBy in GROUP) {

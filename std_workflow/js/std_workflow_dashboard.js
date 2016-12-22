@@ -4,6 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
+
+// Use platform private API
+var interpolateNAMEinString = O.$private.$interpolateNAMEinString;
+
+// --------------------------------------------------------------------------
+
 var CanViewAllDashboards = O.action("std:workflow:admin:view-all-dashboards").
     title("Workflow: View all dashboards").
     allow("group", Group.Administrators);
@@ -62,7 +68,7 @@ DashboardBase.prototype = {
         var textLookup = this.workflow.$instanceClass.prototype.$textLookup;
         var text = textLookup["dashboard-status:"+state] || textLookup["status:"+state] || '????';
         // Need to do the NAME interpolation for dashboard states
-        return P.interpolateNAME(undefined, text);
+        return interpolateNAMEinString(text);
     },
 
     _mergeStatesInCounts: function(counts) {
