@@ -46,6 +46,7 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }
         if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
+        if(!M.workUnit.isSaved) { return; } // doesn't have an ID until saved, but couldn't have been delegated either
         var q = P.db.sharedRoles.select().
             where("workUnitId","=",M.workUnit.id).
             where("entityName","=",actionableBy).
