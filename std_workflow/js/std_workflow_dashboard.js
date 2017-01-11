@@ -179,7 +179,7 @@ DashboardBase.prototype = {
 };
 
 DashboardBase.prototype.__defineGetter__("_displayableTitle", function() {
-    return this.$instanceTitle || this.spec.title;
+    return interpolateNAMEinString(this.$instanceTitle || this.spec.title);
 });
 
 // TODO: Remove query property when we're sure it's not used
