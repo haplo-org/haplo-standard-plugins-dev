@@ -273,7 +273,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(!activePage) { activePage = pages[0]; }
     activePage.active = true;
     // What happens next?
-    var showFormError = false;
+    var showFormError = false, showFormIncompletePage = false;
     if(E.request.method === "POST") {
         // Update from the active form
         activePage.instance.update(E.request);
@@ -306,7 +306,12 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                     }
                 }
                 if(nextIndex >= 0 && nextIndex >= pages.length) {
-                    return actions.finishEditing(this, E, true /* everything complete */);
+                    if(firstIncompletePage) {
+                        // goto checklist/show incomplete overview page
+                        showFormIncompletePage = true;
+                    } else {
+                        return actions.finishEditing(this, E, true /* everything complete */);
+                    }
                 } else {
                     return actions.gotoPage(this, E,
                         pages[nextIndex].form.formId);
@@ -325,14 +330,25 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(delegate.getAdditionalUIForEditor) {
         additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
     }
-    actions.render(this, E, P.template("edit").deferredRender({
-        isSinglePage: isSinglePage,
-        navigation: navigation,
-        pages: pages,
-        showFormError: showFormError,
-        additionalUI: additionalUI,
-        activePage: activePage
-    }));
+    if(showFormIncompletePage) {
+        // slightly abuse form render action to show a list of 'incomplete' forms
+        // when the user tries to submit the last page with incomplete prior pages
+        actions.render(this, E, P.template("incomplete").deferredRender({
+            isSinglePage: isSinglePage,
+            navigation: navigation,
+            pages: pages,
+            additionalUI: additionalUI
+        }));
+    } else {
+        actions.render(this, E, P.template("edit").deferredRender({
+            isSinglePage: isSinglePage,
+            navigation: navigation,
+            pages: pages,
+            showFormError: showFormError,
+            additionalUI: additionalUI,
+            activePage: activePage
+        }));
+    }
 };
 
 // ----------------------------------------------------------------------------
