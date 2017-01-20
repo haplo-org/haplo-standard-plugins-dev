@@ -19,10 +19,12 @@
         // TODO: smartly randomise dates that are shortly in the future
         var d = new Date();
         d.setMonth((d.getMonth()+1) % 11);
-        var month = d.getMonth(); // 0 indexed
+        var month = d.getMonth()+1; // 0 indexed
         d.setFullYear(d.getFullYear() + (month < d.getMonth() ? 1 : 0));
         var year = d.getFullYear();
-        $(".oforms-date input[type=hidden]").each(function() { this.value = year+"-"+(month+1)+"-28"; });
+        $(".oforms-date input[type=hidden]").each(function() { 
+            this.value = year+"-"+("0"+month).slice(-2)+"-28";
+        });
         // toLocaleString might not work in all browsers
         $(".oforms-date input[type=text]").each(function() { this.value = "28 "+d.toLocaleString("en-us", {month:"short"})+" "+year; });
         $(".oforms-boolean").each(function() { 
