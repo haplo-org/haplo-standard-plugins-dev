@@ -1,10 +1,16 @@
 std:plugin:resources("edit.css")
+std:plugin:resources("quickfill.js")
 
 if(additionalUI.top) { render(additionalUI.top) }
 
 if(navigation) {
   <div class="z__docstore_nav_top"> render(navigation) </div>
 }
+
+<p>
+  <button class="z__quickfill_action">"Quick fill"</button>
+</p>
+
 
 if(showFormError) {
   std:ui:notice("Please complete all the required fields.")
