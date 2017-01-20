@@ -29,6 +29,10 @@
             var yesno = $(this).find("input[type=radio]"); 
             yesno[Math.floor(Math.random()*2)].checked = true; 
         });
+        $(".oforms-radio-vertical").each(function() {
+            var options = $(this).find("input[type=radio]");
+            options[Math.floor(Math.random()*options.length)].checked = true;
+        });
         $("input[type=checkbox]").prop("checked", true);
     };
 
