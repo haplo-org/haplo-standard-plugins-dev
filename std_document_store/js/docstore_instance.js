@@ -233,6 +233,8 @@ DocumentInstance.prototype.deferredRenderCurrentDocument = function() {
 DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     // The form ID is encoded into the request somehow
     var untrustedRequestedFormId = this.store._formIdFromRequest(E.request);
+    // Is this the special form incomplete page?
+    var renderingFormIncompletePage = (untrustedRequestedFormId === "$incomplete");
     // Set up information about the pages
     var instance = this,
         delegate = this.store.delegate,
@@ -269,12 +271,28 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         isSinglePage = (pages.length === 1);
     };
     updatePages();
-    // Default the active page to the first page
-    if(!activePage) { activePage = pages[0]; }
-    activePage.active = true;
+    var getGotoPage = function() {
+        return _.find(pages, function(p) {
+            return p.form.formId === E.request.parameters.__goto;
+        });
+    };
+    // Handle the special case of the incomplete overview seperately
+    if(renderingFormIncompletePage) {
+        if(E.request.parameters.__later === "s") {
+            return actions.finishEditing(this, E, false /* not complete */);
+        }
+        // Duplicate the .gotoPage() call from below to be able to do it without
+        // updating the document (incomplete page has no form)
+        var gotoPageIncomplete = getGotoPage();
+        if(gotoPageIncomplete) { return actions.gotoPage(this, E, gotoPageIncomplete.form.formId); }
+    } else {
+        // Default the active page to the first page
+        if(!activePage) { activePage = pages[0]; }
+        activePage.active = true;
+    }
     // What happens next?
-    var showFormError = false, showFormIncompletePage = false;
-    if(E.request.method === "POST") {
+    var showFormError = false;
+    if(!renderingFormIncompletePage && E.request.method === "POST") {
         // Update from the active form
         activePage.instance.update(E.request);
         activePage.complete = activePage.instance.complete;
@@ -285,9 +303,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
         // Goto another form?
-        var gotoPage = _.find(pages, function(p) {
-            return p.form.formId === E.request.parameters.__goto;
-        });
+        var gotoPage = getGotoPage();
         if(gotoPage) {
             return actions.gotoPage(this, E, gotoPage.form.formId);
         } else {
@@ -308,7 +324,8 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                 if(nextIndex >= 0 && nextIndex >= pages.length) {
                     if(firstIncompletePage) {
                         // goto checklist/show incomplete overview page
-                        showFormIncompletePage = true;
+                        // renderingFormIncompletePage = true;
+                        actions.gotoPage(this, E, "$incomplete");
                     } else {
                         return actions.finishEditing(this, E, true /* everything complete */);
                     }
@@ -330,7 +347,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(delegate.getAdditionalUIForEditor) {
         additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
     }
-    if(showFormIncompletePage) {
+    if(renderingFormIncompletePage) {
         // slightly abuse form render action to show a list of 'incomplete' forms
         // when the user tries to submit the last page with incomplete prior pages
         actions.render(this, E, P.template("incomplete").deferredRender({

@@ -19,7 +19,6 @@ if(additionalUI.formTop) { render(additionalUI.formTop) }
         } else {
           <span class="z__docstore_incomplete_form_checklist incomplete"> "X" </span>
         }
-        // has to be buttons because we need to POST the formId
         <button name="__goto" value=form.formId>
           unless(complete) { <strong>form.formTitle</strong> } else { form.formTitle }
         </button>
@@ -32,6 +31,12 @@ if(additionalUI.formTop) { render(additionalUI.formTop) }
 </div>
 
 if(additionalUI.formBottom) { render(additionalUI.formBottom) }
+
+<div class="z__docstore_save">
+  <button name="__later" value="s">
+    "Save for later"
+  </button>
+</div>
 
 if(navigation) {
   <div class="z__docstore_nav_bottom">
