@@ -234,7 +234,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     // The form ID is encoded into the request somehow
     var untrustedRequestedFormId = this.store._formIdFromRequest(E.request);
     // Is this the special form incomplete page?
-    var renderingFormIncompletePage = (untrustedRequestedFormId === "$incomplete");
+    var renderingFormIncompletePage = (untrustedRequestedFormId === "__incomplete");
     // Set up information about the pages
     var instance = this,
         delegate = this.store.delegate,
@@ -325,7 +325,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                     if(firstIncompletePage) {
                         // goto checklist/show incomplete overview page
                         // renderingFormIncompletePage = true;
-                        actions.gotoPage(this, E, "$incomplete");
+                        actions.gotoPage(this, E, "__incomplete");
                     } else {
                         return actions.finishEditing(this, E, true /* everything complete */);
                     }
