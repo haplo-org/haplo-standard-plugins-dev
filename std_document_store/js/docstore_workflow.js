@@ -17,6 +17,8 @@ P.use("std:workflow");
 //    path: URL path where the handlers should be implemented
 //    panel: Which panel the view link should appear in
 //    priority: The priority within the panel, defaulting to "default"
+//    sortDisplay: The priority for displaying in list of forms, defaulting to
+//          priority if it's a number, or 100 otherwise.
 //    ----------
 //          history/view/edit have the concept of "allowing for roles at selectors"
 //                  it is a list of these definition objects, which have properties:
@@ -46,6 +48,21 @@ var Delegate = function() { };
 Delegate.prototype = {
     keyToKeyId: function(key) { return key.workUnit.id; }
 };
+
+P.implementService("std:document_store:workflow:sorted_store_names_action_allowed", function(M, user, action) {
+    var workflow = O.service("std:workflow:definition_for_name", M.workUnit.workType);
+    var stores = [];
+    _.each(workflow.documentStore, function(store, name) {
+        var spec = store.delegate;
+        if(can(M, user, spec, action)) {
+            var sort = spec.sortDisplay;
+            if(!sort) { sort = spec.priority; }
+            if(!sort) { sort = 100; }
+            stores.push({name:name, sort:sort});
+        }
+    });
+    return _.map(_.sortBy(stores,'sort'), function(s) { return s.name; });
+});
 
 P.implementService("std:document_store:workflow:form_action_allowed", function(M, form, user, action) {
     var workflow = O.service("std:workflow:definition_for_name", M.workUnit.workType);
