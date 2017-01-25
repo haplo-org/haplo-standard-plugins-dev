@@ -740,6 +740,7 @@ implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
 implementHandlerList('transitionUI');
+implementHandlerList('transitionUIWithoutTransitionChoice');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');

@@ -237,8 +237,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
             M._callHandler('$transitionUI', E, ui);
 
         } else {
+
+            M._callHandler('$transitionUIWithoutTransitionChoice', E, ui);
+
             // Generate std:ui:choose template options from the transition
-            var urlExtraParameters = requestedTarget ? {target:requestedTarget} : undefined;
+            var urlExtraParameters = ui._urlExtraParameters;
             ui.options = _.map(M.transitions.list, function(transition) {
                 return {
                     action: M.transitionUrl(transition.name, urlExtraParameters),
@@ -267,13 +270,20 @@ P.respond("GET,POST", "/do/workflow/transition", [
 var TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
-    this.requestedTarget = target;
+    if(target) {
+        this.requestedTarget = target;
+        this._urlExtraParameters = {target:target};
+    }
 };
 TransitionUI.prototype = {
     backLinkText: "Cancel",
     addFormDeferred: function(position, deferred) {
         if(!this.$formDeferred) { this.$formDeferred = []; }
         this.$formDeferred.push({position:position, deferred:deferred});
+    },
+    addUrlExtraParameter: function(name, value) {
+        if(!("_urlExtraParameters" in this)) { this._urlExtraParameters = {}; }
+        this._urlExtraParameters[name] = value;
     },
     preventTransition: function() {
         this._preventTransition = true;
