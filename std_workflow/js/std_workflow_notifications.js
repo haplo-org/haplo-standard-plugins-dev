@@ -44,10 +44,14 @@ P.WorkflowInstanceBase.prototype._workUnitNotify = function(workUnit) {
 // --------------------------------------------------------------------------
 
 var NotificationView = function() {
+    this.$headerDeferreds = [];
     this.$notesDeferreds = [];
     this.$endDeferreds = [];
 };
 NotificationView.prototype = {
+    addHeaderDeferred: function(deferred) {
+        this.$headerDeferreds.push(deferred);
+    },
     addNoteDeferred: function(deferred) {
         this.$notesDeferreds.push(deferred);
         return this;

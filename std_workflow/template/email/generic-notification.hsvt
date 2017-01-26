@@ -1,5 +1,7 @@
 #option:no-tag-attribute-quote-minimisation
 
+each($headerDeferreds) { render(.) }
+
 <h1> <a href=$actionFullUrl> title </a> </h1>
 
 if(status) { <h3> status </h3> }
