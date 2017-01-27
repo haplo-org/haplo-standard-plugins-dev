@@ -41,6 +41,13 @@ DashboardList.prototype.hasColumnBasedOnFact = function(fact) {
     return false;
 };
 
+DashboardList.prototype.removeColumnsBasedOnFact = function(fact) {
+    if(!("$removeColumnsBasedOnFact" in this)) {
+        this.$removeColumnsBasedOnFact = [];
+    }
+    this.$removeColumnsBasedOnFact.push(fact);
+};
+
 DashboardList.prototype.__defineGetter__("columnCount", function() {
     var count = 0, groups = this.columnGroups;
     for(var i = groups.length - 1; i >= 0; --i) {
@@ -58,6 +65,13 @@ DashboardList.prototype._makeRenderableColumnList = function() {
     _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
         columns = columns.concat(group.columns);
     });
+    if("$removeColumnsBasedOnFact" in this) {
+        var removes = this.$removeColumnsBasedOnFact;
+        columns = _.filter(columns, function(column) {
+            var cfact = column.fact;
+            return !(cfact && (-1 !== removes.indexOf(cfact)));
+        });
+    }
     columns.forEach(function(c) { c._prepare(dashboard); });
     return columns;
 };
