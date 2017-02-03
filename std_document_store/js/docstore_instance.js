@@ -343,20 +343,19 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
         navigation = P.template("navigation").deferredRender({pages:pages});
     }
-    var additionalUI;
-    if(delegate.getAdditionalUIForEditor) {
-        additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
-    }
     if(renderingFormIncompletePage) {
         // slightly abuse form render action to show a list of 'incomplete' forms
         // when the user tries to submit the last page with incomplete prior pages
         actions.render(this, E, P.template("incomplete").deferredRender({
             isSinglePage: isSinglePage,
             navigation: navigation,
-            pages: pages,
-            additionalUI: additionalUI
+            pages: pages
         }));
     } else {
+        var additionalUI;
+        if(delegate.getAdditionalUIForEditor) {
+            additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
+        }
         actions.render(this, E, P.template("edit").deferredRender({
             isSinglePage: isSinglePage,
             navigation: navigation,
