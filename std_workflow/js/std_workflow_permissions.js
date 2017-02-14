@@ -54,7 +54,9 @@ var checkPermissionsForObject = function(object, checkFunction) {
     var results = [];
     var objectRef = object.ref;
     _.each(workflowPermissionRules, function(rules, workUnitType) {
-        var units = O.work.query(workUnitType).ref(objectRef);
+        var units = O.work.query(workUnitType).ref(objectRef).
+            isEitherOpenOrClosed().
+            anyVisibility();
         _.each(units, function(unit) {
             if(P.allWorkflows[unit.workType]) {
                 var M = P.allWorkflows[unit.workType].instance(unit);
