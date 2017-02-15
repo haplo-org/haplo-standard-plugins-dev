@@ -91,15 +91,15 @@ var checkPermissionsForObject = function(object, checkFunction) {
 
 // API to permissions system
 
-P.implementService("std:workflow:get_additional_readers_for_object", function(objectRef) {
-    var result = checkPermissionsForObject(objectRef, function(perm) {
+P.implementService("std:workflow:get_additional_readers_for_object", function(object) {
+    var result = checkPermissionsForObject(object, function(perm) {
         return (perm==="read") || (perm==="read-edit");
     });
     return result;
 });
 
-P.implementService("std:workflow:get_additional_writers_for_object", function(objectRef) {
-    var result = checkPermissionsForObject(objectRef, function(perm) {
+P.implementService("std:workflow:get_additional_writers_for_object", function(object) {
+    var result = checkPermissionsForObject(object, function(perm) {
         return (perm==="read-edit");
     });
     return result;
