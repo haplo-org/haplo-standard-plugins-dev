@@ -85,6 +85,7 @@ P.respond("GET,POST", "/do/workflow/administration/full-info", [
         workUnit: M.workUnit,
         calculatedActionableBy: calculatedActionableBy,
         actionableNotSameAsCalculated: actionableNotSameAsCalculated,
+        flags: _.keys(M.flags).join(", "),
         tags: JSON.stringify(M.workUnit.tags || {}, undefined, 2),
         data: JSON.stringify(M.workUnit.data || {}, undefined, 2)
     }, "admin/full-info");
