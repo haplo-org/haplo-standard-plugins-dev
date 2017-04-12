@@ -15,24 +15,28 @@ var CanChangeWorkflowVisibility = O.action("std:workflow:admin:change-workflow-v
     allow("group", Group.Administrators).
     allow("group", Group.WorkflowVisibility);
 
+var allowDebugging = function() {
+    return (O.PLUGIN_DEBUGGING_ENABLED && O.impersonatingUser && O.impersonatingUser.isSuperUser);
+};
+
 // --------------------------------------------------------------------------
 
 P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder) {
     var admin = O.currentUser.allowed(CanAdminWorkflow),
         visibility = admin || O.currentUser.allowed(CanChangeWorkflowVisibility);
-    if(!(visibility || admin)) { return; }
+    if(!(allowDebugging || visibility || admin)) { return; }
 
     var panel = builder.panel(8888888).
         spaceAbove().
         element(0, {title:"Workflow override"});
 
-    if(admin) {
+    if(admin || allowDebugging) {
         panel.
             link(1, "/do/workflow/administration/full-info/"+this.workUnit.id, "Full info").
             link(2, "/do/workflow/administration/timeline/"+this.workUnit.id, "Timeline").
             link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state");
     }
-    if(visibility) {
+    if(visibility || allowDebugging) {
         panel.
             link(9, "/do/workflow/administration/visibility/"+this.workUnit.id, "Task visibility");
     }
@@ -41,7 +45,9 @@ P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder
 // --------------------------------------------------------------------------
 
 var getCheckedInstanceForAdmin = function(workUnit, action) {
-    (action || CanAdminWorkflow).enforce();
+    if(!allowDebugging) {
+        (action || CanAdminWorkflow).enforce();
+    }
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     return workflow.instance(workUnit);

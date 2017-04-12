@@ -21,7 +21,8 @@
       "js/std_workflow_transition_form.js",
       "js/std_workflow_dashboard.js",
       "js/std_workflow_permissions.js",
-      "js/std_workflow_admin.js"
+      "js/std_workflow_admin.js",
+      "js/std_workflow_debug.js"
     ],
   "respond": ["/do/workflow"]
 }

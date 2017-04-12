@@ -112,6 +112,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
         this._callHandler('$actionPanelTransitionUI', builder);
         this._callHandler('$actionPanel', builder);
         this._addAdminActionPanelElements(builder);
+        if(O.PLUGIN_DEBUGGING_ENABLED) { this._addDebugActionPanelElements(builder); }
         // Add any configured headings to the panels in the action panel, if they have something in them
         var headings = this.$panelHeadings;
         if(headings) {

@@ -1,3 +1,9 @@
+std:plugin:resources("quick-impersonate.js")
+std:form:token()
+if(currentlyWithUid) {
+<a href="#" class="quick-impersonate" style="display: none;" data-uid=currentlyWithUid>"Impersonate"</a>
+}
+
 <div>
   processName
   unless(workUnit.closed) {
