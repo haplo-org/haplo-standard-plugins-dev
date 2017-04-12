@@ -645,15 +645,34 @@ var implementHandlerList = function(name) {
     };
 };
 
+var useFeature = function(maybe, name /* arguments */) {
+    var feature = P.workflowFeatures[name];
+    if(!feature) {
+        if(maybe) {
+            return;
+        } else {
+            throw new Error("No workflow feature: "+name);
+        }
+    }
+    // Copy arguments, replace name with this workflow definition, call feature function to let it set up the feature
+    var featureArguments = Array.prototype.slice.call(arguments, 1);
+    featureArguments[0] = this;
+    feature.apply(this, featureArguments);
+};
+
 Workflow.prototype = {
 
-    use: function(name /* arguments */) {
-        var feature = P.workflowFeatures[name];
-        if(!feature) { throw new Error("No workflow feature: "+name); }
-        // Copy arguments, replace name with this workflow definition, call feature function to let it set up the feature
-        var featureArguments = Array.prototype.slice.call(arguments, 0);
-        featureArguments[0] = this;
-        feature.apply(this, featureArguments);
+    use: function(/* arguments */) {
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(false); // maybe
+        useFeature.apply(this, args);
+        return this;
+    },
+
+    useMaybe: function(/* arguments */) {
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(true); // maybe
+        useFeature.apply(this, args);
         return this;
     },
 
