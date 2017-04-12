@@ -781,12 +781,8 @@ P.onLoad = function() {
 
 // --------------------------------------------------------------------------
 
-var workflowFeatureImplemented = function(name) {
-    return (name in P.workflowFeatures);
-};
-
 P.registerWorkflowFeature = function(name, feature) {
-    if(workflowFeatureImplemented(name)) { throw new Error("Feature '"+name+"' already registered"); }
+    if((name in P.workflowFeatures)) { throw new Error("Feature '"+name+"' already registered"); }
     P.workflowFeatures[name] = feature;
 };
 
@@ -795,7 +791,9 @@ P.workflowFeatureFunctions = {
         onLoadCallbacks.push(callback);
     },
     registerWorkflowFeature: P.registerWorkflowFeature,
-    workflowFeatureImplemented: workflowFeatureImplemented
+    workflowFeatureImplemented: function(name) {
+        return (name in P.workflowFeatures);
+    }
     // More functions added in other files.
 };
 
