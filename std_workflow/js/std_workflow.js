@@ -782,7 +782,7 @@ P.onLoad = function() {
 // --------------------------------------------------------------------------
 
 P.registerWorkflowFeature = function(name, feature) {
-    if((name in P.workflowFeatures)) { throw new Error("Feature '"+name+"' already registered"); }
+    if(name in P.workflowFeatures) { throw new Error("Feature '"+name+"' already registered"); }
     P.workflowFeatures[name] = feature;
 };
 
