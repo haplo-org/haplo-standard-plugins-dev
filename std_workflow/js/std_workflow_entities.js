@@ -29,12 +29,17 @@ var loadRefs = function(ref) {
 var getterBySuffix = {
     "refMaybe": function(name) {
         var defn = this.__entityDefinition(name);
-        if(typeof(defn) === "function") { return defn.call(this, "first"); }
+        if(typeof(defn) === "function") { 
+            var refs = O.deduplicateArrayOfRefs(defn.call(this, "list")); // "list" argument for backwards compatability
+            return (refs.length ? refs[0] : undefined);
+        }
         return entityLoad.apply(this, defn);
     },
     "refList": function(name) {
         var defn = this.__entityDefinition(name);
-        if(typeof(defn) === "function") { return defn.call(this, "list"); }
+        if(typeof(defn) === "function") { 
+            return O.deduplicateArrayOfRefs(defn.call(this, "list")); // "list" argument for backwards compatability
+        }
         return listLoad.apply(this, defn);
     },
     "ref": function(name) {
