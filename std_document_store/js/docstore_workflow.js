@@ -222,7 +222,6 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     }
 
     workflow.actionPanelTransitionUI({}, function(M, builder) {
-        if(!allowDebugging()) { return; }
         if(can(M, O.currentUser, spec, 'edit')) {
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
