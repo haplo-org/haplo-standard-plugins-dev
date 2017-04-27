@@ -75,7 +75,6 @@ var allowDebugging = function() {
 };
 
 var can = function(M, user, spec, action) {
-    if(allowDebugging()) { return true; }
     var list = spec[action];
     if(!list) { return false; }
     var allow = false, deny = false;
@@ -474,6 +473,34 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             entry: entry,
             document: JSON.stringify(entry.document, undefined, 2)
         }, "workflow/admin/view-document");
+    });
+
+    var adminEditor = {
+        finishEditing: function(instance, E, complete) {
+            E.response.redirect(spec.path+'/admin/'+instance.key.workUnit.id);
+        },
+        gotoPage: function(instance, E, formId) {
+            E.response.redirect(spec.path+'/admin/form/'+instance.key.workUnit.id+"/"+formId);
+        },
+        render: function(instance, E, deferredForm) {
+            var M = workflow.instance(O.work.load(E.request.extraPathElements[0]));
+            E.render({
+                pageTitle: "Admin Edit "+spec.title+": "+instance.key.title,
+                backLink: instance.key.url,
+                deferredForm: deferredForm,
+                deferredPreForm: spec.deferredPreForm ? spec.deferredPreForm(M) : null
+            }, "workflow/form");
+        }
+    };
+
+    plugin.respond("GET,POST", spec.path+'/admin/form', [
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+    ], function(E, workUnit) {
+        if(!allowDebugging()) { O.stop("Not permitted"); }
+        E.setResponsiblePlugin(P); // take over as source of templates, etc
+        var M = workflow.instance(workUnit);
+        var instance = docstore.instance(M);
+        instance.handleEditDocument(E, adminEditor);
     });
 
 });
