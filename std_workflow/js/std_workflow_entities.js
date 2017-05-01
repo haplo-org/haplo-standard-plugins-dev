@@ -30,7 +30,7 @@ var getterBySuffix = {
     "refMaybe": function(name) {
         var defn = this.__entityDefinition(name);
         if(typeof(defn) === "function") { 
-            var refs = O.deduplicateArrayOfRefs(defn.call(this, "list")); // "list" argument for backwards compatability
+            var refs = this[name+"_refList"]; // use refList so list is reused if accessed later
             return (refs.length ? refs[0] : undefined);
         }
         return entityLoad.apply(this, defn);
