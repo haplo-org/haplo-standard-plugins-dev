@@ -1,0 +1,22 @@
+pageTitle("Email log: " M.title)
+backLink(M.url)
+
+each(emails) {
+<div>
+  "Subject: " subject<br>
+  "Datetime: " std:date:time(datetime)<br>
+  if(recipientsObject) {
+    if(recipientsObject.to) {
+      "To: " each(recipientsObject.to) { if(ref) { <a href=["/do/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
+    }
+    if(recipientsObject.cc) {
+      "Cc: " each(recipientsObject.cc) { if(ref) { <a href=["/do/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
+    }
+  }
+  <div style="background-color: #eee;">
+    unsafeHTML(unsafeBody)
+  </div>
+</div>
+<hr>
+}
+

@@ -47,6 +47,21 @@ var defineTimelineDatabase = function(plugin, workflowName) {
     return dbName;
 };
 
+var defineEmailLogDatabase = function(plugin, workflowName) {
+    var dbName = 'stdworkflowEmail'+P.workflowNameToDatabaseTableFragment(workflowName);
+    plugin.db.table(dbName, {
+        workUnitId:     { type:"int",   indexed:true }, // which work unit (= instance of workflow)
+        datetime:       { type:"datetime" },            // when this email was sent
+        user:           { type:"user" },                // which user was active when this email was sent
+        recipients:     { type:"text" },
+        subject:        { type:"text" },
+        body:           { type:"text" }
+        // state:          { type:"text" },                // which state the workflow is in
+        // json:           { type:"text",  nullable:true } // json encoded data (use data property to read)
+    });
+    return dbName;
+};
+
 // --------------------------------------------------------------------------
 
 var Transition = P.Transition = function(M, name, destination, destinationTarget) {
@@ -610,6 +625,7 @@ var Workflow = P.Workflow = function(plugin, name, description) {
     this.$instanceClass.prototype = new WorkflowInstanceBase();
     this.$instanceClass.prototype.$plugin = plugin;
     this.$instanceClass.prototype.$timelineDbName = defineTimelineDatabase(plugin, name);
+    this.$instanceClass.prototype.$emailLogDbName = defineEmailLogDatabase(plugin, name);
 
     var workflow = this;
     plugin.workUnit({

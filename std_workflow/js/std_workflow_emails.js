@@ -111,7 +111,34 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
             emailTemplate.deliver(user.email, user.name, "(CC) "+firstSubject, body);
         });
     }
+    var recipients = {
+        to: _.map(to, function(user) {
+            return {id: user.id, ref: user.ref, email: user.email, name: user.name};
+        }),
+        cc: _.map(cc, function(user) {
+            return {id: user.id, ref: user.ref, email: user.email, name: user.name};
+        })
+    };
+    // var recipients = [];
+    // _.each([to, cc], function(list) {
+    //     _.each(list, function(recipient) {
+    //         recipeints.push(recipient);
+    //     });
+    // });
+    this.$emailLog.create({
+        workUnitId: this.workUnit.id,
+        datetime: new Date(),
+        user: O.currentUser,
+        recipients: JSON.stringify(recipients),
+        subject: firstSubject || "",
+        body: firstBody || "",
+        state: this.state
+    }).save();
 };
+
+P.WorkflowInstanceBase.prototype.__defineGetter__("$emailLog", function() {
+    return this.$plugin.db[this.$emailLogDbName];
+});
 
 P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenList, except) {
     var M = this;

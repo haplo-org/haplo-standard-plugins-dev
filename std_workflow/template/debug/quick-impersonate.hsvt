@@ -1,0 +1,9 @@
+
+<div>
+  std:form:token()
+  <form method="POST" action="/do/authentication/impersonate"> std:form:token()
+    <input type="hidden" name="uid" value=uid>
+    <input type="hidden" name="redirect_to" value=redirect>
+    <input type="submit" value="Impersonate">
+  </form>
+</div>

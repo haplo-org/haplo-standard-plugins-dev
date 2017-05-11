@@ -30,7 +30,8 @@ P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder
         panel.
             link(1, "/do/workflow/administration/full-info/"+this.workUnit.id, "Full info").
             link(2, "/do/workflow/administration/timeline/"+this.workUnit.id, "Timeline").
-            link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state");
+            link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state").
+            link(4, "/do/workflow/administration/email-log/"+this.workUnit.id, "Email log");
     }
     if(visibility) {
         panel.
@@ -163,6 +164,24 @@ P.respond("GET,POST", "/do/workflow/administration/move-state", [
         M: M,
         timeline: timeline
     }, "admin/move-state");
+});
+
+// --------------------------------------------------------------------------
+
+P.respond("GET,POST", "/do/workflow/administration/email-log", [
+    {pathElement:0, as:"workUnit", allUsers:true}
+], function(E, workUnit) {
+    var M = getCheckedInstanceForAdmin(workUnit);
+    var emails = M.$emailLog.select().where("workUnitId","=",workUnit.id);
+    _.each(emails, function(email) {
+        email.unsafeBody = email.body;
+        // below should be a json type
+        email.recipientsObject = email.recipients ? JSON.parse(email.recipients) : undefined;
+    });
+    E.render({
+        M: M,
+        emails: emails
+    }, "admin/email-log");
 });
 
 // --------------------------------------------------------------------------
