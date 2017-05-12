@@ -7,10 +7,10 @@ each(emails) {
   "Datetime: " std:date:time(datetime)<br>
   if(recipientsObject) {
     if(recipientsObject.to) {
-      "To: " each(recipientsObject.to) { if(ref) { <a href=["/do/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
+      "To: " each(recipientsObject.to) { if(ref) { <a href=["/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
     }
     if(recipientsObject.cc) {
-      "Cc: " each(recipientsObject.cc) { if(ref) { <a href=["/do/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
+      "Cc: " each(recipientsObject.cc) { if(ref) { <a href=["/" ref]>name</a> } else { name } " ("<i>email</i>")" ", "}<br>
     }
   }
   <div style="background-color: #eee;">

@@ -113,10 +113,12 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     }
     var recipients = {
         to: _.map(to, function(user) {
-            return {id: user.id, ref: user.ref, email: user.email, name: user.name};
+            var refStr = user.ref ? user.ref.toString() : undefined;
+            return {id: user.id, ref: refStr, email: user.email, name: user.name};
         }),
         cc: _.map(cc, function(user) {
-            return {id: user.id, ref: user.ref, email: user.email, name: user.name};
+            var refStr = user.ref ? user.ref.toString() : undefined;
+            return {id: user.id, ref: refStr, email: user.email, name: user.name};
         })
     };
     // var recipients = [];
