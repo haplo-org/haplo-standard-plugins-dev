@@ -790,7 +790,10 @@ P.workflowFeatureFunctions = {
     registerOnLoadCallback: function(callback) { // last resort API, see notes above
         onLoadCallbacks.push(callback);
     },
-    registerWorkflowFeature: P.registerWorkflowFeature
+    registerWorkflowFeature: P.registerWorkflowFeature,
+    workflowFeatureImplemented: function(name) {
+        return (name in P.workflowFeatures);
+    }
     // More functions added in other files.
 };
 
