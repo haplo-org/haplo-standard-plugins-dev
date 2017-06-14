@@ -7,7 +7,13 @@
 .z__workflow_debug_quick_action {
     margin-bottom: 12px;
 }
-.z__workflow_debug_quick_action input[type=submit] {
+.z__workflow_debug_sidebar {
+    position: absolute;
+    top: 200px;
+    right: 20px;
+    width: 150px;
+}
+.z__workflow_debug_sidebar input[type=submit], .z__workflow_debug_quick_action input[type=submit] {
     display: block;
     width: 100%;
     position: relative;
@@ -19,4 +25,8 @@
     border-width: 1px 1px 1px 1px;
     outline: 0;
     margin-bottom: 2px;
+}
+.z__workflow_debug_sidebar input[type=submit]:disabled {
+    background-color: #fff;
+    color: #bbb;
 }

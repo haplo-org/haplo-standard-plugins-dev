@@ -29,9 +29,39 @@ P.WorkflowInstanceBase.prototype._addDebugActionPanelElements = function(builder
     builder.panel(1).style("special").element(1, {
         deferred: P.template("debug/quick-actions").deferredRender({
             M: this,
-            uid: (uid !== O.currentUser.id ? uid : undefined)
+            uid: (uid !== O.currentUser.id ? uid : undefined),
+            debugEntities: debugEntities
         })
     });
+
+    var debugEntities;
+    var entities = this.entities;
+    if(entities) { 
+        debugEntities = [];
+        var usedAsActionableBy = {};
+        _.each(this.$states, function(defn,name) {
+            if(defn.actionableBy) {
+                usedAsActionableBy[defn.actionableBy] = true;
+            }
+        });
+        _.each(entities.$entityDefinitions, function(v,name) {
+            var first = entities[name+'_refMaybe'];
+            var user = first ? O.user(first) : undefined;
+            var i = {
+                name: name,
+                uid: user ? user.id : undefined,
+                usedAsActionableBy: usedAsActionableBy[name]
+            };
+            if(i.usedAsActionableBy) { debugEntities.unshift(i); } else { debugEntities.push(i); }
+        });
+
+        builder.panel(1).style("special").element(1, {
+            deferred: P.template("debug/sidebar").deferredRender({
+                M: this,
+                debugEntities: debugEntities
+            })
+        });
+    }
 };
 
 // --------------------------------------------------------------------------
