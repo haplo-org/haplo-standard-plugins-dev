@@ -52,7 +52,7 @@ P.WorkflowInstanceBase.prototype._addDebugActionPanelElements = function(builder
                 uid: user ? user.id : undefined,
                 usedAsActionableBy: usedAsActionableBy[name]
             };
-            if(i.usedAsActionableBy) { debugEntities.unshift(i); } else { debugEntities.push(i); }
+            if(user) { debugEntities.unshift(i); } else { debugEntities.push(i); }
         });
 
         builder.panel(1).style("special").element(1, {
