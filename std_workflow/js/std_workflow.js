@@ -721,6 +721,7 @@ implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
 implementFunctionList('modifyFlags');
 implementFunctionList('modifySendEmail');
+implementFunctionList('setEntityRootObjectRef');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
