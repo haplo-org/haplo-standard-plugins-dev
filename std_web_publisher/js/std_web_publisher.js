@@ -184,6 +184,15 @@ Publication.prototype._urlPathForObject = function(object) {
     }
 };
 
+Publication.prototype.urlForObject = function(object) {
+    var path = this._urlPathForObject(object);
+    if(!path) { return; }
+    var hostname = (this.name === DEFAULT) ?
+        O.application.hostname :
+        this.name;
+    return 'https://'+hostname+path;
+};
+
 Publication.prototype._generateRobotsTxt = function() {
     var lines = ["User-agent: *"];
     for(var l = 0; l < this._paths.length; ++l) {
