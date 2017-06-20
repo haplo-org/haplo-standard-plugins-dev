@@ -11,7 +11,6 @@ var Exchange = $Exchange;
 // --------------------------------------------------------------------------
 
 P.$webPublisherHandle = function(host, method, path) {
-    if(method !== "GET") { throw new Error("Only GET requests expected for web publisher"); }
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publication) { return null; }
     return P.renderingWithPublication(publication, function() {
@@ -84,25 +83,39 @@ var Publication = function(name, plugin) {
 
 Publication.prototype.DEFAULT = {};
 
-Publication.prototype.respondToExactPath = function(path, handlerFunction) {
+Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     this._paths.push({
         path: path,
+        allowPOST: allowPOST,
         robotsTxtAllowPath: path,
         matches: function(t) { return t === path; },
         fn: handlerFunction
     });
 };
+Publication.prototype.respondToExactPath = function(path, handlerFunction) {
+    return this._respondToExactPath(false, path, handlerFunction);
+};
+Publication.prototype.respondToExactPathAllowingPOST = function(path, handlerFunction) {
+    return this._respondToExactPath(true, path, handlerFunction);
+};
 
-Publication.prototype.respondToDirectory = function(path, handlerFunction) {
+Publication.prototype._respondToDirectory = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     var pathPrefix = path+"/";
     this._paths.push({
         path: path,
+        allowPOST: allowPOST,
         robotsTxtAllowPath: pathPrefix,
         matches: function(t) { return t.startsWith(pathPrefix); },
         fn: handlerFunction
     });
+};
+Publication.prototype.respondToDirectory = function(path, handlerFunction) {
+    return this._respondToDirectory(false, path, handlerFunction);
+};
+Publication.prototype.respondToDirectoryAllowingPOST = function(path, handlerFunction) {
+    return this._respondToDirectory(true, path, handlerFunction);
 };
 
 Publication.prototype.respondWithObject = function(path, types, handlerFunction) {
@@ -166,6 +179,11 @@ Publication.prototype._handleRequest = function(method, path) {
         }
     }
     if(!handler) { return null; }
+    if(method !== "GET") {
+        if(!(handler.allowPOST)) {
+            return null; // TODO: Nicer error page
+        }
+    }
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
     var E = new Exchange(this._implementingPlugin, handler.path, method, path, pathElements);
