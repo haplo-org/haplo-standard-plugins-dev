@@ -81,6 +81,12 @@ var Publication = function(name, plugin) {
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
 };
 
+Publication.prototype.serviceUser = function(serviceUserCode) {
+    if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
+    this._serviceUserCode = serviceUserCode;
+    return this;
+};
+
 Publication.prototype.DEFAULT = {};
 
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
@@ -169,6 +175,14 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
 // --------------------------------------------------------------------------
 
 Publication.prototype._handleRequest = function(method, path) {
+    if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
+    var publication = this;
+    return O.impersonating(O.serviceUser(this._serviceUserCode), function() {
+        return publication._handleRequest2(method, path);
+    });
+};
+
+Publication.prototype._handleRequest2 = function(method, path) {
     // Find handler from paths this publication responds to:
     var handler;
     for(var l = 0; l < this._paths.length; ++l) {
