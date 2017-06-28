@@ -73,13 +73,16 @@ var checkHandlerArgs = function(path, handlerFunction) {
 
 // --------------------------------------------------------------------------
 
-var Publication = function(name, plugin) {
+var Publication = P.Publication = function(name, plugin) {
     this.name = name;
     this._implementingPlugin = plugin;
     this._paths = [];
     this._objectTypeHandler = O.refdictHierarchical();
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
+    this._setupForFileDownloads();
 };
+
+// NOTE: API for file downloads implemented in std_web_publisher_files.js
 
 Publication.prototype.serviceUser = function(serviceUserCode) {
     if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
@@ -216,13 +219,16 @@ Publication.prototype._urlPathForObject = function(object) {
     }
 };
 
+Publication.prototype.__defineGetter__("urlHostname", function() {
+    return (this.name === DEFAULT) ?
+        O.application.hostname :
+        this.name;
+});
+
 Publication.prototype.urlForObject = function(object) {
     var path = this._urlPathForObject(object);
     if(!path) { return; }
-    var hostname = (this.name === DEFAULT) ?
-        O.application.hostname :
-        this.name;
-    return 'https://'+hostname+path;
+    return 'https://'+this.urlHostname+path;
 };
 
 Publication.prototype._generateRobotsTxt = function() {

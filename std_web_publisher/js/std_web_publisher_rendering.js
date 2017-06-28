@@ -72,6 +72,11 @@ P.renderingWithPublication = function(publication, f) {
     }
 };
 
+P.withCurrentPublication = function(fn) {
+    if(!currentPublication) { throw new Error("Expected a publication to be rendering"); }
+    return fn(currentPublication);
+};
+
 // --------------------------------------------------------------------------
 
 // TODO: Better sevice, better name? Only works when rendering a public page
