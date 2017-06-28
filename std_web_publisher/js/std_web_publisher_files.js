@@ -137,7 +137,7 @@ P.Publication.prototype._handleThumbnailRequest = function(E) {
 
 // --------------------------------------------------------------------------
 
-var makeThumbnailViewForFile = function(publication, file) {
+var makeThumbnailViewForFile = P.makeThumbnailViewForFile = function(publication, file) {
     var w, h, view = {
         file: file
     };

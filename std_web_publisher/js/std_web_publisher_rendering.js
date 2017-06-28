@@ -46,6 +46,17 @@ P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", fu
 });
 
 // --------------------------------------------------------------------------
+// Files
+
+P.globalTemplateFunction("std:web-publisher:file:thumbnail", function(fileOrIdentifier) {
+    if(fileOrIdentifier) {
+        this.render(P.template("value/file/thumbnail").deferredRender(
+            P.makeThumbnailViewForFile(currentPublication, O.file(fileOrIdentifier))
+        ));
+    }
+});
+
+// --------------------------------------------------------------------------
 // Rendering helper fns
 
 P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) {
