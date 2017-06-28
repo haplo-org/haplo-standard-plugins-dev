@@ -113,11 +113,8 @@ P.Publication.prototype._handleFileDownload = function(E) {
     if(this.isFileDownloadPermitted(file)) {
         E.response.setExpiry(86400); // 24 hours
         E.response.body = file;
-    } else {
-        E.response.statusCode = HTTP.FORBIDDEN;
-        E.response.kind = "text";
-        E.response.body = "Not permitted";
     }
+    // NOTE: 404s are returns if file isn't permitted, to avoid revealing any info about files in the store
 };
 
 P.Publication.prototype._handleThumbnailRequest = function(E) {
