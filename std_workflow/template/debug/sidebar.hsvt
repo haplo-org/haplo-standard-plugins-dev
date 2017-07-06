@@ -5,6 +5,7 @@
     std:form:token()
     if(uid) { 
       <input type="hidden" name="uid" value=uid>
+      <input type="hidden" name="rdr" value=^{M.url}>
       <input type="submit" value=name>
     } else {
       <input type="submit" disabled="disabled" value=name>
