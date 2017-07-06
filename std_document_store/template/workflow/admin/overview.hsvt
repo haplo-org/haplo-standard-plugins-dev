@@ -1,3 +1,5 @@
+<p> <b> "WARNING:" </b> " Use this tool with care. It may result in unexpected behaviour." </p>
+
 <h2>"Status"</h2>
 <table>
   <tr>
@@ -21,7 +23,7 @@
   <tr>
     <td> formId </td>
     <td> formTitle </td>
-    <td> <a href=[^{path} "/form/" ^{M.workUnit.id}]>"Edit"</a> </td>
+    <td> <a href=[^{path} "/admin/form/" ^{M.workUnit.id}]>"Edit"</a> </td>
   </tr>
   }
 </table>
