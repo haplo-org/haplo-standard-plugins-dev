@@ -6,9 +6,12 @@
     if(uid) { 
       <input type="hidden" name="uid" value=uid>
       <input type="hidden" name="rdr" value=^{M.url}>
-      <input type="submit" value=name>
+      <button type="submit">
+        entity <br>
+        <span class="z__workflow_debug_sidebar_person_name">personName</span>
+      </button>
     } else {
-      <input type="submit" disabled="disabled" value=name>
+      <input type="submit" disabled="disabled" value=entity>
     }
   </form>
   }

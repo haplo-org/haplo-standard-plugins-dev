@@ -57,8 +57,9 @@ P.WorkflowInstanceBase.prototype._addDebugActionPanelElements = function(builder
             var first = entities[name+'_refMaybe'];
             var user = first ? O.user(first) : undefined;
             var i = {
-                name: name,
+                entity: name,
                 uid: user ? user.id : undefined,
+                personName: user ? user.name : undefined,
                 usedAsActionableBy: usedAsActionableBy[name]
             };
             if(user) { debugEntities.unshift(i); } else { debugEntities.push(i); }

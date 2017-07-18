@@ -13,7 +13,7 @@
     right: 20px;
     width: 150px;
 }
-.z__workflow_debug_sidebar input[type=submit], .z__workflow_debug_quick_action input[type=submit] {
+.z__workflow_debug_sidebar button, .z__workflow_debug_sidebar input[type=submit], .z__workflow_debug_quick_action input[type=submit] {
     display: block;
     width: 100%;
     position: relative;
@@ -25,6 +25,12 @@
     border-width: 1px 1px 1px 1px;
     outline: 0;
     margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.z__workflow_debug_sidebar_person_name { display: none; } /* show person names on mouseover */
+.z__workflow_debug_sidebar button:hover .z__workflow_debug_sidebar_person_name {
+    display: block;
 }
 .z__workflow_debug_sidebar input[type=submit]:disabled {
     background-color: #fff;
