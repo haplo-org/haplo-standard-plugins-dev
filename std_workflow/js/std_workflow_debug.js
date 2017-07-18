@@ -8,7 +8,7 @@ var showDebugTools = function() {
     return (O.PLUGIN_DEBUGGING_ENABLED &&
         O.currentAuthenticatedUser &&
         O.currentAuthenticatedUser.isSuperUser &&
-        O.currentAuthenticatedUser.data["std_workflow:enable_debugging"]);
+        O.currentAuthenticatedUser.data["std:enable_debugging"]);
 };
 
 var getCheckedInstanceForDebugging = function(workUnit) {
@@ -102,7 +102,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
         var M, workflow = workUnit ? P.allWorkflows[workUnit.workType] : undefined;
         if(workflow) { M = workflow.instance(workUnit); }
         // enable/disable debug mode on a per-user basis
-        O.currentAuthenticatedUser.data["std_workflow:enable_debugging"] = (option === "enable");
+        O.currentAuthenticatedUser.data["std:enable_debugging"] = (option === "enable");
         return M ? E.response.redirect(M.url) : E.response.redirect(O.application.url);
     });
 

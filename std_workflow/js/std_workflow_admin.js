@@ -19,7 +19,7 @@ var showDebugTools = function() {
     return (O.PLUGIN_DEBUGGING_ENABLED &&
         O.currentAuthenticatedUser &&
         O.currentAuthenticatedUser.isSuperUser &&
-        O.currentAuthenticatedUser.data["std_workflow:enable_debugging"]);
+        O.currentAuthenticatedUser.data["std:enable_debugging"]);
 };
 
 // --------------------------------------------------------------------------
