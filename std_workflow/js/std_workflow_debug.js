@@ -99,11 +99,19 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
     ], function(E, option, workUnit) {
         // superusers only
         if(!O.currentAuthenticatedUser.isSuperUser) { return; }
-        var M, workflow = workUnit ? P.allWorkflows[workUnit.workType] : undefined;
-        if(workflow) { M = workflow.instance(workUnit); }
-        // enable/disable debug mode on a per-user basis
-        O.currentAuthenticatedUser.data["std:enable_debugging"] = (option === "enable");
-        return M ? E.response.redirect(M.url) : E.response.redirect(O.application.url);
+        if(E.request.method === "POST") {
+            var M, workflow = workUnit ? P.allWorkflows[workUnit.workType] : undefined;
+            if(workflow) { M = workflow.instance(workUnit); }
+            // enable/disable debug mode on a per-user basis
+            O.currentAuthenticatedUser.data["std:enable_debugging"] = (option === "enable");
+            return M ? E.response.redirect(M.url) : E.response.redirect(O.application.url);
+        } else {
+            E.render({
+                pageTitle: "Toggle debug mode",
+                text: (option === "enable" ? "Enable" : "Disable") + " workflow debugging tools?",
+                options: [{label: (option === "enable" ? "Enable" : "Disable")}]
+            }, "std:ui:confirm");
+        }
     });
 
 }
