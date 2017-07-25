@@ -33,7 +33,9 @@ P.respond("GET", "/do/reporting/admin", [
         });
     });
     E.render({
-        collections: collections
+        collections: collections,
+        debugging: O.PLUGIN_DEBUGGING_ENABLED,
+        automaticUpdates: !P.data["disable_automatic_updates"]
     }, "admin/collections-admin-ui");
 });
 
@@ -47,6 +49,15 @@ P.respond("POST", "/do/reporting/admin/rebuild-collection", [
     collection.collectAllFactsInBackground();
     E.response.redirect("/do/reporting/admin");
 });
+
+if(O.PLUGIN_DEBUGGING_ENABLED) {
+    P.respond("POST", "/do/reporting/admin/toggle-automatic-updates", [
+    ], function(E) {
+        CanAdminReporting.enforce();
+        P.data["disable_automatic_updates"] = !P.data["disable_automatic_updates"];
+        E.response.redirect("/do/reporting/admin");
+    });
+}
 
 // --------------------------------------------------------------------------
 

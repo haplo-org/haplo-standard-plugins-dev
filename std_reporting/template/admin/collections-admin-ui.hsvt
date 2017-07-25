@@ -24,3 +24,16 @@ pageTitle("Reporting administration")
     </tr>
   }
 </table>
+
+if(debugging) {
+  <h1> "Automatic updates" </h1>
+  "Automatic plugin-triggered updates are currently " <b> if(automaticUpdates) { "Enabled" } else { "Disabled" } </b>
+  <form method="POST" action="/do/reporting/admin/toggle-automatic-updates"> std:form:token()
+    if(automaticUpdates) { 
+      <input type="submit" value="Disable">
+    } else {
+      <input type="submit" value="Enable">
+    } 
+  </form>
+}
+

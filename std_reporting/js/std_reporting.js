@@ -617,6 +617,7 @@ var needToCollecteUpdateRules = true,
     };
 
 P.hook('hPostObjectChange', function(response, object, operation, previous) {
+    if(O.PLUGIN_DEBUGGING_ENABLED && P.data['disable_automatic_updates']) { return; }
     // Collect all the rules from the implementing plugins on the first call
     if(needToCollecteUpdateRules) {
         // Gathering the spec about collections may generate implicit update rules.
@@ -689,7 +690,31 @@ P.hook('hPostObjectChange', function(response, object, operation, previous) {
 
 // --------------------------------------------------------------------------
 
+P.disableAutomaticUpdates = function() { if(O.PLUGIN_DEBUGGING_ENABLED) { P.data['disable_automatic_updates'] = true; } };
+P.implementService("std:reporting:disable_automatic_updates", P.disableAutomaticUpdates);
+
+P.enableAutomaticUpdates = function() { if(O.PLUGIN_DEBUGGING_ENABLED) { P.data['disable_automatic_updates'] = false; } };
+P.implementService("std:reporting:enable_automatic_updates", P.enableAutomaticUpdates);
+
+// --------------------------------------------------------------------------
+
+P.implementService("std:reporting:update_all_collections", function() {
+    if(O.PLUGIN_DEBUGGING_ENABLED && P.data['disable_automatic_updates']) { return; }
+    console.log("Rebuilding all collections");
+    P.ensureCollectionsDiscovered();
+    _.each(P._collections, function(collection, name) {
+        P.db.rebuilds.create({
+            collection: name,
+            requested: new Date(),
+            object: null,
+            changesNotExpected: false    // because this is a scheduled update
+        }).save();
+    });
+    $StdReporting.signalUpdatesRequired();
+});
+
 P.implementService("std:reporting:update_entire_collection", function(collectionName) {
+    if(O.PLUGIN_DEBUGGING_ENABLED && P.data['disable_automatic_updates']) { return; }
     var collection = getCollection(collectionName);
     if(!collection) { return; }
     collection.collectAllFactsInBackground();
@@ -697,6 +722,7 @@ P.implementService("std:reporting:update_entire_collection", function(collection
 
 // Assumes that only objects which should be in the collection are passed to this service
 P.implementService("std:reporting:update_required", function(collectionName, updates) {
+    if(O.PLUGIN_DEBUGGING_ENABLED && P.data['disable_automatic_updates']) { return; }
     if(!getCollection(collectionName)) { return; }
     _.each(updates, function(ref) {
         if(ref && O.isRef(ref)) {
@@ -716,6 +742,7 @@ P.implementService("std:reporting:update_required", function(collectionName, upd
 // TODO: Change frequency of rebuild all collections scheduled to weekly. Or make it configurable for dev systems?
 
 var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
+    if(O.PLUGIN_DEBUGGING_ENABLED && P.data['disable_automatic_updates']) { return; }
     console.log("Rebuilding all collections to check that other plugins have been keeping their facts up to date.");
     P.ensureCollectionsDiscovered();
     _.each(P._collections, function(collection, name) {
