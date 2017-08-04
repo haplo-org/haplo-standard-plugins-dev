@@ -59,6 +59,8 @@ P.onLoad = function() {
 
 // --------------------------------------------------------------------------
 
+var publisherFeatures = {}; // name -> function(publication)
+
 var publications = {};
 
 var DEFAULT = "$default$";
@@ -77,19 +79,23 @@ P.FEATURE = {
         var publication = new Publication(name, this.$plugin);
         publications[name] = publication;
         return publication;
+    },
+    feature: function(name, feature) {
+        if(name in publisherFeatures) { throw new Error("Feature '"+name+"' already registered"); }
+        publisherFeatures[name] = feature;
     }
 };
-var Feature = function(plugin) { this.$plugin = plugin; };
-Feature.prototype = P.FEATURE;
+var ConsumerFeature = function(plugin) { this.$plugin = plugin; };
+ConsumerFeature.prototype = P.FEATURE;
 
 P.WIDGETS = {};
 var Widgets = function(plugin) { this.$plugin = plugin; };
 Widgets.prototype = P.WIDGETS;
 
 P.provideFeature("std:web-publisher", function(plugin) {
-    var feature = new Feature(plugin);
-    feature.widget = new Widgets(plugin);
-    plugin.webPublication = feature;
+    var consumerFeature = new ConsumerFeature(plugin);
+    consumerFeature.widget = new Widgets(plugin);
+    plugin.webPublication = consumerFeature;
 });
 
 // --------------------------------------------------------------------------
@@ -120,6 +126,16 @@ var Publication = P.Publication = function(name, plugin) {
 Publication.prototype.DEFAULT = {};
 
 // NOTE: API for file downloads implemented in std_web_publisher_files.js
+
+Publication.prototype.use = function(name /* arguments */) {
+    var feature = publisherFeatures[name];
+    if(!feature) { throw new Error("No web publisher feature: "+name); }
+    // Copy arguments, replace name with this publication, call feature function to let it set up the feature
+    var featureArguments = Array.prototype.slice.call(arguments, 0);
+    featureArguments[0] = this;
+    feature.apply(this, featureArguments);
+    return this;
+};
 
 Publication.prototype.serviceUser = function(serviceUserCode) {
     if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
