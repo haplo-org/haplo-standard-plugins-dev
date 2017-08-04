@@ -57,19 +57,20 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 var toId = function(u) { return u.id; };
 
-P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
-    // Allow global changes (which have to be quite carefully written)
-    var modify = {specification:specification};
-    this._call('$modifySendEmail', modify);
-    specification = modify.specification;
+var sendNewEmail = function(specification, M) {
+    if(M) {
+        var modify = {specification:specification};
+        M._call('$modifySendEmail', modify);
+        specification = modify.specification;   
+    }
 
-    var except = this._generateEmailRecipientList(specification.except, []).map(toId);
-    var to =     this._generateEmailRecipientList(specification.to,     except);
-    var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)));
+    var except = _generateEmailRecipientList(specification.except, [], M).map(toId);
+    var to =     _generateEmailRecipientList(specification.to,     except, M);
+    var cc =     _generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)), M);
 
     // Add in any external recipients
-    if("toExternal" in specification) { to = to.concat(this._externalEmailRecipients(specification.toExternal)); }
-    if("ccExternal" in specification) { cc = cc.concat(this._externalEmailRecipients(specification.ccExternal)); }
+    if("toExternal" in specification) { to = to.concat(_externalEmailRecipients(specification.toExternal, M)); }
+    if("ccExternal" in specification) { cc = cc.concat(_externalEmailRecipients(specification.ccExternal, M)); }
 
     // NOTE: If any additional properties are added, initialise them to something easy
     // to use in std_workflow_notifications.js
@@ -77,16 +78,22 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     // Obtain the message template
     var template = specification.template;
     if(!template) { throw new Error("No template specified to sendEmail()"); }
-    if(typeof(template) === "string") {
-        template = this.$plugin.template(template);
+    if(typeof(template) === "string" && M) {
+        template = M.$plugin.template(template);
     }
 
     // Set up the initial template
     var view = Object.create(specification.view || {});
-    view.M = this;
-
+    if(M) {
+        view.M = M;
+    }
     // Get the email template
-    var emailTemplate = O.email.template(this.$emailTemplate);
+    var emailTemplate;
+    if(M) {
+        emailTemplate = O.email.template(M.$emailTemplate);
+    } else {
+        emailTemplate = O.email.template("std:email-template:workflow-notification");
+    }    
 
     // Send emails to the main recipients
     var firstBody, firstSubject, firstUser;
@@ -113,8 +120,7 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     }
 };
 
-P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenList, except) {
-    var M = this;
+var _generateEmailRecipientList = function(givenList, except, M) {
     if(typeof(givenList) === "function") {
         givenList = givenList(M);
     }
@@ -131,7 +137,9 @@ P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenLis
         if(recipient) {
             switch(typeof(recipient)) {
                 case "string":
-                    pushRecipient(M.getActionableBy(recipient));
+                    if(M) {
+                        pushRecipient(M.getActionableBy(recipient));
+                    }
                     break;
                 case "number":
                     pushRecipient(O.securityPrincipal(recipient));
@@ -153,11 +161,10 @@ P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenLis
     return outputList;
 };
 
-P.WorkflowInstanceBase.prototype._externalEmailRecipients = function(givenList) {
-    var M = this;
+var _externalEmailRecipients = function(givenList, M) {
     var outputList = [];
     _.flatten([givenList || []]).forEach(function(recipient) {
-        if(typeof(recipient) === "function") {
+        if(typeof(recipient) === "function" && M) {
             recipient = recipient(M);   // may return a list of recipients
         }
         if(recipient) {
@@ -166,3 +173,13 @@ P.WorkflowInstanceBase.prototype._externalEmailRecipients = function(givenList) 
     });
     return _.flatten(outputList);
 };
+
+P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
+    // Allow global changes (which have to be quite carefully written)
+    sendNewEmail(specification, this);
+
+};
+
+P.implementService("std:workflow_emails:send_email", function(specification) {
+    sendNewEmail(specification);
+});
