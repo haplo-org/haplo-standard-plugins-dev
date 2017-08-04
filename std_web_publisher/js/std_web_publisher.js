@@ -7,6 +7,7 @@
 
 // Private platform APIs
 var Exchange = $Exchange;
+var GenericDeferredRender = $GenericDeferredRender;
 
 // --------------------------------------------------------------------------
 
@@ -149,6 +150,12 @@ Publication.prototype.setPagePartOptions = function(pagePartName, options) {
     return this;
 };
 
+// Register a function to render a layout around HTML pages: layoutRenderer(E, context, body)
+// NOTE: pageTitle from template can be obtained through the context object
+Publication.prototype.layout = function(layoutRenderer) {
+    this._layoutRenderer = layoutRenderer;
+};
+
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     this._paths.push({
@@ -244,6 +251,7 @@ var RenderingContext = function(publication) {
 // Properties:
 //      publication
 //      object  (when rendering an object)
+//      pageTitle  (when rendering a layout, if specified by the E.render() view)
 
 RenderingContext.prototype.publishedObjectUrl = function(object) {
     return this.publication.urlForObject(object);
@@ -291,6 +299,14 @@ Publication.prototype._handleRequest2 = function(method, path) {
     handler.fn(E, renderingContext);
     if(!E.response.body) {
         return null;    // 404
+    }
+    if(this._layoutRenderer && E.response.kind === "html") {
+        renderingContext.pageTitle = E.response.pageTitle;
+        var fn = this._layoutRenderer;
+        var renderedWithLayout = fn(E, renderingContext, new GenericDeferredRender(function() { return E.response.body; }));
+        if(renderedWithLayout) {
+            E.response.body = renderedWithLayout;
+        }
     }
     E.response.headers["Server"] = "Haplo Web Publisher";
     return E.response;
