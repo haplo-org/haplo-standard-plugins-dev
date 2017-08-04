@@ -10,17 +10,51 @@ var Exchange = $Exchange;
 
 // --------------------------------------------------------------------------
 
+var renderingContext;
+P.getRenderingContext = function() { return renderingContext; };
+
+// --------------------------------------------------------------------------
+
+// Platform support
 P.$webPublisherHandle = function(host, method, path) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publication) { return null; }
-    return P.renderingWithPublication(publication, function() {
+    renderingContext = new RenderingContext(publication);
+    try {
         return publication._handleRequest(method, path);
-    });
+    } finally {
+        renderingContext = undefined;
+    }
 };
 
 P.$generateRobotsTxt = function(host) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     return publication ? publication._generateRobotsTxt() : null;
+};
+
+P.$renderObjectValue = function(object) {
+    var href;
+    if(renderingContext) {
+        href = renderingContext.publication._urlPathForObject(object);
+    }
+    return P.template("object/link").render({
+        href: href,
+        title: object.title
+    });
+};
+
+P.$isRenderingForWebPublisher = function() {
+    return !!renderingContext;
+};
+
+P.$renderFileIdentifierValue = function(fileIdentifier) {
+    renderingContext.publication._renderFileIdentifierValue(fileIdentifier);
+};
+
+// --------------------------------------------------------------------------
+
+P.onLoad = function() {
+    P.setupPageParts();
 };
 
 // --------------------------------------------------------------------------
@@ -75,12 +109,15 @@ var checkHandlerArgs = function(path, handlerFunction) {
 
 var Publication = P.Publication = function(name, plugin) {
     this.name = name;
-    this._implementingPlugin = plugin;
+    this.implementingPlugin = plugin;
+    this._pagePartOptions = {};
     this._paths = [];
     this._objectTypeHandler = O.refdictHierarchical();
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
     this._setupForFileDownloads();
 };
+
+Publication.prototype.DEFAULT = {};
 
 // NOTE: API for file downloads implemented in std_web_publisher_files.js
 
@@ -90,7 +127,11 @@ Publication.prototype.serviceUser = function(serviceUserCode) {
     return this;
 };
 
-Publication.prototype.DEFAULT = {};
+// NOTE: Can also be set on per-request basis in RenderingContext
+Publication.prototype.setPagePartOptions = function(pagePartName, options) {
+    this._pagePartOptions[pagePartName] = options || {};
+    return this;
+};
 
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
@@ -150,7 +191,8 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 console.log("Web publisher: object has wrong type for this path", object);
                 return null;
             }
-            return handlerFunction(E, object);
+            renderingContext.object = object;    // allow Page Parts to get the object we're rendering
+            return handlerFunction(E, renderingContext, object);
         },
         urlForObject: function(object) {
             return path+"/"+object.ref+"/"+object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
@@ -173,6 +215,31 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
             renderers.set(type, renderer);
         });
     }
+};
+
+// --------------------------------------------------------------------------
+
+// Passed to all handler functions as second argument
+var RenderingContext = function(publication) {
+    this.publication = publication;
+    this._pagePartOptions = {};
+};
+
+// Properties:
+//      publication
+//      object  (when rendering an object)
+
+RenderingContext.prototype.publishedObjectUrl = function(object) {
+    return this.publication.urlForObject(object);
+};
+RenderingContext.prototype.publishedObjectUrlPath = function(object) {
+    return this.publication._urlPathForObject(object);
+};
+
+// NOTE: Can also be set on the publication
+RenderingContext.prototype.setPagePartOptions = function(pagePartName, options) {
+    this._pagePartOptions[pagePartName] = options || {};
+    return this;
 };
 
 // --------------------------------------------------------------------------
@@ -203,8 +270,9 @@ Publication.prototype._handleRequest2 = function(method, path) {
     }
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
-    var E = new Exchange(this._implementingPlugin, handler.path, method, path, pathElements);
-    handler.fn(E);
+    var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
+    renderingContext.$E = E;
+    handler.fn(E, renderingContext);
     if(!E.response.body) {
         return null;    // 404
     }

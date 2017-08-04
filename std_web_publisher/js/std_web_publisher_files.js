@@ -180,12 +180,3 @@ P.Publication.prototype._renderFileIdentifierValue = function(fileIdentifier) {
         return P.template("value/file/file-hidden-by-permissions").render();
     }
 };
-
-// --------------------------------------------------------------------------
-
-// Platform support
-P.$renderFileIdentifierValue = function(fileIdentifier) {
-    return P.withCurrentPublication(function(publication) {
-        return publication._renderFileIdentifierValue(fileIdentifier);
-    });
-};
