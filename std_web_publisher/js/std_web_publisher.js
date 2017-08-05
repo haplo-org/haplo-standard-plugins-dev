@@ -150,7 +150,8 @@ Publication.prototype.setPagePartOptions = function(pagePartName, options) {
     return this;
 };
 
-// Register a function to render a layout around HTML pages: layoutRenderer(E, context, body)
+// Register a function to render a layout around HTML pages: layoutRenderer(E, context, blocks)
+// Blocks contains deferred renders for parts of page. Will contain 'body', may contain 'sidebar'.
 // NOTE: pageTitle from template can be obtained through the context object
 Publication.prototype.layout = function(layoutRenderer) {
     this._layoutRenderer = layoutRenderer;
@@ -245,11 +246,13 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
 // Passed to all handler functions as second argument
 var RenderingContext = function(publication) {
     this.publication = publication;
+    this.hint = {};
     this._pagePartOptions = {};
 };
 
 // Properties:
 //      publication
+//      hint  (used for passing info to the layout, NOT for passing info to page parts, which should use options)
 //      object  (when rendering an object)
 //      pageTitle  (when rendering a layout, if specified by the E.render() view)
 
@@ -303,7 +306,12 @@ Publication.prototype._handleRequest2 = function(method, path) {
     if(this._layoutRenderer && E.response.kind === "html") {
         renderingContext.pageTitle = E.response.pageTitle;
         var fn = this._layoutRenderer;
-        var renderedWithLayout = fn(E, renderingContext, new GenericDeferredRender(function() { return E.response.body; }));
+        var blocks = {
+            body: new GenericDeferredRender(function() { return E.response.body; })
+        };
+        var sidebarHTML = $host.getRightColumnHTML();
+        if(sidebarHTML) { blocks.sidebar = new GenericDeferredRender(function() { return sidebarHTML; }); }
+        var renderedWithLayout = fn(E, renderingContext, blocks);
         if(renderedWithLayout) {
             E.response.body = renderedWithLayout;
         }
