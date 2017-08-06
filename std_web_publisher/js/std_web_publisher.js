@@ -62,7 +62,7 @@ P.onLoad = function() {
 
 var publisherFeatures = {}; // name -> function(publication)
 
-var publications = {};
+var publications = P.allPublications = {};
 
 var DEFAULT = "$default$";
 
