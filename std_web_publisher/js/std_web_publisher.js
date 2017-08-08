@@ -49,7 +49,7 @@ P.$isRenderingForWebPublisher = function() {
 };
 
 P.$renderFileIdentifierValue = function(fileIdentifier) {
-    renderingContext.publication._renderFileIdentifierValue(fileIdentifier);
+    return renderingContext.publication._renderFileIdentifierValue(fileIdentifier);
 };
 
 // --------------------------------------------------------------------------
