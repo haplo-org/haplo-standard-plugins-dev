@@ -117,6 +117,7 @@ var checkHandlerArgs = function(path, handlerFunction) {
 var Publication = P.Publication = function(name, plugin) {
     this.name = name;
     this.implementingPlugin = plugin;
+    this._homePageUrlPath = null;
     this._pagePartOptions = {};
     this._paths = [];
     this._objectTypeHandler = O.refdictHierarchical();
@@ -147,6 +148,12 @@ Publication.prototype.serviceUser = function(serviceUserCode) {
 // NOTE: Can also be set on per-request basis in RenderingContext
 Publication.prototype.setPagePartOptions = function(pagePartName, options) {
     this._pagePartOptions[pagePartName] = options || {};
+    return this;
+};
+
+// Set a home page
+Publication.prototype.setHomePageUrlPath = function(urlPath) {
+    this._homePageUrlPath = urlPath;
     return this;
 };
 

@@ -22,6 +22,7 @@ P.$getPublicationInfoHTML = function(givenHostname) {
     return P.template("mnginfo/publication-info").render({
         publication: publication,
         hostname: givenHostname,
+        homePageUrl: publication._homePageUrlPath ? "https://"+givenHostname+publication._homePageUrlPath : null,
         serviceUser: O.serviceUser(publication._serviceUserCode),
         robotsTxt: publication._generateRobotsTxt()
     });

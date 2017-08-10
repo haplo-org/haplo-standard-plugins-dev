@@ -4,6 +4,18 @@
         <td> <span class="z__management_code_text"> hostname </span> </td>
     </tr>
     <tr>
+        <th> "Home page" </th>
+        <td>
+            if(homePageUrl) {
+                <span class="z__management_code_text">
+                    <a href=homePageUrl rel="noopener" target="_blank"> homePageUrl </a>
+                </span>
+            } else {
+                <i> "No home page set" </i>
+            }
+        </td>
+    </tr>
+    <tr>
         <th> "Implementing plugin" </th>
         <td> publication.implementingPlugin.pluginName </td>
     </tr>
