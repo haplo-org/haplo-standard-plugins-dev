@@ -34,7 +34,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
         W.render({
             workUnit: M.workUnit,
             processName: M.getWorkflowProcessName(),
-            status: M._getText(['status'], [M.state]),
+            status: M.getDisplayableStatus(),
             timeline: M.renderTimelineDeferred(true)
         }, P.template("default-work"));
         return true;
@@ -59,21 +59,29 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
         var state = this.state;
         builder.status("top", this._getText(['status'], [state]));
         if(!this.workUnit.closed) {
-            var user = this.workUnit.actionableBy;
-            if(user && user.name) {
-                var stateDefn = this.$states[state],
-                    displayedName = user.name;
-                if(stateDefn && stateDefn.actionableBy) {
-                    var currentlyWithNameAnnotation = this._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
-                    if(currentlyWithNameAnnotation) {
-                        displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
-                    }
-                }
+            var displayedName = this._callHandler('$currentlyWithDisplayName');
+            if(displayedName) {
                 builder.element("top", {
                     title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
                     label: displayedName
                 });
             }
+        }
+    }},
+
+    $currentlyWithDisplayName: {selector:{}, handler:function(M) {
+        var state = this.state,
+            user = M.workUnit.actionableBy;
+        if(user && user.name) {
+            var stateDefn = M.$states[state],
+                displayedName = user.name;
+            if(stateDefn && stateDefn.actionableBy) {
+                var currentlyWithNameAnnotation = M._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
+                if(currentlyWithNameAnnotation) {
+                    displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
+                }
+            }
+            return displayedName;
         }
     }},
 
@@ -105,6 +113,14 @@ _.extend(P.WorkflowInstanceBase.prototype, {
 
     getWorkflowProcessName: function() {
         return this._getTextMaybe(["workflow-process-name"], [this.state]) || 'Workflow';
+    },
+
+    getDisplayableStatus: function() {
+        return this._getText(['status'], [this.state]);
+    },
+
+    getCurrentlyWithDisplayName: function() {
+        return this._callHandler('$currentlyWithDisplayName');
     },
 
     fillActionPanel: function(builder) {
