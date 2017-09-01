@@ -144,9 +144,17 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     },
 
     renderTimelineDeferred: function(renderingForWorkUnitDisplay) {
-        var entries = [];
         var timeline = this.timelineSelect();
+        var entries = this._renderTimelineEntries(timeline);
+        return P.template("timeline").deferredRender({
+            renderingForWorkUnitDisplay: renderingForWorkUnitDisplay,
+            entries: entries
+        });
+    },
+
+    _renderTimelineEntries: function(timeline) {
         var layout = P.template('timeline/entry-layout');
+        var entries = [];
         for(var i = 0; i < timeline.length; ++i) {
             var entry = timeline[i];
             var textSearch = [entry.action];
@@ -158,17 +166,18 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                     this._renderTimelineEntryDeferredBuiltIn(entry);
             }
             if(text || special) {
-                entries.push(layout.deferredRender({
+                var deferred = layout.deferredRender({
                     entry: entry,
                     text: text,
                     special: special
-                }));
+                });
+                entries.push({
+                    datetime: entry.datetime,
+                    deferred: deferred
+                });
             }
         }
-        return P.template("timeline").deferredRender({
-            renderingForWorkUnitDisplay: renderingForWorkUnitDisplay,
-            entries: entries
-        });
+        return entries;
     },
 
     // Render built-in timeline entries
@@ -192,6 +201,29 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             W
         );
     }
+});
+
+// --------------------------------------------------------------------------
+
+P.implementService("std:workflow:deferred_render_combined_timeline", function(instances) {
+    var entries = [];
+    _.each(instances, function(M) {
+        var processName = M.getWorkflowProcessName();
+        var renderedEntries = M._renderTimelineEntries(M.timelineSelect());
+        renderedEntries.forEach(function(e) { e.processName = processName; });
+        entries = entries.concat(renderedEntries);
+    });
+    entries = _.sortBy(entries, 'datetime');
+    var currentProcessName;
+    entries.forEach(function(e) {
+        if(e.processName !== currentProcessName) {
+            currentProcessName = e.processName;
+            e.differentProcess = true;
+        }
+    });
+    return P.template("timeline-combined").deferredRender({
+        entries: entries
+    });
 });
 
 // --------------------------------------------------------------------------
