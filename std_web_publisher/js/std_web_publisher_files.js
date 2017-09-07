@@ -25,12 +25,12 @@ P.Publication.prototype.addFileDownloadPermissionHandler = function(fn) {
 P.Publication.prototype.permitFileDownloadsForServiceUser = function() {
     var publication = this;
     return this.addFileDownloadPermissionHandler(function(fileOrIdentifier, result) {
-        O.impersonating(O.serviceUser(publication._serviceUserCode), function() {
-            var objects = O.query().identifier(fileOrIdentifier.identifier()).setSparseResults().execute();
-            if(objects.length > 0) {
-                result.allow = true;
-            }
-        });
+        if($StdWebPublisher.checkFileReadPermittedByReadableObjects(
+                fileOrIdentifier.identifier(),
+                O.serviceUser(publication._serviceUserCode)
+        )) {
+            result.allow = true;
+        }
     });
 };
 
