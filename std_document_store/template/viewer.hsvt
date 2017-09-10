@@ -10,7 +10,17 @@ unless(document) {
       std:ui:notice(_uncommittedChangesWarningText)
     }
   }
-  render(_viewerBody)
+  <div id="z__docstore_body">
+    render(_viewerBody)
+  </div>
 }
 
 if(additionalUI.bottom) { render(additionalUI.bottom) }
+
+if(showChangesFromDocument) {
+  <div id="z__docstore_previous_version" style="display:none">
+    render(_viewerShowChangesFromDocumentDeferred)
+  </div>
+  template:std:oforms:changes()
+  std:plugin:resources("changes.js")
+}

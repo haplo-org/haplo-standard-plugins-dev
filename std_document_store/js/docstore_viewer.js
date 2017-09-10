@@ -28,6 +28,13 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         this.version = parseInt(E.request.parameters.version, 10);
     }
 
+    // Requested change?
+    if("showChangesFrom" in this.options) {
+        this.showChangesFrom = this.options.showChangesFrom;
+    } else if(this.options.showVersions && ("from" in E.request.parameters)) {
+        this.showChangesFrom = parseInt(E.request.parameters.from, 10);
+    }
+
     if("style" in this.options) {
         this.style = this.options.style;
         this.options.hideFormNavigation = true;
@@ -72,6 +79,18 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         }
     }
 
+    // Retrieve the "previous" version?
+    if(this.showChangesFrom) {
+        var requestedPrevious = store.versionsTable.select().
+            where("keyId","=",instance.keyId).
+            where("version","=",this.showChangesFrom).
+            limit(1);
+        if(requestedPrevious.length === 0) {
+            O.stop("Requested previous version does not exist");
+        }
+        this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
+    }
+
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
     if(delegate.getAdditionalUIForViewer) {
@@ -114,6 +133,10 @@ DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() 
 
 DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {
     return this.instance._selectedFormInfo(this.document, this.selectedFormId);
+});
+
+DocumentViewer.prototype.__defineGetter__("_viewerShowChangesFromDocumentDeferred", function() {
+    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_');
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
