@@ -32,7 +32,20 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     if("showChangesFrom" in this.options) {
         this.showChangesFrom = this.options.showChangesFrom;
     } else if(this.options.showVersions && ("from" in E.request.parameters)) {
-        this.showChangesFrom = parseInt(E.request.parameters.from, 10);
+        if(E.request.parameters.from === "previous") {
+            var v = store.versionsTable.select().
+                where("keyId","=",instance.keyId).
+                order("version",true).
+                limit(2); // because non-versioned number needs 2
+            if(this.version) {
+                v.where("version","<",this.version);
+                if(v.length) { this.showChangesFrom = v[0].version; }
+            } else {
+                if(v.length > 1) { this.showChangesFrom = v[1].version; }
+            }
+        } else {
+            this.showChangesFrom = parseInt(E.request.parameters.from, 10);
+        }
     }
 
     if("style" in this.options) {
@@ -146,7 +159,9 @@ DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", func
 });
 
 DocumentViewer.prototype.__defineGetter__("_versionsView", function() {
+    // NOTE: Versions selector view is derived from this view
     var viewer = this;
+    if("$_versionsView" in this) { return this.$_versionsView; }
     var versions = _.map(viewer.instance.store.versionsTable.select().
         where("keyId","=",viewer.instance.keyId).order("version",true), function(row) {
             return {
@@ -162,7 +177,27 @@ DocumentViewer.prototype.__defineGetter__("_versionsView", function() {
             selected: viewer.showingCurrent
         });
     }
+    this.$_versionsView = versions; // cached because versions uses this too
     return versions;
+});
+
+DocumentViewer.prototype.__defineGetter__("_changesVersionView", function() {
+    if(!this.options.showVersions) { return []; }
+    if("$_changesVersionView" in this) { return this.$_changesVersionView; }
+    var vv = this._versionsView; // cached
+    var options = [];
+    var changesVersion = this.showChangesFrom;
+    vv.forEach(function(version) {
+        if(!version.selected && !version.editedVersion) {
+            options.push({
+                row: version.row,
+                selected: changesVersion === version.row.version,
+                datetime: version.datetime
+            });
+        }
+    });
+    this.$_changesVersionView = options;
+    return options;
 });
 
 DocumentViewer.prototype.__defineGetter__("_showFormNavigation", function() {
