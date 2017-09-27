@@ -357,8 +357,17 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         if(delegate.getAdditionalUIForEditor) {
             additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
         }
+        var saveButtonStyle = "continue";
+        if(!delegate.__formSubmissionDoesNotCompleteProcess) {
+            if(isSinglePage) {
+                saveButtonStyle = "save";
+            } else if(activePage.isLastPage) {
+                saveButtonStyle = "finish";
+            }
+        }
         actions.render(this, E, P.template("edit").deferredRender({
             isSinglePage: isSinglePage,
+            saveButtonStyle: saveButtonStyle,
             navigation: navigation,
             pages: pages,
             showFormError: showFormError,
