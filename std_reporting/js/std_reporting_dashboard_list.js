@@ -9,6 +9,7 @@ var DashboardList = function() {
     this.columnGroups = [];
     this.$uiWidgetsTop = [];
     this.$rowAttributeFns = [];
+    this.$filterExportFns = [];
 };
 
 P.dashboardConstructors["list"] = DashboardList;
@@ -164,7 +165,12 @@ DashboardList.prototype._respondWithExport = function() {
         var w = c.exportWidth;
         while((--w) > 0) { xls.cell(''); }
     });
-    _.each(this.select(), function(row) {
+    var query = this.select();
+    var parameters = this.E.request.parameters;
+    _.each(this.$filterExportFns, function(fn) {
+        query = fn(query, parameters);
+    });
+    _.each(query, function(row) {
         xls.nextRow();
         columns.forEach(function(column) {
             column.exportCell(row, xls);
@@ -219,6 +225,13 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         if(value !== null) {
             attrs[attrName] = value.toString();
         }
+    });
+
+    dashboard.$filterExportFns.push(function(query, parameters) {
+        if(parameters[fact]) {
+            return query.where(fact, "=", O.ref(parameters[fact]));
+        }
+        return query;
     });
     // Add downdown filters to the list
     dashboard.$uiWidgetsTop.push(function() {
