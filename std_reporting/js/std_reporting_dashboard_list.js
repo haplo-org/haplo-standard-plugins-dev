@@ -750,6 +750,8 @@ var JsonColumn = makeColumnType({
             } else if(column instanceof NumberColumn) {
                 // Paranoid about numbers
                 valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
+            } else if(column instanceof RefColumn || column instanceof RefPersonNameColumn) {
+                valueConversion = function(v) { return v ? O.ref(v) : null; };
             }
             // Delegate this object to the column
             this.renderCell = function(row) {
