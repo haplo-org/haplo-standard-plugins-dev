@@ -373,9 +373,16 @@ Collection.prototype.calculateStatistic = function(statistic, sample, filterName
     };
     if(groups) { calculated.groups = groups; }
     // The value might need to be formatted for presentation (eg if it's a percentage)
-    calculated.display = (statistic.displayFormat) ?
-        _.sprintf(statistic.displayFormat, value):
-        ""+value;
+    if(statistic.displayFormat) {
+        if(typeof statistic.displayFormat === "string") {
+            calculated.display = _.sprintf(statistic.displayFormat, value);
+        } else if (typeof statistic.displayFormat === "function") {
+            calculated.display = statistic.displayFormat(value);
+        }
+    } else {
+        calculated.display = ""+value;
+    }
+    
     return calculated;
 };
 
