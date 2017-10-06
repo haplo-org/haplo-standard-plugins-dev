@@ -563,6 +563,33 @@ NumberColumn.prototype.renderCellInner = function(row) {
 
 // --------------------------------------------------------------------------
 
+var NumericColumn = makeColumnType({type:"numeric",
+    construct: function(collection, colspec) {
+        this.format = colspec.format || "#,###.##";
+    }
+});
+
+NumericColumn.prototype.renderCell = function(row) {
+    var value = row[this.fact];
+    if(value === null) {
+        return '<td></td>';
+    } else {
+        return '<td data-sort='+value+'>'+value.format(this.format)+'</td>';
+    }
+};
+
+NumericColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    return (value === null) ? '' : value.format(this.format);
+};
+
+NumericColumn.prototype.exportCell = function(row, xls) {
+    var value = row[this.fact];
+    xls.cell(value ? value.format(this.format) : null);
+};
+
+// --------------------------------------------------------------------------
+
 var BooleanColumn = makeColumnType({
     type:"boolean",
     construct: function(collection, colspec) {
