@@ -565,7 +565,7 @@ NumberColumn.prototype.renderCellInner = function(row) {
 
 var NumericColumn = makeColumnType({type:"numeric",
     construct: function(collection, colspec) {
-        this.format = colspec.format || "#,###.##";
+        this.formatter = colspec.formatter || "#,###.##";
     }
 });
 
@@ -574,18 +574,18 @@ NumericColumn.prototype.renderCell = function(row) {
     if(value === null) {
         return '<td></td>';
     } else {
-        return '<td data-sort='+value+'>'+value.format(this.format)+'</td>';
+        return '<td data-sort='+value+'>'+_.escape(value.format(this.formatter))+'</td>';
     }
 };
 
 NumericColumn.prototype.renderCellInner = function(row) {
     var value = row[this.fact];
-    return (value === null) ? '' : value.format(this.format);
+    return (value === null) ? '' : _.escape(value.format(this.formatter));
 };
 
 NumericColumn.prototype.exportCell = function(row, xls) {
     var value = row[this.fact];
-    xls.cell(value ? value.format(this.format) : null);
+    xls.cell(value ? _.escape(value.format(this.formatter)) : null);
 };
 
 // --------------------------------------------------------------------------
