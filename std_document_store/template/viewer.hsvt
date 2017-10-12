@@ -1,5 +1,7 @@
 std:plugin:resources("viewer.css")
 
+if(additionalUI.top) { render(additionalUI.top) }
+
 // Only show changes UI if there are options (more than one version, show versions enabled)
 if(_changesVersionView.length) {
   <div style="text-align:right">
@@ -20,8 +22,6 @@ if(_changesVersionView.length) {
     }
   </div>
 }
-
-if(additionalUI.top) { render(additionalUI.top) }
 
 unless(document) {
   std:ui:notice("The form has not yet been completed.")
