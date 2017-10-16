@@ -14,22 +14,30 @@ template:dashboard:common:summary-display()
 
 each(dashboard.$displays.above-export) { render(.) }
 
-unless(hideExport) {
-  <div class="z__std_reporting_list_export_form">
-    <form method="POST"> std:form:token() <input type="submit" value="Export"> </form>
-  </div>
-}
+do() {
+  unless(hideExport) {
+    <form method="POST">
+      <div class="z__std_reporting_list_export_form">
+        std:form:token() <input type="submit" value="Export"> 
+      </div>
+      yield:ui()
+    </form>
+  } else {
+    yield:ui()
+  }
+} ui {
 
-each(dashboard.$displays.above-navigation) { render(.) }
-
-template:dashboard:common:navigation()
-
-each(dashboard.$displays.above) { render(.) }
-
-if(widgetsTop) {
-  <div class="z__std_reporting_list_widgets_top">
-    each(widgetsTop) { render(.) }
-  </div>
+  each(dashboard.$displays.above-navigation) { render(.) }
+  
+  template:dashboard:common:navigation()
+  
+  each(dashboard.$displays.above) { render(.) }
+  
+  if(widgetsTop) {
+    <div class="z__std_reporting_list_widgets_top">
+      each(widgetsTop) { render(.) }
+    </div>
+  }
 }
 
 each(dashboard.$displays.above-table) { render(.) }

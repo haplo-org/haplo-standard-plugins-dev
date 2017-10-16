@@ -9,6 +9,7 @@ var DashboardList = function() {
     this.columnGroups = [];
     this.$uiWidgetsTop = [];
     this.$rowAttributeFns = [];
+    this.$filterExportFns = [];
 };
 
 P.dashboardConstructors["list"] = DashboardList;
@@ -164,7 +165,12 @@ DashboardList.prototype._respondWithExport = function() {
         var w = c.exportWidth;
         while((--w) > 0) { xls.cell(''); }
     });
-    _.each(this.select(), function(row) {
+    var query = this.select();
+    var parameters = this.E.request.parameters;
+    _.each(this.$filterExportFns, function(fn) {
+        query = fn(query, parameters);
+    });
+    _.each(query, function(row) {
         xls.nextRow();
         columns.forEach(function(column) {
             column.exportCell(row, xls);
@@ -219,6 +225,13 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         if(value !== null) {
             attrs[attrName] = value.toString();
         }
+    });
+
+    dashboard.$filterExportFns.push(function(query, parameters) {
+        if(parameters[fact]) {
+            return query.where(fact, "=", O.ref(parameters[fact]));
+        }
+        return query;
     });
     // Add downdown filters to the list
     dashboard.$uiWidgetsTop.push(function() {
@@ -550,6 +563,28 @@ NumberColumn.prototype.renderCellInner = function(row) {
 
 // --------------------------------------------------------------------------
 
+var NumericColumn = makeColumnType({type:"numeric",
+    construct: function(collection, colspec) {
+        this.formatter = O.numberFormatter(colspec.formatter || "#,###.##");
+    }
+});
+
+NumericColumn.prototype.renderCell = function(row) {
+    var value = row[this.fact];
+    if(value === null) {
+        return '<td></td>';
+    } else {
+        return '<td data-sort='+value+'>'+_.escape(this.formatter(value))+'</td>';
+    }
+};
+
+NumericColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    return (value === null) ? '' : _.escape(this.formatter(value));
+};
+
+// --------------------------------------------------------------------------
+
 var BooleanColumn = makeColumnType({
     type:"boolean",
     construct: function(collection, colspec) {
@@ -737,6 +772,8 @@ var JsonColumn = makeColumnType({
             } else if(column instanceof NumberColumn) {
                 // Paranoid about numbers
                 valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
+            } else if(column instanceof RefColumn || column instanceof RefPersonNameColumn) {
+                valueConversion = function(v) { return v ? O.ref(v) : null; };
             }
             // Delegate this object to the column
             this.renderCell = function(row) {
