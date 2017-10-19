@@ -1,0 +1,7 @@
+std:layout:wide()
+
+template:dashboard:common:dashboard-page() {
+  template:dashboard:common:export-form() {
+    template:dashboard:aggregate:aggregate-table()
+  }
+}

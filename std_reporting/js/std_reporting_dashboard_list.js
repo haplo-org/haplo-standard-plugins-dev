@@ -128,9 +128,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
     });
 
     return {
-        pageTitle: this.specification.title,
-        backLink: this.specification.backLink,
-        backLinkText: this.specification.backLinkText,
+        // pageTitle, backLink, backLinkText handled in template, with values from specification
         hideExport: hideExport,
         layout: "std:wide",
         dashboard: this,
