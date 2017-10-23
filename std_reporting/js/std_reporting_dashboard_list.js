@@ -304,6 +304,9 @@ var makeColumnType = function(info) {
         this.exportHeading = colspec.exportHeading;
         this.groups = colspec.groups;
         this.columnStyle = colspec.style;
+        if(colspec.formatter) {
+            this.formatter = O.numberFormatter(colspec.formatter);
+        }
         if(info.construct) { info.construct.call(this, collection, colspec); }
     };
     t.prototype = new ColumnBase();
@@ -550,12 +553,18 @@ NumberColumn.prototype.renderCell = function(row) {
     } else if(value === 0) {
         return '<td class="z__std_reporting_value_0"></td>';
     } else {
+        if(this.formatter) {
+            return '<td>' + _.escape(this.formatter(value)) + '</td>';
+        }
         return '<td>'+value+'</td>';
     }
 };
 
 NumberColumn.prototype.renderCellInner = function(row) {
     var value = row[this.fact];
+    if(this.formatter) {
+       return _.escape(this.formatter(value));
+    }
     return (value === null) ? '' : value;
 };
 
