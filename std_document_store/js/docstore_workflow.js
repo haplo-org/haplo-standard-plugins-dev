@@ -71,13 +71,6 @@ P.implementService("std:document_store:workflow:form_action_allowed", function(M
     return can(M, user, spec, action);
 });
 
-var showDebugTools = function() {
-    return (O.PLUGIN_DEBUGGING_ENABLED &&
-        O.currentAuthenticatedUser &&
-        O.currentAuthenticatedUser.isSuperUser &&
-        O.currentAuthenticatedUser.data["std:enable_debugging"]);
-};
-
 var can = function(M, user, spec, action) {
     var list = spec[action];
     if(!list) { return false; }
@@ -144,7 +137,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     if(!("documentStore" in workflow)) {
         workflow.documentStore = {};
         workflow.actionPanel({}, function(M, builder) {
-            if(O.currentUser.isSuperUser || showDebugTools()) { builder.panel(8888999).element(0, {title:"Docstore admin"}); }
+            if(O.currentUser.isSuperUser) { builder.panel(8888999).element(0, {title:"Docstore admin"}); }
         });
     }
     workflow.documentStore[spec.name] = docstore;
@@ -234,7 +227,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     });
 
     workflow.actionPanel({}, function(M, builder) {
-        if(O.currentUser.isSuperUser || showDebugTools()) {
+        if(O.currentUser.isSuperUser) {
             builder.panel(8888999).
                 link("default", spec.path+'/admin/'+M.workUnit.id, spec.title);
         }
@@ -421,7 +414,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     plugin.respond("GET,POST", spec.path+'/admin', [
         {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
     ], function(E, workUnit) {
-        if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var M = workflow.instance(workUnit);
         var instance = docstore.instance(M);
@@ -454,7 +447,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true},
         {pathElement:1, as:"int"}
     ], function(E, workUnit, requestedVersion) {
-        if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var M = workflow.instance(workUnit);
         var instance = docstore.instance(M);
@@ -495,11 +488,16 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     plugin.respond("GET,POST", spec.path+'/admin/form', [
         {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
     ], function(E, workUnit) {
-        if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
         E.setResponsiblePlugin(P); // take over as source of templates, etc
         var M = workflow.instance(workUnit);
         var instance = docstore.instance(M);
         instance.handleEditDocument(E, adminEditor);
     });
 
+    // console.log('on load?');
+    // if(O.serviceImplemented("std:document_store:workflow_feature:extend")) {
+    //     O.service("std:document_store:workflow_feature:extend", docstore, workflow, spec);
+    //     console.log('cool');
+    // }
 });

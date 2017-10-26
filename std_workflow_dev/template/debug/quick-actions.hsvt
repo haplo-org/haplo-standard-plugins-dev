@@ -10,7 +10,7 @@ std:plugin:resources("debug.css")
     <input type="submit" value="Impersonate">
   </form>
   }
-  <form method="GET" action=["/do/workflow/debug/transition-to-previous-state/" M.workUnit.id]>
+  <form method="GET" action=["/do/workflow-dev/debug/transition-to-previous-state/" M.workUnit.id]>
     <input type="submit" value="Previous state">
   </form>
 </div>

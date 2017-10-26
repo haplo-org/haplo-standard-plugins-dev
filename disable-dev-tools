@@ -1,0 +1,5 @@
+#!/bin/sh
+# TEMP shortcut to quickly disable dev-tool plugins
+# usage: ./disable-dev-tools <server substring>
+
+haplo-plugin -p std_workflow_dev,std_document_store_dev -s $1 uninstall --force
