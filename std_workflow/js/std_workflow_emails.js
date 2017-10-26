@@ -57,16 +57,24 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 var toId = function(u) { return u.id; };
 
-var sendNewEmail = function(specification, M) {
+var sendNewEmail = function(specification, entities, M) {
     if(M) {
         var modify = {specification:specification};
         M._call('$modifySendEmail', modify);
         specification = modify.specification;   
     }
 
-    var except = _generateEmailRecipientList(specification.except, [], M).map(toId);
-    var to =     _generateEmailRecipientList(specification.to,     except, M);
-    var cc =     _generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)), M);
+    var except = typeof specification.except === "function" ? 
+                            specification.except(M) :
+                            _generateEmailRecipientList(specification.except, [], entities).map(toId);
+
+    var to = typeof specification.to === "function" ? 
+                            specification.to(M) :
+                            _generateEmailRecipientList(specification.to, except, entities);
+
+    var cc = typeof specification.cc === "function" ? 
+                            specification.cc(M) :
+                            _generateEmailRecipientList(specification.cc, except.concat(to.map(toId)), entities);
 
     // Add in any external recipients
     if("toExternal" in specification) { to = to.concat(_externalEmailRecipients(specification.toExternal, M)); }
@@ -120,10 +128,7 @@ var sendNewEmail = function(specification, M) {
     }
 };
 
-var _generateEmailRecipientList = function(givenList, except, M) {
-    if(typeof(givenList) === "function") {
-        givenList = givenList(M);
-    }
+var _generateEmailRecipientList = function(givenList, except, entities) {
     var outputList = [];
     var pushRecipient = function(r) {
         if(r && (-1 === except.indexOf(r.id)) && r.email && r.isActive) {
@@ -137,9 +142,10 @@ var _generateEmailRecipientList = function(givenList, except, M) {
         if(recipient) {
             switch(typeof(recipient)) {
                 case "string":
-                    if(M) {
-                        pushRecipient(M.getActionableBy(recipient));
-                    }
+                    var entityList = entities[recipient];
+                    _.each(_.flatten([entityList]), function (entity) {
+                        pushRecipient(O.user(entity.ref));
+                    });
                     break;
                 case "number":
                     pushRecipient(O.securityPrincipal(recipient));
@@ -176,10 +182,10 @@ var _externalEmailRecipients = function(givenList, M) {
 
 P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     // Allow global changes (which have to be quite carefully written)
-    sendNewEmail(specification, this);
+    sendNewEmail(specification, this.entities, this);
 
 };
 
-P.implementService("std:workflow_emails:send_email", function(specification) {
-    sendNewEmail(specification);
+P.implementService("std:workflow_emails:send_email", function(specification, entities) {
+    sendNewEmail(specification, entities);
 });
