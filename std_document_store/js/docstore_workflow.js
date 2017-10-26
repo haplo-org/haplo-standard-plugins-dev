@@ -495,9 +495,4 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         instance.handleEditDocument(E, adminEditor);
     });
 
-    // console.log('on load?');
-    // if(O.serviceImplemented("std:document_store:workflow_feature:extend")) {
-    //     O.service("std:document_store:workflow_feature:extend", docstore, workflow, spec);
-    //     console.log('cool');
-    // }
 });
