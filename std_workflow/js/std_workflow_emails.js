@@ -86,8 +86,12 @@ var sendNewEmail = function(specification, entities, M) {
     // Obtain the message template
     var template = specification.template;
     if(!template) { throw new Error("No template specified to sendEmail()"); }
-    if(typeof(template) === "string" && M) {
-        template = M.$plugin.template(template);
+    if(typeof(template) === "string") {
+        if(M) {
+            template = M.$plugin.template(template);
+        } else {
+            throw new Error("A template formed using P.template() should be passed to send_email, not a string");
+        }
     }
 
     // Set up the initial template
