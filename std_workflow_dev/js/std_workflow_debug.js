@@ -20,6 +20,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                 O.currentAuthenticatedUser.id === 3 && // SUPPORT only for now
                 O.currentAuthenticatedUser.data["std:enable_debugging"]);
         };
+        P.implementService("std_workflow:allow_admin_tools", showDebugTools);
 
         var getCheckedInstanceForDebugging = function(workUnit) {
             if(!showDebugTools()) { return; }
