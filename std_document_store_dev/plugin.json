@@ -4,7 +4,6 @@
   "pluginVersion": 1,
   "displayName": "Document Store Development",
   "displayDescription": "Development tools for document store plugin",
-  "installSecret": "02b34388d0f255452e4dbfa4ddea3946bd0b3205",
   "apiVersion": 4,
   "loadPriority": 1013,
   "depend": ["std_workflow"],
