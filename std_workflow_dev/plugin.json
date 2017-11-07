@@ -10,7 +10,6 @@
   "use": ["std:workflow"],
   "loadPriority": 1011,
   "load": [
-      "js/std_workflow_snapshots.js",
       "js/std_workflow_debug.js"
     ],
   "respond": ["/do/workflow-dev"]
