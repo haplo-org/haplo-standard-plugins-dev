@@ -37,3 +37,10 @@ button.z__docstore_nav_selected {
     border: 1px solid #ddd;
     border-radius: 2px;
 }
+
+.z__docstore_form_title_for_edit {
+    font-size: 20px;
+    color: #777;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 4px;
+}

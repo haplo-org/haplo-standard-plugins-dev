@@ -369,6 +369,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             isSinglePage: isSinglePage,
             saveButtonStyle: saveButtonStyle,
             navigation: navigation,
+            showFormTitles: actions.showFormTitlesWhenEditing,
             pages: pages,
             showFormError: showFormError,
             additionalUI: additionalUI,
