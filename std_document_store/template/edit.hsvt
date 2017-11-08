@@ -1,4 +1,4 @@
-std:plugin:resources("edit.css")
+std:plugin:resources("edit.css" "viewer.css")
 
 if(additionalUI.top) { render(additionalUI.top) }
 
@@ -13,7 +13,7 @@ if(showFormError) {
 if(additionalUI.formTop) { render(additionalUI.formTop) }
 
 if(showFormTitles) {
-    <h1 class="z__docstore_form_title_for_edit"> activePage.form.formTitle </h1>
+    <h1 class="z__docstore_form_title"> activePage.form.formTitle </h1>
 }
 
 std:form(activePage.instance)
