@@ -160,11 +160,9 @@ DocumentInstance.prototype.commit = function(user) {
 
 DocumentInstance.prototype.addInitialCommittedDocument = function(document, user, date) {
     // ensure that other documents don't already exist
-    const errorMessage = "Cannot add initial document.";
-    if(!_.isEmpty(this.$currentDocument)) { throw new Error(errorMessage); }
     const current = this.store.currentTable.select().where("keyId", "=", this.keyId);
     const versions = this.store.versionsTable.select().where("keyId", "=", this.keyId);
-    if(current.length || versions.length) { throw new Error(errorMessage); }
+    if(current.length || versions.length) { throw new Error("Cannot add initial document because there is already a document for this key."); }
     // don't want to call onCommit delegate because would be repeating actions that have already occurred
     this.store.versionsTable.create({
         keyId: this.keyId,
