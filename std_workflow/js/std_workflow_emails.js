@@ -64,17 +64,9 @@ var sendNewEmail = function(specification, entities, M) {
         specification = modify.specification;   
     }
 
-    var except = typeof specification.except === "function" ? 
-                            specification.except(M) :
-                            _generateEmailRecipientList(specification.except, [], entities).map(toId);
-
-    var to = typeof specification.to === "function" ? 
-                            specification.to(M) :
-                            _generateEmailRecipientList(specification.to, except, entities);
-
-    var cc = typeof specification.cc === "function" ? 
-                            specification.cc(M) :
-                            _generateEmailRecipientList(specification.cc, except.concat(to.map(toId)), entities);
+    var except = _generateEmailRecipientList(specification.except, [], entities, M).map(toId);
+    var to = _generateEmailRecipientList(specification.to, except, entities, M);
+    var cc = _generateEmailRecipientList(specification.cc, except.concat(to.map(toId)), entities, M);
 
     // Add in any external recipients
     if("toExternal" in specification) { to = to.concat(_externalEmailRecipients(specification.toExternal, M)); }
@@ -132,7 +124,10 @@ var sendNewEmail = function(specification, entities, M) {
     }
 };
 
-var _generateEmailRecipientList = function(givenList, except, entities) {
+var _generateEmailRecipientList = function(givenList, except, entities, M) {
+    if(typeof(givenList) === "function") {
+        givenList = givenList(M);
+    }
     var outputList = [];
     var pushRecipient = function(r) {
         if(r && (-1 === except.indexOf(r.id)) && r.email && r.isActive) {
@@ -146,10 +141,14 @@ var _generateEmailRecipientList = function(givenList, except, entities) {
         if(recipient) {
             switch(typeof(recipient)) {
                 case "string":
-                    var entityList = entities[recipient];
-                    _.each(_.flatten([entityList]), function (entity) {
-                        pushRecipient(O.user(entity.ref));
-                    });
+                    if(M) {
+                        pushRecipient(M.getActionableBy(recipient));
+                    } else {
+                        var entityList = entities[recipient];
+                        _.each(_.flatten([entityList]), function (entity) {
+                            pushRecipient(O.user(entity.ref));
+                        });
+                    }
                     break;
                 case "number":
                     pushRecipient(O.securityPrincipal(recipient));
@@ -174,7 +173,7 @@ var _generateEmailRecipientList = function(givenList, except, entities) {
 var _externalEmailRecipients = function(givenList, M) {
     var outputList = [];
     _.flatten([givenList || []]).forEach(function(recipient) {
-        if(typeof(recipient) === "function" && M) {
+        if(typeof(recipient) === "function") {
             recipient = recipient(M);   // may return a list of recipients
         }
         if(recipient) {
