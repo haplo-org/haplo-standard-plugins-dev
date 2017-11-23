@@ -57,8 +57,9 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 var toId = function(u) { return u.id; };
 
-var sendNewEmail = function(specification, entities, M) {
+var sendEmail = function(specification, entities, M) {
     if(M) {
+        // Allow global changes (which have to be quite carefully written)
         var modify = {specification:specification};
         M._call('$modifySendEmail', modify);
         specification = modify.specification;   
@@ -184,11 +185,9 @@ var _externalEmailRecipients = function(givenList, M) {
 };
 
 P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
-    // Allow global changes (which have to be quite carefully written)
-    sendNewEmail(specification, this.entities, this);
-
+    sendEmail(specification, this.entities, this);
 };
 
 P.implementService("std:workflow_emails:send_email", function(specification, entities) {
-    sendNewEmail(specification, entities);
+    sendEmail(specification, entities);
 });
