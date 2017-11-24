@@ -29,9 +29,7 @@ var DEFAULT_X = [{}],
 
 DashboardAggregate.prototype = new P.Dashboard();
 
-// Support but ignore some functions from list dashboard to make common setup easier
-DashboardAggregate.prototype.columns = function() {};
-DashboardAggregate.prototype.hasColumnBasedOnFact = function() { return false; };
+DashboardAggregate.prototype.kind = "aggregate";
 
 DashboardAggregate.prototype._calculateValues = function() {
     var x = cells(this.specification.x, DEFAULT_X),

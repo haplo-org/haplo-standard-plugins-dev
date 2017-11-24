@@ -18,6 +18,8 @@ P.dashboardConstructors["list"] = DashboardList;
 
 DashboardList.prototype = new P.Dashboard();
 
+DashboardList.prototype.kind = "list";
+
 DashboardList.prototype.columns = function(priority, columns) {
     var collection = this.collection;
     this.columnGroups.push({
