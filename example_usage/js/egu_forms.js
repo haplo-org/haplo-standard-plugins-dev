@@ -2,20 +2,25 @@
 var form0 = P.form({
     specificationVersion:0,
     formId: "exForm0",
-    formTitle: "Overview",
-    elements: [
-        {
-            type:"paragraph",
-            path:"description",
-            label:"Description",
-            required:true
-        },
-        {
-            type:"boolean",
-            path:"secondForm",
-            label:"Use second form?"
-        }
-    ]
+    formTitle: "Overview of project",
+    formTitleShort: "Overview",
+    elements: [{
+        type:"section",
+        heading:"Example heading",
+        elements: [
+            {
+                type:"paragraph",
+                path:"description",
+                label:"Description",
+                required:true
+            },
+            {
+                type:"boolean",
+                path:"secondForm",
+                label:"Use second form?"
+            }
+        ]
+    }]
 });
 
 var form1 = P.form({
@@ -38,6 +43,7 @@ P.ExampleUsageWorkflow.use("std:document_store", {
     title: "Workflow form",
     path: "/do/example-usage/document-store",
     panel: 200,
+    showFormTitlesWhenEditing: true,
     formsForKey: function(key, instance, document) {
         var forms = [form0];
         if(document.secondForm) {

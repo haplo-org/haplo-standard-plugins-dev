@@ -17,6 +17,7 @@ P.use("std:workflow");
 //    path: URL path where the handlers should be implemented
 //    panel: Which panel the view link should appear in
 //    priority: The priority within the panel, defaulting to "default"
+//    showFormTitlesWhenEditing: show form titles in viewer (TODO consider making this the default)
 //    sortDisplay: The priority for displaying in list of forms, defaulting to
 //          priority if it's a number, or 100 otherwise.
 //    ----------
@@ -260,6 +261,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             }, "workflow/form");
         }
     };
+
+    // TODO: Should this be done more elegantly?
+    if(spec.showFormTitlesWhenEditing) {
+        editor.showFormTitlesWhenEditing = true;
+    }
 
     // ------------------------------------------------------------------------
 

@@ -158,6 +158,20 @@ DocumentInstance.prototype.commit = function(user) {
     this._notifyDelegate('onCommit', user);
 };
 
+DocumentInstance.prototype.addInitialCommittedDocument = function(document, user, date) {
+    // ensure that other documents don't already exist
+    const current = this.store.currentTable.select().where("keyId", "=", this.keyId);
+    const versions = this.store.versionsTable.select().where("keyId", "=", this.keyId);
+    if(current.length || versions.length) { throw new Error("Cannot add initial document because there is already a document for this key."); }
+    // don't want to call onCommit delegate because would be repeating actions that have already occurred
+    this.store.versionsTable.create({
+        keyId: this.keyId,
+        json: JSON.stringify(document),
+        version: date.getTime(),
+        user: user
+    }).save();
+};
+
 // ----------------------------------------------------------------------------
 
 DocumentInstance.prototype._displayForms = function(document) {
@@ -369,6 +383,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             isSinglePage: isSinglePage,
             saveButtonStyle: saveButtonStyle,
             navigation: navigation,
+            showFormTitles: actions.showFormTitlesWhenEditing,
             pages: pages,
             showFormError: showFormError,
             additionalUI: additionalUI,
