@@ -209,6 +209,11 @@ WorkflowInstanceBase.prototype = {
                 var possibleDestinations = stateDefinition.dispatch;
                 var dispatchedDestination = this._callHandler("$resolveDispatchDestination", transition, destination, destinationTarget, possibleDestinations) || possibleDestinations[0];
                 if(!dispatchedDestination) { throw new Error("Can't resolve dispatch destination for "+destination); }
+                if(typeof(dispatchedDestination) !== "string") {
+                    // resolveDispatchDestination is specifying the target as well as the state
+                    this.workUnit.tags.target = destinationTarget = dispatchedDestination.target;
+                    dispatchedDestination = dispatchedDestination.state;
+                }
                 if(-1 === possibleDestinations.indexOf(dispatchedDestination)) { throw new Error("Not a valid dispatch destination for state: "+destination); }
                 destination = dispatchedDestination;
                 stateDefinition = this.$states[destination];
