@@ -12,15 +12,20 @@ P.onLoad = function() {
 
 if(O.PLUGIN_DEBUGGING_ENABLED) {
 
+    var showDebugTools = function() {
+        return (O.PLUGIN_DEBUGGING_ENABLED &&
+            O.currentAuthenticatedUser &&
+            O.currentAuthenticatedUser.isSuperUser &&
+            O.currentAuthenticatedUser.id === 3 && // SUPPORT only for now
+            O.currentAuthenticatedUser.data["std:enable_debugging"]);
+    };
+
+    // Display standard workflow admin action all the time?
+    P.implementService("std:action:check:devtools-workflow-debug", showDebugTools);
+    O.action("std:workflow:admin:can-administrate-workflow").
+        allow("devtools-workflow-debug");
+
     P.workflow.registerOnLoadCallback(function(workflows) {
-        var showDebugTools = function() {
-            return (O.PLUGIN_DEBUGGING_ENABLED &&
-                O.currentAuthenticatedUser &&
-                O.currentAuthenticatedUser.isSuperUser &&
-                O.currentAuthenticatedUser.id === 3 && // SUPPORT only for now
-                O.currentAuthenticatedUser.data["std:enable_debugging"]);
-        };
-        P.implementService("std_workflow:allow_admin_tools", showDebugTools);
 
         var getCheckedInstanceForDebugging = function(workUnit) {
             if(!showDebugTools()) { return; }
