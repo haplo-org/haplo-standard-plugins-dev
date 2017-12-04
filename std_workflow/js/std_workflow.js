@@ -673,6 +673,19 @@ Workflow.prototype = {
         return this;
     },
 
+    addAdditionalTransitionToState: function(state, transition, destination) {
+        var states = this.$instanceClass.prototype.$states;
+        if(!(state in states)) {
+            throw new Error("State "+state+" is not defined.");
+        }
+        if(!(destination in states)) {
+            throw new Error("Destination state "+destination+" is not defined.");
+        }
+        var defn = states[state];
+        if(!defn.transitions) { defn.transitions = []; }
+        defn.transitions.push([transition, destination]);
+    },
+
     // ----------------------------------------------------------------------
 
     text: function(text) {
