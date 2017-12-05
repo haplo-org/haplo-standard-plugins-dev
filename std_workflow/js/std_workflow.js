@@ -237,6 +237,11 @@ WorkflowInstanceBase.prototype = {
         if(stateDefinition.finish === true) {
             this._callHandler('$observeFinish');
         }
+        var deadline = new XDate().clearTime();
+        if(!this._callHandler('$deadline', deadline)) {
+            deadline.addDays(14); //TODO: make this configurable
+        }
+        this.workUnit.deadline = deadline.toDate();
         this._saveWorkUnit();
         // Add timeline entry
         var timelineRow = {
@@ -778,6 +783,7 @@ implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
 implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
+implementHandlerList('deadline');
 
 // --------------------------------------------------------------------------
 
