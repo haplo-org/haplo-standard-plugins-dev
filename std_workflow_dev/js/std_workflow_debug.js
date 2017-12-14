@@ -13,7 +13,7 @@ P.onLoad = function() {
 P.onInstall = function() {
     if(O.PLUGIN_DEBUGGING_ENABLED) {
         // enable debugging for SUPPORT by default
-        if(!("std:enable_debugging") in O.user(3).data) {
+        if(!("std:enable_debugging" in O.user(3).data)) {
             O.user(3).data["std:enable_debugging"] = true;
         }
     }
