@@ -126,6 +126,14 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
     this.$textLookup = {};
 };
 
+var setDeadline = function(M) {
+    var deadline = new XDate().clearTime();
+    if(!M._callHandler('$setDeadline', deadline)) {
+        deadline.addDays(14); //TODO: make this configurable
+    }
+    M.workUnit.deadline = deadline.toDate();
+};
+
 WorkflowInstanceBase.prototype = {
     // Is this work unit selected by the selector?
     selected: function(selector) {
@@ -237,11 +245,7 @@ WorkflowInstanceBase.prototype = {
         if(stateDefinition.finish === true) {
             this._callHandler('$observeFinish');
         }
-        var deadline = new XDate().clearTime();
-        if(!this._callHandler('$deadline', deadline)) {
-            deadline.addDays(14); //TODO: make this configurable
-        }
-        this.workUnit.deadline = deadline.toDate();
+        setDeadline(this);
         this._saveWorkUnit();
         // Add timeline entry
         var timelineRow = {
@@ -391,6 +395,7 @@ WorkflowInstanceBase.prototype = {
         }
         this.workUnit.tags.state = initial.state;
         if(initial.target) { this.workUnit.tags.target = initial.target; }
+        setDeadline(this);
         this._saveWorkUnit();
         this.$timeline.create({
             workUnitId: this.workUnit.id,
@@ -783,7 +788,7 @@ implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
 implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
-implementHandlerList('deadline');
+implementHandlerList('setDeadline');
 
 // --------------------------------------------------------------------------
 
