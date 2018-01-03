@@ -36,8 +36,8 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
 
     P.workflow.registerOnLoadCallback(function(workflows) {
 
-        var getCheckedInstanceForDebugging = function(workUnit) {
-            if(!showDebugTools()) { return; }
+        var getCheckedInstanceForDebugging = function(workUnit, always) {
+            if(!(showDebugTools() || always)) { O.stop("Debug tools are not enabled"); }
             var workflow = workflows.getWorkflow(workUnit.workType);
             if(!workflow) { O.stop("Workflow not implemented"); }
             return workflow.instance(workUnit);
@@ -50,7 +50,9 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
             var plugin = workflow.plugin;
 
             workflow.actionPanel({}, function(M, builder) {
-                var adminPanel = builder.panel(8888888);
+                var adminPanel = builder.panel(8888889);
+
+                adminPanel.link(98, "/do/workflow-dev/workflow-notifications/"+this.workUnit.id, "Notifications");
 
                 if(!showDebugTools()) {
                     if(O.currentUser.isSuperUser) {
@@ -141,6 +143,34 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                 }, "std:ui:confirm");
             }
         });
+
+        // --------------------------------------------------------------------------
+
+        P.respond("GET,POST", "/do/workflow-dev/workflow-notifications", [
+            {pathElement:0, as:"workUnit", allUsers:true} // Security check below
+        ], function(E, workUnit) {
+            var M = getCheckedInstanceForDebugging(workUnit, true);
+            var testSend;
+            if(E.request.method === "POST") {
+                testSend = (E.request.parameters.notification || '').split(/:\s+/)[1];
+                if(testSend) {
+                    M.sendNotification(testSend);
+                }
+            }
+            var notifications = [];
+            _.each(M.$notifications, function(spec, name) {
+                notifications.push({
+                    name: name,
+                    testSend: name === testSend,
+                    spec: spec
+                });
+            });
+            E.render({
+                M: M,
+                notifications: notifications
+            });
+        });
+
     });
 
 }
