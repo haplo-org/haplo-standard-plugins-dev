@@ -124,6 +124,7 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
         instance[list] = [impl];
     });
     this.$textLookup = {};
+    this.$notifications = {};
 };
 
 WorkflowInstanceBase.prototype = {
