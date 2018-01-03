@@ -53,6 +53,8 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 //      numeric user/group IDs (eg from the Group schema dictionary)
 //      Ref of a user, looked up with O.user()
 //      Anything with a ref property which is a Ref (eg StoreObject), then treated as Ref
+//      EntityName objects, created with P.workflow.makeEntityNameForSendEmail(name)
+//          (recommend that long function name is aliased to 'e' in your code)
 //      An array of any of the above (nesting allowed)
 //      The above allows you to use entities with code like M.entities.supervisor_list
 // Note that if there's a single recipient, it can be specified without enclosing it in an array.
@@ -152,8 +154,10 @@ var _generateEmailRecipientList = function(givenList, except, entities, M) {
                     if(M) {
                         pushRecipient(M.getActionableBy(recipient));
                     } else {
+                        // This behaviour "works" for standalone use, but is subtly different
+                        // from the need to use EntityName when used with a workflow instance.
                         var entityList = entities[recipient];
-                        _.each(_.flatten([entityList]), function (entity) {
+                        _.each(_.flatten([entityList]), function(entity) {
                             pushRecipient(O.user(entity.ref));
                         });
                     }
@@ -168,6 +172,12 @@ var _generateEmailRecipientList = function(givenList, except, entities, M) {
                         pushRecipient(recipient);
                     } else if(("ref" in recipient) && recipient.ref) {
                         pushRecipient(O.user(recipient.ref));
+                    } else if(recipient instanceof EntityName) {
+                        console.log(recipient);
+                        console.log(M.entities[recipient.name]);
+                        _.each(_.flatten([M.entities[recipient.name]]), function(entity) {
+                            pushRecipient(O.user(entity.ref));
+                        });
                     } else {
                         throw new Error("Unknown recipient kind " + recipient);
                     }
@@ -198,6 +208,16 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
 P.implementService("std:workflow_emails:send_email", function(specification, entities) {
     sendEmail(specification, entities);
 });
+
+// --------------------------------------------------------------------------
+
+var EntityName = function(name) {
+    this.name = name;
+};
+
+P.workflowFeatureFunctions.makeEntityNameForSendEmail = function(name) {
+    return new EntityName(name);
+};
 
 // --------------------------------------------------------------------------
 
