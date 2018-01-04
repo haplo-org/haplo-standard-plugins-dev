@@ -8,6 +8,8 @@
 // Use platform private API
 var interpolateNAMEinString = O.$private.$interpolateNAMEinString;
 
+var DEADLINE_DEFAULT_ADD_DAYS = O.application.config["std_workflow:deadline_default_add_days"] || 14;
+
 // --------------------------------------------------------------------------
 
 P.allWorkflows = {}; // workType -> workflow object
@@ -127,9 +129,10 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
 };
 
 var setDeadline = function(M) {
-    var deadline = new XDate().clearTime();
-    if(!M._callHandler('$setDeadline', deadline)) {
-        deadline.addDays(14); //TODO: make this configurable
+    var today = new XDate().clearTime();
+    var deadline = M._callHandler('$setDeadline', today);
+    if(!deadline) {
+        deadline = today.addDays(DEADLINE_DEFAULT_ADD_DAYS);
     }
     M.workUnit.deadline = deadline.toDate();
 };
