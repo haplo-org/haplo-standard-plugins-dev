@@ -19,6 +19,8 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 // --------------------------------------------------------------------------
 
+// USE OF M.sendEmail()
+//
 // specification has keys:
 //      template - Template object, or name of template within consuming plugin
 //          When used as a notification, template need not be specified and defaults
@@ -63,6 +65,26 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // Note that if there's a single recipient, it can be specified without enclosing it in an array.
 //
 // Email subject should be set in view as emailSubject, or preferably use the emailSubject() template function
+//
+//
+// NOTIFICATIONS
+//
+// Notifications are pre-defined 'notification' emails, as a lookup of name to
+// sendEmail() specification.
+//
+// Use Workflow.notifications() to create one or more notifications, then 
+// M.sendNotification() to send one.
+//
+// When the workflow enters a state (or passes through a dispatch state),
+// the notification with the same name as the state is automatically sent.
+//
+// Remember that the sendEmail() spec is created when the plugin is loaded,
+// so view will have to be a function, so ideally use strings to specific
+// recipients. If necessary use a function for recipients.
+//
+// devtools has a feature to send test emails from all defined notifications.
+
+// --------------------------------------------------------------------------
 
 const IS_ENTITY_NAME = /_(refMaybe|refList|ref|maybe|list)$/;
 
