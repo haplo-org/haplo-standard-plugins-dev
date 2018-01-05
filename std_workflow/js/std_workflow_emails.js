@@ -230,13 +230,8 @@ P.WorkflowInstanceBase.prototype.sendNotification = function(name) {
 };
 
 // Automatically send a notification when entering state
-var observeEnterSendNotification = function(M, transition, previousState) {
-    var state = M.state;
+P.WorkflowInstanceBase.prototype._maybeSendNotificationOnEnterState = function(state) {
     if(state in this.$notifications) {
-        M.sendNotification(state);
+        this.sendNotification(state);
     }
-};
-P.WorkflowInstanceBase.prototype.$fallbackImplementations.$observeEnter = {
-    selector: {},
-    handler: observeEnterSendNotification
 };
