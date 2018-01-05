@@ -27,14 +27,9 @@ ExampleUsageWorkflow.states({
     }
 });
 
-// --------------------------------------------------------------------------
-
-// Boilerplate
-var e = P.workflow.makeEntityNameForSendEmail;
-
 ExampleUsageWorkflow.notifications({
     finished: {
-        to: [e("user_list")],
+        to: ["user_refList"],
         view: function(M) {
             return {
                 value: M.entities.user_maybe ? M.entities.user.title : "No user"
