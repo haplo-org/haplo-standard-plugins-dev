@@ -70,7 +70,9 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // NOTIFICATIONS
 //
 // Notifications are pre-defined 'notification' emails, as a lookup of name to
-// sendEmail() specification.
+// sendEmail() specification. The template name can be left out of these
+// specifications, as it will default to templates in the notification/
+// directory with the same name as the notification.
 //
 // Use Workflow.notifications() to create one or more notifications, then 
 // M.sendNotification() to send one.
