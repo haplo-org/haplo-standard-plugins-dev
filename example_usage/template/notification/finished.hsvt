@@ -1,0 +1,5 @@
+emailSubject("Example notification")
+
+<p> "The workflow has finished" </p>
+
+<p> "Value is '" value "'" </p>

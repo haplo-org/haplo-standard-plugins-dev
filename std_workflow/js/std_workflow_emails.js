@@ -19,9 +19,15 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 // --------------------------------------------------------------------------
 
+// USE OF M.sendEmail()
+//
 // specification has keys:
 //      template - Template object, or name of template within consuming plugin
+//          When used as a notification, template need not be specified and defaults
+//          to "notification/NAME" where NAME is the name of the notification.
 //      view - view for rendering template
+//          If view is a function, the function is called to generate the view
+//          with M as the single argument.
 //      to - list of recipients
 //      cc - CC list, only sent if the to list includes at least one entry
 //      except - list of recipients to *not* send stuff to
@@ -44,7 +50,13 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // components.
 //
 // Recipients lists can contains:
-//      Strings as actionableBy names resolved by M.getActionableBy()
+//      Strings,
+//          when ending _refMaybe, _refList, _ref, _maybe, _list: recipients from
+//              M.entities (which will be adjusted to use 'ref'/'maybe' variants
+//              for efficiency)
+//          otherwise: as actionableBy names resolved by M.getActionableBy(),
+//              which for entity names, will give as result as using entities.
+//              When used standalone, will use entity lookup for this case too.
 //      SecurityPrincipal objects (users or groups)
 //      numeric user/group IDs (eg from the Group schema dictionary)
 //      Ref of a user, looked up with O.user()
@@ -54,6 +66,37 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // Note that if there's a single recipient, it can be specified without enclosing it in an array.
 //
 // Email subject should be set in view as emailSubject, or preferably use the emailSubject() template function
+//
+//
+// NOTIFICATIONS
+//
+// Notifications are pre-defined 'notification' emails, as a lookup of name to
+// sendEmail() specification. The template name can be left out of these
+// specifications, as it will default to templates in the notification/
+// directory with the same name as the notification.
+//
+// Use Workflow.notifications() to create one or more notifications, then 
+// M.sendNotification() to send one.
+//
+// When the workflow enters a state (or passes through a dispatch state),
+// the notification with the same name as the state is automatically sent.
+//
+// Remember that the sendEmail() spec is created when the plugin is loaded,
+// so view will have to be a function, so ideally use strings to specific
+// recipients. If necessary use a function for recipients.
+//
+// devtools has a feature to send test emails from all defined notifications.
+
+// --------------------------------------------------------------------------
+
+const IS_ENTITY_NAME = /_(refMaybe|refList|ref|maybe|list)$/;
+const MATCH_ENTITY_SUFFIX = /(|_[a-zA-Z]+)$/;
+const ENTITY_SUFFIX_REPLACEMENTS = {
+    "": "_refMaybe",
+    "_ref": "_refMaybe",
+    "_maybe": "_refMaybe",
+    "_list": "_refList"
+};
 
 var toId = function(u) { return u.id; };
 
@@ -83,12 +126,15 @@ var sendEmail = function(specification, entities, M) {
         if(M) {
             template = M.$plugin.template(template);
         } else {
-            throw new Error("A template formed using P.template() should be passed to send_email, not a string");
+            throw new Error("template property for sendEmail can only be a string when called on a workflow object. Use P.template() to obtain a Template object.");
         }
     }
 
     // Set up the initial template
-    var view = Object.create(specification.view || {});
+    var view = Object.create(
+        // view property is a template view, or a function which generates the view
+        ((typeof(specification.view) === "function") ? specification.view(M) : specification.view) || {}
+    );
     if(M) {
         view.M = M;
     }
@@ -142,13 +188,17 @@ var _generateEmailRecipientList = function(givenList, except, entities, M) {
         if(recipient) {
             switch(typeof(recipient)) {
                 case "string":
-                    if(M) {
-                        pushRecipient(M.getActionableBy(recipient));
-                    } else {
-                        var entityList = entities[recipient];
-                        _.each(_.flatten([entityList]), function (entity) {
-                            pushRecipient(O.user(entity.ref));
+                    if(!M || IS_ENTITY_NAME.test(recipient)) {
+                        // Adjust given entity name to 1) use maybe variants, so missing entities don't exception
+                        // and 2) use ref variants, to avoid loading objects from the store unnecessarily.
+                        var recipientEntityName = recipient.replace(MATCH_ENTITY_SUFFIX, function(_, suffix) {
+                            return ENTITY_SUFFIX_REPLACEMENTS[suffix] || suffix;
                         });
+                        _.each(_.flatten([entities[recipientEntityName]]), function(ref) {
+                            if(ref) { pushRecipient(O.user(ref)); }
+                        });
+                    } else {
+                        pushRecipient(M.getActionableBy(recipient));
                     }
                     break;
                 case "number":
@@ -191,3 +241,32 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
 P.implementService("std:workflow_emails:send_email", function(specification, entities) {
     sendEmail(specification, entities);
 });
+
+// --------------------------------------------------------------------------
+
+// $notifications = {} in WorkflowInstanceBase constructor function
+
+// Define notifications
+P.Workflow.prototype.notifications = function(notifications) {
+    _.extend(this.$instanceClass.prototype.$notifications, notifications);
+    return this;
+};
+
+// Explicitly send a notification email
+P.WorkflowInstanceBase.prototype.sendNotification = function(name) {
+    var specification = this.$notifications[name];
+    if(!specification) { throw new Error("Notification "+name+" is not defined"); }
+    // Notification template names can be implicit
+    if(!specification.template) {
+        specification = Object.create(specification);
+        specification.template = "notification/"+name;
+    }
+    this.sendEmail(specification);
+};
+
+// Automatically send a notification when entering state
+P.WorkflowInstanceBase.prototype._maybeSendNotificationOnEnterState = function(state) {
+    if(state in this.$notifications) {
+        this.sendNotification(state);
+    }
+};
