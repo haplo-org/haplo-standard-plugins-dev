@@ -14,6 +14,8 @@ P.allWorkflows = {}; // workType -> workflow object
 
 P.workflowFeatures = {}; // name -> function(workflow)
 
+P.workflowServices = {}; // worktype --> {name --> [[function(M, args), serviceThis]]}
+
 // --------------------------------------------------------------------------
 
 P.workflowNameToDatabaseTableFragment = function(name) {
@@ -313,6 +315,37 @@ WorkflowInstanceBase.prototype = {
             if(returnValue !== undefined) { break; }
         }
         return returnValue;
+    },
+
+    // Call each workflow service function, returning the value of the first
+    // one which returns a value which isn't undefined.
+    _workflowServiceCall: function(serviceRegistration, args) {
+        for(let i = 0; i < serviceRegistration.length; i++) {
+            let s = serviceRegistration[i];
+            // Call the function
+            let r = s[0].apply(s[1], [this].concat(args));
+            if(undefined !== r) { return r; }
+        }
+    },
+
+    workflowService: function(name /* arg1, arg2, ... */) {
+        let registry = P.workflowServices[this.workUnit.workType];
+        if(!registry || !(name in registry)) {
+            throw new Error("No provider for workflow service "+name+" on workType "+this.workUnit.workType);
+        }
+        return this._workflowServiceCall(registry[name], _.tail(arguments));
+    },
+
+    workflowServiceMaybe: function(name /* arg1, arg2, ... */) {
+        let registry = P.workflowServices[this.workUnit.workType];
+        if(registry && (name in registry)) {
+            return this._workflowServiceCall(registry[name], _.tail(arguments));
+        }
+    },
+
+    workflowServiceImplemented: function(name) {
+        let registry = P.workflowServices[this.workUnit.workType];
+        return !!(registry && (name in registry));
     },
 
     // Call function list in reverse order with single argument, with the
@@ -719,6 +752,18 @@ Workflow.prototype = {
         }
         var instance = new (this.$instanceClass)(workUnit);
         return instance._initialise(properties);
+    },
+
+    // ----------------------------------------------------------------------
+
+    implementWorkflowService: function(name, serviceFunction) {
+        let registry = P.workflowServices[this.fullName];
+        if(!registry) {
+            registry = P.workflowServices[this.fullName] = {};
+        }
+        if(!registry[name]) { registry[name] = []; }
+        registry[name].push([serviceFunction, this]);
+        return registry[name].length;
     },
 
     // ----------------------------------------------------------------------
