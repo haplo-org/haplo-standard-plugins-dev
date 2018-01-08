@@ -195,7 +195,7 @@ var _generateEmailRecipientList = function(givenList, except, entities, M) {
                             return ENTITY_SUFFIX_REPLACEMENTS[suffix] || suffix;
                         });
                         _.each(_.flatten([entities[recipientEntityName]]), function(ref) {
-                            pushRecipient(O.user(ref));
+                            if(ref) { pushRecipient(O.user(ref)); }
                         });
                     } else {
                         pushRecipient(M.getActionableBy(recipient));
