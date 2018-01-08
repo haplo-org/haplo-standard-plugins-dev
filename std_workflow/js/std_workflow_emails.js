@@ -52,7 +52,8 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // Recipients lists can contains:
 //      Strings,
 //          when ending _refMaybe, _refList, _ref, _maybe, _list: recipients from
-//              M.entities (prefer the 'ref' variants for efficiency)
+//              M.entities (which will be adjusted to use 'ref'/'maybe' variants
+//              for efficiency)
 //          otherwise: as actionableBy names resolved by M.getActionableBy(),
 //              which for entity names, will give as result as using entities.
 //              When used standalone, will use entity lookup for this case too.
@@ -89,6 +90,13 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 // --------------------------------------------------------------------------
 
 const IS_ENTITY_NAME = /_(refMaybe|refList|ref|maybe|list)$/;
+const MATCH_ENTITY_SUFFIX = /(|_[a-zA-Z]+)$/;
+const ENTITY_SUFFIX_REPLACEMENTS = {
+    "": "_refMaybe",
+    "_ref": "_refMaybe",
+    "_maybe": "_refMaybe",
+    "_list": "_refList"
+};
 
 var toId = function(u) { return u.id; };
 
@@ -181,10 +189,13 @@ var _generateEmailRecipientList = function(givenList, except, entities, M) {
             switch(typeof(recipient)) {
                 case "string":
                     if(!M || IS_ENTITY_NAME.test(recipient)) {
-                        var entityList = entities[recipient];
-                        _.each(_.flatten([entityList]), function(entity) {
-                            // Accept objects or refs (consumer should prefer refs)
-                            pushRecipient(O.user(O.isRef(entity) ? entity : entity.ref));
+                        // Adjust given entity name to 1) use maybe variants, so missing entities don't exception
+                        // and 2) use ref variants, to avoid loading objects from the store unnecessarily.
+                        var recipientEntityName = recipient.replace(MATCH_ENTITY_SUFFIX, function(_, suffix) {
+                            return ENTITY_SUFFIX_REPLACEMENTS[suffix] || suffix;
+                        });
+                        _.each(_.flatten([entities[recipientEntityName]]), function(ref) {
+                            pushRecipient(O.user(ref));
                         });
                     } else {
                         pushRecipient(M.getActionableBy(recipient));
