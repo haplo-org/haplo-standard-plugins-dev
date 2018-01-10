@@ -9,6 +9,9 @@
 //    version - version number to display (overrides version)
 //    showVersions - true to allow user to select a version to view
 //    showCurrent - allow the user to see the current version
+//    viewComments - show comments in this viewer
+//    addComment - user is allowed to add comments
+//    commentsUrl - path of comment server (required if viewComments or addComment is true)
 //    hideFormNavigation - hide the interform links from the sidebar
 //    uncommittedChangesWarningText - specify (or disable) the uncommitted changes warning text
 //    style - specify the style of the viewer
@@ -104,6 +107,14 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
     }
 
+    // Commenting?
+    if(this.options.viewComments || this.options.addComment) {
+        this.requiresComments = true;
+        if(!this.options.commentsUrl) {
+            throw new Error("viewComments or addComment used in docstore viewer, but commentsUrl not specified");
+        }
+    }
+
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
     if(delegate.getAdditionalUIForViewer) {
@@ -141,7 +152,7 @@ DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() {
-    return this.instance._renderDocument(this.document, true);
+    return this.instance._renderDocument(this.document, true, undefined, this.requiresComments /* so needs unames */);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {

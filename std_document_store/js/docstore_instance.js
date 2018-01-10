@@ -185,7 +185,7 @@ DocumentInstance.prototype._displayForms = function(document) {
 };
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix) {
+DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix, requiresUNames) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
@@ -194,6 +194,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
+        if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }

@@ -31,12 +31,15 @@ P.use("std:workflow");
 //              property allows the history to be viewable by everyone
 //    view: [{roles:[],selector:{}}, ...] - when the document can be viewed
 //              (omit roles key to mean everyone)
+//    viewDraft: [{roles:[],selector:{}}, ...] - when drafts of the document can be viewed
 //    edit: [{roles:[],selector:{},transitionsFiltered:[]},optional:true, ...] - when the document
 //              can be edited, the (optional) transitionsFiltered property specifies
 //              which transitions should only be avaialble if the form has been
 //              edited & completed, the optional property overrides the default that,
 //              when a user is allowed to edit a document, there must be a committed
 //              version before they can transition
+//    addComment: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can comment on the forms
+//    viewComments: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the comments
 //    ----------
 //    actionableUserMustReview: (selector) - a selector which specifies when the
 //              current actionable user should be shown the completed document and
@@ -134,6 +137,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     }
 
     var delegate = _.extend(new Delegate(), spec);
+
+    // The 'addComment' permission implies that per element comments are needed
+    if(spec.addComment) {
+        delegate.enablePerElementComments = true;
+    }
+
     var docstore = plugin.defineDocumentStore(delegate);
     if(!("documentStore" in workflow)) {
         workflow.documentStore = {};
@@ -324,7 +333,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var instance = docstore.instance(M);
         var ui = instance.makeViewerUI(E, {
-            showCurrent: true
+            showCurrent: true,
+            viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
+            commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
         });
         // std:ui:choose
         var text = M.getTextMaybe("docstore-review-prompt:"+spec.name) ||
@@ -369,6 +380,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         var ui = instance.makeViewerUI(E, {
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: true,
+            viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
+            commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-draft-warning-text:"+
                 spec.name) || "This is a draft version"
         });
@@ -398,6 +411,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         var ui = instance.makeViewerUI(E, {
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
+            addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
+            viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
+            commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name)
         });
@@ -414,6 +430,23 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             ui: ui
         }, "workflow/view");
     });
+
+    // ----------------------------------------------------------------------
+
+    if(delegate.enablePerElementComments) {
+
+        var checkPermissions = function(M, action) {
+            return can(M, O.currentUser, spec, action);
+        };
+
+        plugin.respond("GET,POST", spec.path+'/comments', [
+            {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+        ], function(E, workUnit) {
+            var M = workflow.instance(workUnit);
+            O.service("std:document_store:comments:respond", E, docstore, M, checkPermissions);
+        });
+
+    }
 
     // ----------------------------------------------------------------------
 
