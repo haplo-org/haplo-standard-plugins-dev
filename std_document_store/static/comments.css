@@ -7,22 +7,47 @@
 .z__docstore_add_comment {
     position: absolute;
     top: 0;
-    right: 0;
-    background: #ddd;
+    right: -26px;
+}
+
+.z__docstore_add_comment_button {
+    background: url(comment.svg) right no-repeat;
+    color: transparent;
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.z__docstore_add_comment_button:hover {
+    color: #000;
+    width: 132px;
+    text-decoration: none;
+    background-color: #eee;
+    border-radius: 4px;
+    font-weight: bold;
+    padding: 4px 0 0 12px;
 }
 
 .z__docstore_comment_container {
     background: #eee;
     border: 1px solid #ddd;
     border-radius: 3px;
-    padding: 4px;
-    margin: 4px 0;
+    padding: 1px 4px 4px 4px;
+    margin: 4px 0 4px 24px;
 }
 
 .z__docstore_comment_header {
-    border: 1px solid #ccc;
-    padding: 2px 8px;
-    border-radius: 3px;
+    padding: 0px 4px;
+    font-size: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.z__docstore_comment_username {
+    font-weight: bold;
+}
+
+.z__docstore_comment_datetime {
+    float:right;
 }
 
 .z__docstore_comment_container p {
@@ -30,14 +55,15 @@
     margin: 2px 0;
 }
 
-/* TODO: Proper styling */
-.z__docstore_comment_previous_version,
+.z__docstore_comment_previous_version {
+    border: 2px solid #800;
+}
+
 .z__docstore_comment_later_version {
-    border: 4px solid #f0f;
+    border: 2px solid #080;
 }
 
 .z__docstore_comment_different_version_msg {
     text-align: center;
-    font-size: 10px;
     font-style: italic;
 }

@@ -13,3 +13,8 @@ Tablesort.js
 std_reporting/static/tablesort.js
   https://github.com/tristen/tablesort
   MIT License
+
+Font Awesome (comment icon)
+std_document_store/static/comment.svg
+  http://fontawesome.io/
+  http://fontawesome.io/license/

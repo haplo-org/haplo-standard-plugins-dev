@@ -18,9 +18,15 @@
         var displayComment = function(formId, uname, comment, insertAtTop) {
             var element = $('#'+formId+' div[data-uname='+uname+']');
             var div = $('<div class="z__docstore_comment_container"></div>');
-            div.append($('<div></div>', {
-                "class": "z__docstore_comment_header",
-                text: (userNameLookup[comment.uid]||'') + ' @ ' + comment.datetime
+            var header = $('<div class="z__docstore_comment_header"></div>');
+            div.append(header);
+            header.append($('<div></div>', {
+                "class": "z__docstore_comment_datetime",
+                text: comment.datetime
+            }));
+            header.append($('<div></div>', {
+                "class": "z__docstore_comment_username",
+                text: (userNameLookup[comment.uid]||'')
             }));
             _.each(comment.comment.split(/[\r\n]+/), function(p) {
                 p = $.trim(p);
@@ -35,7 +41,7 @@
                 versionMsg = 'This comment refers to a later version of this form.';
             }
             if(versionMsg) {
-                div.append($('<div></div>', {
+                header.append($('<div></div>', {
                     "class": "z__docstore_comment_different_version_msg",
                     text: versionMsg
                 }));
@@ -85,7 +91,7 @@
             $('#z__docstore_body div[data-uname]').each(function() {
                 // Ignore if this contains other elements with unames
                 if($('div[data-uname]',this).length) { return; }
-                $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#">Add comment</a></div>');
+                $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment</a></div>');
             });
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
