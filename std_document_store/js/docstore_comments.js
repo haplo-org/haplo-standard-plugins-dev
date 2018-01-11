@@ -1,16 +1,5 @@
 
 // checkPermissions called with key & action, where action is 'addComment' or 'viewComments'
-
-var rowForClient = function(row) {
-    return {
-        id: row.id,
-        uid: row.userId,
-        version: row.version,
-        datetime: (new XDate(row.datetime)).toString("dd MMM yyyy HH:mm"),
-        comment: row.comment
-    };
-};
-
 P.implementService("std:document_store:comments:respond", function(E, docstore, key, checkPermissions) {
     E.response.kind = 'json';
 
@@ -73,3 +62,15 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
 
     E.response.body = JSON.stringify(response);
 });
+
+// --------------------------------------------------------------------------
+
+var rowForClient = function(row) {
+    return {
+        id: row.id,
+        uid: row.userId,
+        version: row.version,
+        datetime: (new XDate(row.datetime)).toString("dd MMM yyyy HH:mm"),
+        comment: row.comment
+    };
+};

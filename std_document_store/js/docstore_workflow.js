@@ -40,6 +40,7 @@ P.use("std:workflow");
 //              version before they can transition
 //    addComment: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can comment on the forms
 //    viewComments: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the comments
+//    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
 //    ----------
 //    actionableUserMustReview: (selector) - a selector which specifies when the
 //              current actionable user should be shown the completed document and
@@ -47,6 +48,8 @@ P.use("std:workflow");
 //              like {pendingTransitions:[...]} to narrow down to individual transitions
 
 // ----------------------------------------------------------------------------
+
+var DEFAULT_HIDE_COMMENTS_WHEN = {closed:true};
 
 var Delegate = function() { };
 Delegate.prototype = {
@@ -341,7 +344,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         var ui = instance.makeViewerUI(E, {
             showCurrent: true,
             viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
-            commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
+            commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined
         });
         // std:ui:choose
         var text = M.getTextMaybe("docstore-review-prompt:"+spec.name) ||
@@ -420,6 +423,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
             viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
+            hideCommentsByDefault: delegate.enablePerElementComments ? M.selected(spec.hideCommentsByDefault||DEFAULT_HIDE_COMMENTS_WHEN) : true,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name)
         });

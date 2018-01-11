@@ -121,6 +121,16 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         if(!this.versionForComments) {
             this.requiresComments = false;  // disable if there isn't a committed version yet, so won't have comments anyway
         }
+        // Don't want to clutter up display of final versions, so comments can be turned off
+        if(this.requiresComments && this.options.hideCommentsByDefault && (E.request.parameters.comments !== "1")) {
+            this.requiresComments = false;  // just turn it all off
+            var numberOfComments = store.commentsTable.select().
+                where("keyId","=",instance.keyId).
+                count();
+            if(numberOfComments > 0) {
+                this.couldShowNumberOfComments = numberOfComments;
+            }
+        }
     }
 
     // Get any additional UI to display
