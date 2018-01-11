@@ -287,7 +287,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             O.stop("Not permitted.");
         }
         var instance = docstore.instance(M);
-        instance.handleEditDocument(E, editor);
+        var configuredEditor = editor;
+        if(delegate.enablePerElementComments) {
+            configuredEditor = Object.create(editor);
+            configuredEditor.viewComments = can(M, O.currentUser, spec, 'viewComments');
+            configuredEditor.commentsUrl = spec.path+"/comments/"+M.workUnit.id;
+        }
+        instance.handleEditDocument(E, configuredEditor);
     });
 
     // ------------------------------------------------------------------------
