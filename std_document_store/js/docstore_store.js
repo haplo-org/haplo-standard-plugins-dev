@@ -41,9 +41,10 @@ var DocumentStore = P.DocumentStore = function(P, delegate) {
     if(this.enablePerElementComments) {
         var commentsDbName = "dsComment"+dbNameFragment;
         P.db.table(commentsDbName, {
-            keyId:        { type:delegate.keyIdType || "int", indexed:true },
+            keyId:        { type:delegate.keyIdType || "int", indexed:true, indexedWith:"datetime" },
             version:      { type:"bigint" },
             userId:       { type:"int" },   // don't use 'user' to avoid unnecessary creation of user objects
+            datetime:     { type:"datetime"},
             formId:       { type:"text" },
             elementUName: { type:"text" },
             comment:      { type:"text" }

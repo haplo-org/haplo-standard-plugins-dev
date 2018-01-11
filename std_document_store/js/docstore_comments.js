@@ -1,6 +1,16 @@
 
 // checkPermissions called with key & action, where action is 'addComment' or 'viewComments'
 
+var rowForClient = function(row) {
+    return {
+        id: row.id,
+        uid: row.userId,
+        version: row.version,
+        datetime: (new XDate(row.datetime)).toString("dd MMM yyyy HH:mm"),
+        comment: row.comment
+    };
+};
+
 P.implementService("std:document_store:comments:respond", function(E, docstore, key, checkPermissions) {
     E.response.kind = 'json';
 
@@ -28,28 +38,29 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 keyId: instance.keyId,
                 version: version,
                 userId: O.currentUser.id,
+                datetime: new Date(),
                 formId: formId,
                 elementUName: elementUName,
                 comment: comment
             });
-            response.id = row.id;
+            row.save();
+            response.comment = rowForClient(row);
+            response.commentUserName = O.currentUser.name;
         }
 
     } else {
         // Return all comments for this document
         var users = {}, forms = {};
-        _.each(docstore.commentsTable.select().where("keyId","=",instance.keyId), function(row) {
+        var allComments = docstore.commentsTable.select().
+            where("keyId","=",instance.keyId).
+            order("datetime", true);    // latest comments first
+        _.each(allComments, function(row) {
             var form = forms[row.formId];
             if(!form) { form = forms[row.formId] = {}; }
             var comments = form[row.elementUName];
             if(!comments) { comments = form[row.elementUName] = []; }
+            comments.push(rowForClient(row));
             var uid = row.userId;
-            comments.push({
-                id: row.id,
-                uid: uid,
-                version: row.version,
-                comment: row.comment
-            });
             if(!users[uid]) {
                 users[uid] = O.user(uid).name;
             }

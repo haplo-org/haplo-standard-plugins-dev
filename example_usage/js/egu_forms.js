@@ -15,6 +15,11 @@ var form0 = P.form({
                 required:true
             },
             {
+                type:"text",
+                path:"something",
+                label:"Another note",
+            },
+            {
                 type:"boolean",
                 path:"secondForm",
                 label:"Use second form?"
@@ -55,5 +60,7 @@ P.ExampleUsageWorkflow.use("std:document_store", {
         return true;
     },
     view: [{}],
-    edit: [{roles:["user"], selector:{state:"wait_submit"}}]
+    edit: [{roles:["user"], selector:{state:"wait_submit"}}],
+    addComment: [{}],
+    viewComments: [{}]
 });

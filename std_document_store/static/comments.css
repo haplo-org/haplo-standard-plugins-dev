@@ -1,0 +1,43 @@
+
+/* fix position of things which need comments */
+[data-uname] {
+    position: relative;
+}
+
+.z__docstore_add_comment {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ddd;
+}
+
+.z__docstore_comment_container {
+    background: #eee;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 4px;
+    margin: 4px 0;
+}
+
+.z__docstore_comment_header {
+    border: 1px solid #ccc;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.z__docstore_comment_container p {
+    padding: 0px 4px;
+    margin: 2px 0;
+}
+
+/* TODO: Proper styling */
+.z__docstore_comment_previous_version,
+.z__docstore_comment_later_version {
+    border: 4px solid #f0f;
+}
+
+.z__docstore_comment_different_version_msg {
+    text-align: center;
+    font-size: 10px;
+    font-style: italic;
+}

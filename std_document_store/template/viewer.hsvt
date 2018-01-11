@@ -3,11 +3,14 @@ std:plugin:resources("viewer.css")
 if(requiresComments) {
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system
-    <div id="z__docstore_comments_setup"
-        data-view=if(options.viewComments){"yes"}
-        data-add=if(options.addComment){"yes"}
+    <div id="z__docstore_comments_configuration"
+        data-displayedversion=version
+        data-view=if(options.viewComments){"1"}
+        data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
-    ></div>
+    >
+        std:form:token()
+    </div>
 }
 
 if(additionalUI.top) { render(additionalUI.top) }
