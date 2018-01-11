@@ -31,6 +31,8 @@
 
 .z__docstore_comment_enter_ui,
 .z__docstore_comment_container {
+    position: relative;
+    z-index: 99999; /* hack to avoid delete on repeating sections overlapping */
     background: #eee;
     border: 1px solid #ddd;
     border-radius: 3px;
