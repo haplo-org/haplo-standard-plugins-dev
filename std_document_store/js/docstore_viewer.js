@@ -28,7 +28,8 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     if("version" in this.options) {
         this.version = this.options.version;
     } else if(this.options.showVersions && ("version" in E.request.parameters)) {
-        this.version = parseInt(E.request.parameters.version, 10);
+        var vstr = E.request.parameters.version;
+        this.version = (vstr === '') ? undefined : parseInt(vstr,10);
     }
 
     // Requested change?
@@ -107,11 +108,18 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
     }
 
-    // Commenting?
-    if(this.options.viewComments || this.options.addComment) {
+    // Commenting? (but only if we're not showing changes)
+    if(!(this.showChangesFrom) && (this.options.viewComments || this.options.addComment)) {
         this.requiresComments = true;
         if(!this.options.commentsUrl) {
             throw new Error("viewComments or addComment used in docstore viewer, but commentsUrl not specified");
+        }
+        this.versionForComments = this.version;
+        if(!this.versionForComments) {
+            this.versionForComments = instance.committedVersionNumber;
+        }
+        if(!this.versionForComments) {
+            this.requiresComments = false;  // disable if there isn't a committed version yet, so won't have comments anyway
         }
     }
 

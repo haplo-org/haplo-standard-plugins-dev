@@ -4,7 +4,7 @@ if(requiresComments) {
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system
     <div id="z__docstore_comments_configuration"
-        data-displayedversion=version
+        data-displayedversion=versionForComments
         data-view=if(options.viewComments){"1"}
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
