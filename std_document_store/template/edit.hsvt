@@ -6,6 +6,7 @@ if(viewComments) {
     <div id="z__docstore_comments_configuration"
         data-displayedversion=versionForComments
         data-view=if(viewComments){"1"}
+        data-onlyform=activePage.form.formId
         data-url=commentsUrl
     >
         std:form:token()

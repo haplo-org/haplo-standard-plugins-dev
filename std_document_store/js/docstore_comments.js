@@ -54,6 +54,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         var allComments = docstore.commentsTable.select().
             where("keyId","=",instance.keyId).
             order("datetime", true);    // latest comments first
+        var onlyCommentsForForm = E.request.parameters.onlyform;
+        if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
         _.each(allComments, function(row) {
             var form = forms[row.formId];
             if(!form) { form = forms[row.formId] = {}; }

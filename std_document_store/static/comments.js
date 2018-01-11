@@ -7,6 +7,7 @@
         var configDiv = $('#z__docstore_comments_configuration')[0],
             displayedVersion = configDiv.getAttribute('data-displayedversion')*1,
             viewingComments = !!configDiv.getAttribute('data-view'),
+            onlyViewingCommentsForForm = configDiv.getAttribute('data-onlyform'),
             canAddComment = !!configDiv.getAttribute('data-add'),
             commentServerUrl = configDiv.getAttribute('data-url');
 
@@ -53,7 +54,12 @@
 
         // Viewing comments?
         if(viewingComments) {
+            var data = {};
+            if(onlyViewingCommentsForForm) {
+                data.onlyform = onlyViewingCommentsForForm;
+            }
             $.ajax(commentServerUrl, {
+                data: data,
                 dataType: "json",
                 success: function(data) {
                     if(data.result !== "success") {
