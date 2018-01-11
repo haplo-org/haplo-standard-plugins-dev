@@ -95,11 +95,39 @@
             });
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
-                var comment = window.prompt("Add comment to form --- TODO: replace with better UI");
+
+                var commentBox = $('<div class="z__docstore_comment_enter_ui"><span><textarea rows="4"></textarea></span><div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>');
+
+                var element = $(this).parents('[data-uname]').first();
+                var existingComments = $('.z__docstore_comment_container', element);
+                if(existingComments.length) {
+                    existingComments.first().before(commentBox);
+                } else {
+                    element.append(commentBox);
+                }
+                $(this).hide(); // hide button to avoid
+                window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
+            });
+
+            // Cancel making comment
+            $('#z__docstore_body').on('click', 'a.z__docstore_comment_enter_cancel', function(evt) {
+                evt.preventDefault();
+                var element = $(this).parents('[data-uname]').first();
+                $('.z__docstore_comment_enter_ui', element).remove();
+                $('.z__docstore_add_comment_button', element).show();
+            });
+
+            // Submit a comment
+            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input', function(evt) {
+                evt.preventDefault();
+                var element = $(this).parents('[data-uname]').first();
+                var comment = $.trim($('textarea', element).val());
+                $('.z__docstore_comment_enter_ui', element).remove();
+                $('.z__docstore_add_comment_button', element).show();
+
                 if(comment) {
-                    var element = $(this),
-                        formId = element.parents('.z__docstore_form_display').first()[0].id,
-                        uname = element.parents('[data-uname]').first()[0].getAttribute('data-uname');
+                    var formId = element.parents('.z__docstore_form_display').first()[0].id,
+                        uname = element[0].getAttribute('data-uname');
                     $.ajax(commentServerUrl, {
                         method: "POST",
                         data: {
@@ -121,6 +149,7 @@
                     });
                 }
             });
+
         }
 
     });
