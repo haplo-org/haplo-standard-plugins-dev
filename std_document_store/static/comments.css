@@ -8,6 +8,7 @@
     position: absolute;
     top: 0;
     right: -26px;
+    z-index: 99999;
 }
 
 .z__docstore_add_comment_button {

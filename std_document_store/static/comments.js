@@ -16,7 +16,7 @@
         var userNameLookup = {};
 
         var displayComment = function(formId, uname, comment, insertAtTop) {
-            var element = $('#'+formId+' div[data-uname='+uname+']');
+            var element = $('#'+formId+' div[data-uname="'+uname+'"]');
             var div = $('<div class="z__docstore_comment_container"></div>');
             var header = $('<div class="z__docstore_comment_header"></div>');
             div.append(header);

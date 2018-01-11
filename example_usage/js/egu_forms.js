@@ -20,6 +20,38 @@ var form0 = P.form({
                 label:"Another note",
             },
             {
+                "type": "repeating-section",
+                "path": "researchLocation",
+                "label": "If your research fieldwork takes place outside of the UK, please state the location.",
+                "allowAdd": true,
+                "allowDelete": true,
+                "elements": [
+                    { "type": "text",      "path": "region",      "label": "Region" },
+                    { "type": "choice",    "path": "country",     "label": "Country",
+                      "choices": [
+                        ["GB", "United Kingdom"],
+                        ["AD", "Andorra"],
+                        ["AX", "Åland Islands"],
+                        ["AF", "Afghanistan"],
+                        ["AL", "Albania"],
+                        ["DZ", "Algeria"],
+                        ["AS", "American Samoa"],
+                        ["AO", "Angola"],
+                        ["AI", "Anguilla"],
+                        ["AQ", "Antarctica"],
+                        ["AG", "Antigua and Barbuda"],
+                        ["AR", "Argentina"]
+                      ]
+                    }
+                ]
+            },
+            {
+              "type": "date",
+              "path": "startDate",
+              "label": "Project start date",
+              "required": true
+            },
+            {
                 type:"boolean",
                 path:"secondForm",
                 label:"Use second form?"
