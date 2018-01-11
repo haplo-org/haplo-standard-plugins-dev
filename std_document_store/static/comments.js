@@ -14,7 +14,7 @@
 
         var userNameLookup = {};
 
-        var displayComment = function(formId, uname, comment) {
+        var displayComment = function(formId, uname, comment, insertAtTop) {
             var element = $('#'+formId+' div[data-uname='+uname+']');
             var div = $('<div class="z__docstore_comment_container"></div>');
             div.append($('<div></div>', {
@@ -38,6 +38,13 @@
                     "class": "z__docstore_comment_different_version_msg",
                     text: versionMsg
                 }));
+            }
+            if(insertAtTop) {
+                var existingComments = $('.z__docstore_comment_container', element);
+                if(existingComments.length) {
+                    existingComments.first().before(div);
+                    return;
+                }
             }
             element.append(div);
         };
@@ -97,7 +104,7 @@
                                 return;
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
-                            displayComment(formId, uname, data.comment);
+                            displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         }
                     });
                 }
