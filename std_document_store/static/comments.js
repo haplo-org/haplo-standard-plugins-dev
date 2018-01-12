@@ -88,14 +88,11 @@
 
         var updateShowCommentsOnlyUI = function() {
             if(!viewingComments || !isViewer) { return; }
-            var commentCount = $('.z__docstore_comment_container').length;
-            if(commentCount) {
+            if($('.z__docstore_comment_container').length) {
                 if($('#z__docstore_show_only_comments').length === 0) {
-                    var showOnlyUI = $('<div><span id="z__docstore_show_only_comments"><label><input type="checkbox">Only show <span id="z__docstore_show_only_comments_count"></span> question<span id="z__docstore_show_only_comments_plural" style="display:none">s</span> with comments</label></span></div>');
+                    var showOnlyUI = $('<div><span id="z__docstore_show_only_comments"><label><input type="checkbox">Only show questions with comments</label></span></div>');
                     $('#z__docstore_body').prepend(showOnlyUI);
                 }
-                $('#z__docstore_show_only_comments_count').text(''+commentCount);
-                if(commentCount > 1) { $('#z__docstore_show_only_comments_plural').show(); }
             }
         };
 
