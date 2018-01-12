@@ -101,10 +101,20 @@
             if(show) {
                 $('div[data-uname]').show();
             } else {
+                var containers = [];
                 $('div[data-uname]').each(function() {
-                    if($('div[data-uname]',this).length) { return; }
-                    if($('.z__docstore_comment_container',this).length === 0) {
-                        $(this).hide();
+                    if($('div[data-uname]',this).length) {
+                        containers.push(this);
+                    } else {
+                        if($('.z__docstore_comment_container',this).length === 0) {
+                            $(this).hide();
+                        }
+                    }
+                });
+                // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
+                _.each(containers, function(container) {
+                    if($('div[data-uname]:visible',container).length === 0) {
+                        $(container).hide();
                     }
                 });
             }
@@ -116,7 +126,8 @@
         if(canAddComment) {
             $('#z__docstore_body div[data-uname]').each(function() {
                 // Ignore if this contains other elements with unames
-                if($('div[data-uname]',this).length) { return; }
+                if($('[data-uname]',this).length) { return; }
+                if(!/\S/.test(this.innerText||'')) { return; }  // no text/labels to comment on
                 $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment</a></div>');
             });
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {

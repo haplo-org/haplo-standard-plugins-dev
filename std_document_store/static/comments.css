@@ -16,7 +16,7 @@
     position: absolute;
     top: 0;
     right: -26px;
-    z-index: 99999;
+    z-index: 8990;
 }
 
 .z__docstore_add_comment_button {
@@ -40,13 +40,16 @@
 .z__docstore_comment_enter_ui,
 .z__docstore_comment_container {
     position: relative;
-    z-index: 99999; /* TODO: fix this hack properly (this obsurces 'delete' in repeating sections, as otherwise they'd overlap) */
-    background: #eee;
+    z-index: 8990; /* TODO: fix this hack properly (this obsurces 'delete' in repeating sections, as otherwise they'd overlap) */
     border: 1px solid #ddd;
     border-radius: 3px;
     margin: 4px 0 4px 24px;
 }
+.z__docstore_comment_enter_ui {
+    background: #ececec;
+}
 .z__docstore_comment_container {
+    background: #eee;
     padding: 1px 4px 4px 4px;
 }
 
