@@ -36,8 +36,10 @@
     background: #eee;
     border: 1px solid #ddd;
     border-radius: 3px;
-    padding: 1px 4px 4px 4px;
     margin: 4px 0 4px 24px;
+}
+.z__docstore_comment_container {
+    padding: 1px 4px 4px 4px;
 }
 
 .z__docstore_comment_header {
@@ -74,6 +76,7 @@
 
 .z__docstore_comment_enter_ui div {
     text-align: right;
+    padding: 0 2% 4px 0;
 }
 
 .z__docstore_comment_enter_ui a,
@@ -87,6 +90,6 @@
     display: block;
 }
 .z__docstore_comment_enter_ui textarea {
-    width: 474px;
-    margin-top: 4px;
+    width: 95%; /* needs to be % because width of box is variable (repeating section borders) */
+    margin: 6px 0;
 }
