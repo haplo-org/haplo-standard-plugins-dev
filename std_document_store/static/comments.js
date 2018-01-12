@@ -128,7 +128,7 @@
                 // Ignore if this contains other elements with unames
                 if($('[data-uname]',this).length) { return; }
                 if(!/\S/.test(this.innerText||'')) { return; }  // no text/labels to comment on
-                $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment</a></div>');
+                $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment<span></span></a></div>');
             });
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();

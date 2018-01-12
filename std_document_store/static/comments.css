@@ -20,9 +20,18 @@
 }
 
 .z__docstore_add_comment_button {
-    background: url(comment.svg) right no-repeat;
     color: transparent;
     display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.z__docstore_add_comment_button span {
+    background: url(comment.svg) bottom right no-repeat;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
     width: 24px;
     height: 24px;
 }
@@ -35,6 +44,11 @@
     border-radius: 4px;
     font-weight: bold;
     padding: 4px 0 0 12px;
+}
+
+.z__docstore_add_comment_button:hover span {
+    width: 26px;
+    height: 26px;
 }
 
 .z__docstore_comment_enter_ui,
