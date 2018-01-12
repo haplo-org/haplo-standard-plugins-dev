@@ -9,7 +9,8 @@
             viewingComments = !!configDiv.getAttribute('data-view'),
             onlyViewingCommentsForForm = configDiv.getAttribute('data-onlyform'),
             canAddComment = !!configDiv.getAttribute('data-add'),
-            commentServerUrl = configDiv.getAttribute('data-url');
+            commentServerUrl = configDiv.getAttribute('data-url'),
+            isViewer = !!configDiv.getAttribute('data-isviewer');
 
         // ------------------------------------------------------------------
 
@@ -80,9 +81,37 @@
                             });
                         });
                     });
+                    updateShowCommentsOnlyUI();
                 }
             });
         }
+
+        var updateShowCommentsOnlyUI = function() {
+            if(!viewingComments || !isViewer) { return; }
+            var commentCount = $('.z__docstore_comment_container').length;
+            if(commentCount) {
+                if($('#z__docstore_show_only_comments').length === 0) {
+                    var showOnlyUI = $('<div><span id="z__docstore_show_only_comments"><label><input type="checkbox">Only show <span id="z__docstore_show_only_comments_count"></span> question<span id="z__docstore_show_only_comments_plural" style="display:none">s</span> with comments</label></span></div>');
+                    $('#z__docstore_body').prepend(showOnlyUI);
+                }
+                $('#z__docstore_show_only_comments_count').text(''+commentCount);
+                if(commentCount > 1) { $('#z__docstore_show_only_comments_plural').show(); }
+            }
+        };
+
+        $('#z__docstore_body').on('click', '#z__docstore_show_only_comments input', function() {
+            var show = !this.checked;
+            if(show) {
+                $('div[data-uname]').show();
+            } else {
+                $('div[data-uname]').each(function() {
+                    if($('div[data-uname]',this).length) { return; }
+                    if($('.z__docstore_comment_container',this).length === 0) {
+                        $(this).hide();
+                    }
+                });
+            }
+        });
 
         // ------------------------------------------------------------------
 
@@ -145,6 +174,7 @@
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
+                            updateShowCommentsOnlyUI();
                         }
                     });
                 }

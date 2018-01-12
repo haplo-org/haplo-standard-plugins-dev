@@ -4,6 +4,14 @@
     position: relative;
 }
 
+#z__docstore_show_only_comments {
+    display: inline-block;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 12px 4px 6px;
+}
+
 .z__docstore_add_comment {
     position: absolute;
     top: 0;

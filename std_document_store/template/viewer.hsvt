@@ -8,6 +8,7 @@ if(requiresComments) {
         data-view=if(options.viewComments){"1"}
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
+        data-isviewer="1"
     >
         std:form:token()
     </div>
