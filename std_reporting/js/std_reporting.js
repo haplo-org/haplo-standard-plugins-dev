@@ -403,7 +403,19 @@ var factValueComparisonFunctions = {
     "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch
 };
 
+// Used for reporting exceptions in full collection updates
+var _exceptionObj;
+
 var updateFacts = function(collection, object, existingRow, timeNow) {
+    try {
+        _updateFacts(collection, object, existingRow, timeNow);
+    } catch(e) {
+        _exceptionObj = object;
+        throw e;
+    }
+};
+
+var _updateFacts = function(collection, object, existingRow, timeNow) {
     if($StdReporting.shouldStopUpdating()) {
         var e = new Error("Updates interrupted");
         e.$isPlatformStopUpdating = true;
@@ -597,8 +609,9 @@ P.callback("$update", function() {
             console.log("Updating, caught error: "+e.message);
             if(reportNextExceptionFromUpdates) {
                 O.reportHealthEvent("Exception in std_reporting collection update",
-                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);
+                    "Exception thrown when updating facts for an object: "+_exceptionObj.ref.toString()+". NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);
                 reportNextExceptionFromUpdates = false; // don't send too many, just one per runtime gives the right idea
+                _exceptionObj = undefined;
             }
             // In the error state, fall through to clearing updates, so it's not retried
             // endlessly. It'll be fixed eventually in a nightly update.
