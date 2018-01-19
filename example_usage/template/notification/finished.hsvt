@@ -1,5 +1,29 @@
 emailSubject("Example notification")
 
+M:text("
+  This is some example test.
+  Hello @user@ (interpolated).
+")
+
 <p> "The workflow has finished" </p>
 
+M:button()
+M:button("Other title")
+M:button("Other url" "/abc")
+
 <p> "Value is '" value "'" </p>
+
+<p> "Has user? " M:if-entity("user") { "true" } else { "false" } </p>
+<p> "Has nullEntity? " M:if-entity("nullEntity") { "true" } else { "false" } </p>
+
+<p> "First name: " M:first-name("user") </p>
+<p> "First name2: " M:first-name(M.entities.user_maybe) </p>
+<p> "Last name: " M:last-name("user") </p>
+
+<p> "List (args): " M:list("1" "2" "3") </p>
+<p> "List (entities): " M:entity-list("user") </p>
+
+<p> "List 0: " M:list(list0) </p>
+<p> "List 1: " M:list(list1) </p>
+<p> "List 2: " M:list(list2) </p>
+<p> "List 3: " M:list(list3) </p>

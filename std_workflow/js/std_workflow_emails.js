@@ -270,3 +270,83 @@ P.WorkflowInstanceBase.prototype._maybeSendNotificationOnEnterState = function(s
         this.sendNotification(state);
     }
 };
+
+// --------------------------------------------------------------------------
+
+// Template functions to make writing notifications easier
+
+P.globalTemplateFunction("M:text", function(text) {
+    var M = this.view.M;
+    var t = M._applyFunctionListToValue('$textInterpolate', text) || text;
+    this.render(P.template("n/text").deferredRender({
+        // don't use std:text:paragraph as we assume there'll be lots of extra whitespace for indents
+        paragraphs: _.strip(t).split(/\s*\n\s*/)
+    }));
+});
+
+P.globalTemplateFunction("M:if-entity", function(entityName) {
+    var ref = this.view.M.entities[entityName+"_refMaybe"];
+    if(ref) {
+        if(this.hasBlock(null)) { this.writeBlock(null); }
+    } else {
+        if(this.hasBlock("else")) { this.writeBlock("else"); }
+    }
+});
+
+P.globalTemplateFunction("M:button", function(title, url) {
+    var M = this.view.M;
+    this.render(P.template("n/button").deferredRender({
+        title: title || M.title,
+        url:   url   || M.url
+    }));
+});
+
+P.globalTemplateFunction("M:list", function(/* args */) {
+    templateFunctionRenderList(this, _.flatten(Array.prototype.slice.call(arguments)));
+});
+
+P.globalTemplateFunction("M:entity-list", function(entityName) {
+    var M = this.view.M;
+    templateFunctionRenderList(this, M.entities[entityName+"_list"]);
+});
+
+var templateFunctionRenderList = function(t, items) {
+    var strings = _.map(_.compact(items), function(item) {
+        if(typeof(item) === "string") {
+            return item;
+        } else if(O.isRef(item)) {
+            return item.load().title;
+        } else if(item instanceof $StoreObject) {
+            return item.title;
+        } else {
+            return ""+item;
+        }
+    });
+    var first = strings.shift();
+    var last = strings.pop();
+    t.render(P.template("n/list").deferredRender({
+        first: first,
+        middle: strings,
+        last: last
+    }));
+};
+
+
+P.globalTemplateFunction("M:first-name", function(object) {
+    return templateFunctionNamePart(this, "first", object);
+});
+
+P.globalTemplateFunction("M:last-name", function(object) {
+    return templateFunctionNamePart(this, "last", object);
+});
+
+var templateFunctionNamePart = function(t, part, object) {
+    if(!object) { return ""; }
+    if(typeof(object) === "string") { object = t.view.M.entities[object]; }
+    var title = object.firstTitle();
+    if(O.typecode(title) === O.T_TEXT_PERSON_NAME) {
+        var f = title.toFields();
+        return f[part];
+    }
+    return title.toString();
+};
