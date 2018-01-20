@@ -1,5 +1,5 @@
 
-// checkPermissions called with key & action, where action is 'addComment' or 'viewComments'
+// checkPermissions called with key & action, where action is 'addComment', 'viewComments' or 'viewCommentsOtherUsers'
 P.implementService("std:document_store:comments:respond", function(E, docstore, key, checkPermissions) {
     E.response.kind = 'json';
 
@@ -43,6 +43,9 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         var allComments = docstore.commentsTable.select().
             where("keyId","=",instance.keyId).
             order("datetime", true);    // latest comments first
+        if(!checkPermissions(key, 'viewCommentsOtherUsers')) {
+            allComments.where("userId","=",O.currentUser.id);
+        }
         var onlyCommentsForForm = E.request.parameters.onlyform;
         if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
         _.each(allComments, function(row) {

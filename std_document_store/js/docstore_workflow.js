@@ -40,6 +40,8 @@ P.use("std:workflow");
 //              version before they can transition
 //    addComment: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can comment on the forms
 //    viewComments: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the comments
+//    viewCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the 
+//              comments of other users. Defaults to same value as viewComments.
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
 //    ----------
 //    actionableUserMustReview: (selector) - a selector which specifies when the
@@ -446,6 +448,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     if(delegate.enablePerElementComments) {
 
         var checkPermissions = function(M, action) {
+            if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
+                action = "viewComments";
+            }
             return can(M, O.currentUser, spec, action);
         };
 
