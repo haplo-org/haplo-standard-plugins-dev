@@ -61,7 +61,7 @@
 
         // Viewing comments?
         if(viewingComments) {
-            var data = {};
+            var data = {t:(new Date()).getTime()}; // help prevent naughty browsers caching
             if(onlyViewingCommentsForForm) {
                 data.onlyform = onlyViewingCommentsForForm;
             }
