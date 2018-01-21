@@ -14,8 +14,6 @@ P.allWorkflows = {}; // workType -> workflow object
 
 P.workflowFeatures = {}; // name -> function(workflow)
 
-P.workflowServices = {}; // worktype --> {name --> [[function(M, args), serviceThis]]}
-
 // --------------------------------------------------------------------------
 
 P.workflowNameToDatabaseTableFragment = function(name) {
@@ -321,35 +319,21 @@ WorkflowInstanceBase.prototype = {
         return returnValue;
     },
 
-    // Call each workflow service function, returning the value of the first
-    // one which returns a value which isn't undefined.
-    _workflowServiceCall: function(serviceRegistration, args) {
-        for(let i = 0; i < serviceRegistration.length; i++) {
-            let s = serviceRegistration[i];
-            // Call the function
-            let r = s[0].apply(s[1], [this].concat(args));
-            if(undefined !== r) { return r; }
-        }
-    },
-
+    // NOTE: Order of calling implementation is reversed compared to O.service() for consistency with workflow function lists
     workflowService: function(name /* arg1, arg2, ... */) {
-        let registry = P.workflowServices[this.workUnit.workType];
-        if(!registry || !(name in registry)) {
+        var listName = "$wfsrv$ "+name;
+        if(!(listName in this)) {
             throw new Error("No provider for workflow service "+name+" on workType "+this.workUnit.workType);
         }
-        return this._workflowServiceCall(registry[name], _.tail(arguments));
+        return this._call.apply(this, [listName].concat(_.tail(arguments)));
     },
 
     workflowServiceMaybe: function(name /* arg1, arg2, ... */) {
-        let registry = P.workflowServices[this.workUnit.workType];
-        if(registry && (name in registry)) {
-            return this._workflowServiceCall(registry[name], _.tail(arguments));
-        }
+        return this._call.apply(this, ["$wfsrv$ "+name].concat(_.tail(arguments)));
     },
 
     workflowServiceImplemented: function(name) {
-        let registry = P.workflowServices[this.workUnit.workType];
-        return !!(registry && (name in registry));
+        return !!("$wfsrv$ "+name in this);
     },
 
     // Call function list in reverse order with single argument, with the
@@ -673,9 +657,7 @@ var Workflow = P.Workflow = function(plugin, name, description) {
 var implementFunctionList = function(name) {
     var listInternalName = '$'+name;
     Workflow.prototype[name] = function(fn) {
-        var prototype = this.$instanceClass.prototype;
-        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
-        prototype[listInternalName].push(fn);
+        this._addFunctionToList(listInternalName, fn);
     };
 };
 
@@ -761,13 +743,7 @@ Workflow.prototype = {
     // ----------------------------------------------------------------------
 
     implementWorkflowService: function(name, serviceFunction) {
-        let registry = P.workflowServices[this.fullName];
-        if(!registry) {
-            registry = P.workflowServices[this.fullName] = {};
-        }
-        if(!registry[name]) { registry[name] = []; }
-        registry[name].push([serviceFunction, this]);
-        return registry[name].length;
+        this._addFunctionToList("$wfsrv$ "+name, serviceFunction);
     },
 
     // ----------------------------------------------------------------------
@@ -789,6 +765,12 @@ Workflow.prototype = {
             a.push(state.actionableBy);
         });
         return _.uniq(_.compact(a));
+    },
+
+    _addFunctionToList: function(listInternalName, fn) {
+        var prototype = this.$instanceClass.prototype;
+        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
+        prototype[listInternalName].push(fn);
     }
 };
 implementFunctionList('start');
