@@ -319,6 +319,23 @@ WorkflowInstanceBase.prototype = {
         return returnValue;
     },
 
+    // NOTE: Order of calling implementation is reversed compared to O.service() for consistency with workflow function lists
+    workflowService: function(name /* arg1, arg2, ... */) {
+        var listName = "$wfsrv$ "+name;
+        if(!(listName in this)) {
+            throw new Error("No provider for workflow service "+name+" on workType "+this.workUnit.workType);
+        }
+        return this._call.apply(this, [listName].concat(_.tail(arguments)));
+    },
+
+    workflowServiceMaybe: function(name /* arg1, arg2, ... */) {
+        return this._call.apply(this, ["$wfsrv$ "+name].concat(_.tail(arguments)));
+    },
+
+    workflowServiceImplemented: function(name) {
+        return !!("$wfsrv$ "+name in this);
+    },
+
     // Call function list in reverse order with single argument, with the
     // return value the argument to the next function
     _applyFunctionListToValue: function(list, value) {
@@ -640,9 +657,7 @@ var Workflow = P.Workflow = function(plugin, name, description) {
 var implementFunctionList = function(name) {
     var listInternalName = '$'+name;
     Workflow.prototype[name] = function(fn) {
-        var prototype = this.$instanceClass.prototype;
-        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
-        prototype[listInternalName].push(fn);
+        this._addFunctionToList(listInternalName, fn);
     };
 };
 
@@ -727,6 +742,12 @@ Workflow.prototype = {
 
     // ----------------------------------------------------------------------
 
+    implementWorkflowService: function(name, serviceFunction) {
+        this._addFunctionToList("$wfsrv$ "+name, serviceFunction);
+    },
+
+    // ----------------------------------------------------------------------
+
     // Sometimes it's necessary to get a workflow name without an instance of the workflow being available.
     // A slightly grubby way of getting it, but the full text system is not available without an instance.
     getWorkflowProcessName: function() {
@@ -744,6 +765,12 @@ Workflow.prototype = {
             a.push(state.actionableBy);
         });
         return _.uniq(_.compact(a));
+    },
+
+    _addFunctionToList: function(listInternalName, fn) {
+        var prototype = this.$instanceClass.prototype;
+        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
+        prototype[listInternalName].push(fn);
     }
 };
 implementFunctionList('start');
