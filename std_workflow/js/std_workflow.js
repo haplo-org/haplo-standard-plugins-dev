@@ -126,6 +126,7 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
         instance[list] = [impl];
     });
     this.$textLookup = {};
+    this.$notifications = {};
 };
 
 WorkflowInstanceBase.prototype = {
@@ -201,6 +202,7 @@ WorkflowInstanceBase.prototype = {
             this._callHandler('$observeExit', transition);
             this.workUnit.tags.state = destination;
             this.workUnit.tags.target = destinationTarget;
+            this._maybeSendNotificationOnEnterState(destination);
 
             // Dispatch states are used to make decisions which skip other states
             var safety = 256;
@@ -221,6 +223,7 @@ WorkflowInstanceBase.prototype = {
                 stateDefinition = this.$states[destination];
                 if(!stateDefinition) { throw new Error("Workflow does not have destination state after dispatch: "+destination); }
                 this.workUnit.tags.state = destination;
+                this._maybeSendNotificationOnEnterState(destination);
             }
             if(safety <= 0) { throw new Error("Went through too many dispatch states when attempting transition (possible loop)"); }
 
@@ -273,6 +276,7 @@ WorkflowInstanceBase.prototype = {
             this._setPendingTransition(undefined);
         }
         this._callHandler('$observeEnter', entry.action, entry.previousState);
+        this._maybeSendNotificationOnEnterState(entry.state);
         this._saveWorkUnit();
         this.$timeline.create({
             workUnitId: this.workUnit.id,

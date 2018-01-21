@@ -72,6 +72,14 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
     }
 });
 
+DocumentInstance.prototype.__defineGetter__("committedVersionNumber", function() {
+    var latest = this.store.versionsTable.select().
+        where("keyId","=",this.keyId).
+        order("version", true).
+        limit(1);
+    return latest.length ? latest[0].version : undefined;
+});
+
 DocumentInstance.prototype._notifyDelegate = function(fn) {
     var delegate = this.store.delegate;
     if(delegate[fn]) {
@@ -185,7 +193,7 @@ DocumentInstance.prototype._displayForms = function(document) {
 };
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix) {
+DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix, requiresUNames) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
@@ -194,6 +202,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
+        if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }
@@ -254,6 +263,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     var instance = this,
         delegate = this.store.delegate,
         cdocument = this.currentDocument,
+        requiresUNames = !!actions.viewComments,
         forms,
         pages, isSinglePage,
         activePage;
@@ -266,6 +276,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
+            if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
             if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, cdocument) || actions._showAllForms) {
                 if(delegate.prepareFormInstance) {
                     delegate.prepareFormInstance(instance.key, form, formInstance, "form");
@@ -381,6 +392,9 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         }
         actions.render(this, E, P.template("edit").deferredRender({
             isSinglePage: isSinglePage,
+            viewComments: actions.viewComments,
+            commentsUrl: actions.commentsUrl,
+            versionForComments: actions.viewComments ? this.committedVersionNumber : undefined,
             saveButtonStyle: saveButtonStyle,
             navigation: navigation,
             showFormTitles: actions.showFormTitlesWhenEditing,
