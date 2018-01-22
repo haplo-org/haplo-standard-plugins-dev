@@ -250,6 +250,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         // Render!
         return P.template("dashboard/list/widget_object_filter").deferredRender({
             fact: fact.toLowerCase(),
+            upperCaseFact: fact,
             placeholder: placeholder,
             objects: objects
         });
