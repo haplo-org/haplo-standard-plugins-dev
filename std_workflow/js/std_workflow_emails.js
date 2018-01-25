@@ -295,8 +295,9 @@ P.globalTemplateFunction("M:if-entity", function(entityName) {
 
 P.globalTemplateFunction("M:button", function(title, url) {
     var M = this.view.M;
+    var t = M._applyFunctionListToValue('$textInterpolate', title) || title;
     this.render(P.template("n/button").deferredRender({
-        title: title || M.title,
+        title: t || M.title,
         url:   url   || M.url
     }));
 });
