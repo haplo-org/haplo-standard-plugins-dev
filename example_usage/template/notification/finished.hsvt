@@ -5,6 +5,9 @@ M:text("
   Hello @user@ (interpolated).
 ")
 
+M:switch-role(toUser) {}
+    user { <p>"Text specific to the role 'user'."</p> }
+
 <p> "The workflow has finished" </p>
 
 M:button()
