@@ -351,3 +351,17 @@ var templateFunctionNamePart = function(t, part, object) {
     }
     return title.toString();
 };
+
+P.globalTemplateFunction("M:switch-role", function(user) {
+    var M = this.view.M, hasRoles = [];
+    if("ref" in user) {
+        hasRoles = _.filter(this.getAllNamedBlockNames(),
+            function(name) {
+                return M.hasRole(user, name);
+            }
+        );
+    }
+    hasRoles.forEach(function(role) {
+        this.writeBlock(role);
+    }, this);
+});
