@@ -295,6 +295,7 @@ P.globalTemplateFunction("M:if-entity", function(entityName) {
 
 P.globalTemplateFunction("M:button", function(title, url) {
     var M = this.view.M;
+    if(title) { title = M._applyFunctionListToValue('$textInterpolate', title) || title; }
     this.render(P.template("n/button").deferredRender({
         title: title || M.title,
         url:   url   || M.url
@@ -350,3 +351,10 @@ var templateFunctionNamePart = function(t, part, object) {
     }
     return title.toString();
 };
+
+P.globalTemplateFunction("M:switch-role", function(user) {
+    var M = this.view.M;
+    this.getAllNamedBlockNames().forEach(function(name) {
+        if(M.hasRole(user, name)) { this.writeBlock(name); }
+    }, this);
+});
