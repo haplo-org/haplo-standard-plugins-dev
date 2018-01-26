@@ -354,11 +354,12 @@ var templateFunctionNamePart = function(t, part, object) {
 
 P.globalTemplateFunction("M:switch-role", function(user) {
     var M = this.view.M;
-    var allNames = this.getAllNamedBlockNames();
-    if(!M.hasAnyRole(user, allNames)) { this.writeBlock(null); }
-    else {
-        allNames.forEach(function(name) {
-            if(M.hasRole(user, name)) { this.writeBlock(name); }
-        }, this);
-    }
+    var haveRenderedBlock = false;
+    this.getAllNamedBlockNames().forEach(function(name) {
+        if(M.hasRole(user, name)) {
+            this.writeBlock(name);
+            haveRenderedBlock = true;
+        }
+    }, this);
+    if(!haveRenderedBlock) { this.writeBlock(null); }
 });
