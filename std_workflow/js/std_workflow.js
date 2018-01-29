@@ -130,11 +130,11 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
 
 var setDeadline = function(M) {
     var today = new XDate().clearTime();
-    var deadline = M._callHandler('$setDeadline', today);
+    var deadline = M._callHandler('$setDeadline', today.toDate());
     if(!deadline) {
-        deadline = today.addDays(DEADLINE_DEFAULT_ADD_DAYS);
+        deadline = (new XDate(today)).addDays(DEADLINE_DEFAULT_ADD_DAYS);
     }
-    M.workUnit.deadline = deadline.toDate();
+    M.workUnit.deadline = deadline;
 };
 
 WorkflowInstanceBase.prototype = {
