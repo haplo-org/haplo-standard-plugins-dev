@@ -567,7 +567,7 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
         }
         console.log("Collecting all facts for:", collection.name);
 
-        var updater = new FactUpdater(this);
+        var updater = new FactUpdater(collection);
 
         var wasUpdated, updated = 0, updatedRefs = [];
 
