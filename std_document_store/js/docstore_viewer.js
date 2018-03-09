@@ -220,12 +220,14 @@ DocumentViewer.prototype.__defineGetter__("_changesVersionView", function() {
     var vv = this._versionsView; // cached
     var options = [];
     var changesVersion = this.showChangesFrom;
+    var currentParams = this.currentParams;
     vv.forEach(function(version) {
         if(!version.selected && !version.editedVersion) {
             options.push({
                 row: version.row,
                 selected: changesVersion === version.row.version,
-                datetime: version.datetime
+                datetime: version.datetime,
+                currentParams: currentParams
             });
         }
     });
