@@ -24,6 +24,9 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
 
     var store = instance.store;
 
+    var currentParams = E.request.parameters;
+    this.currentParams = currentParams;
+    this.notShowingChanges = true;
     // Requested version?
     if("version" in this.options) {
         this.version = this.options.version;
@@ -31,12 +34,11 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         var vstr = E.request.parameters.version;
         this.version = (vstr === '') ? undefined : parseInt(vstr,10);
     }
-
     // Requested change?
     if("showChangesFrom" in this.options) {
         this.showChangesFrom = this.options.showChangesFrom;
-    } else if(this.options.showVersions && ("from" in E.request.parameters)) {
-        if(E.request.parameters.from === "previous") {
+    } else if(this.options.showVersions && E.request.parameters.changes === '1') {
+        if(!E.request.parameters.from) {
             var v = store.versionsTable.select().
                 where("keyId","=",instance.keyId).
                 order("version",true).
@@ -106,6 +108,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             O.stop("Requested previous version does not exist");
         }
         this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
+        this.notShowingChanges = false;
     }
 
     // Commenting? (but only if we're not showing changes)
@@ -132,6 +135,14 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             }
         }
     }
+
+    var params = ["filter", "comment", "changes"];
+    var that = this;
+    _.each(params, function(p) {
+        var property = p+"Params";
+        that[property] = _.clone(currentParams);
+        that[property][p] = that[property][p] === '1' ? '0' : '1';
+    });
 
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;

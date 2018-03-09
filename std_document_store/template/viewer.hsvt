@@ -9,6 +9,8 @@ if(requiresComments) {
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
         data-isviewer="1"
+        data-isviewing=currentParams.comment
+        data-filter=currentParams.filter
     >
         std:form:token()
     </div>
@@ -16,26 +18,22 @@ if(requiresComments) {
 
 if(additionalUI.top) { render(additionalUI.top) }
 
-// Only show changes UI if there are options (more than one version, show versions enabled)
-if(_changesVersionView.length) {
-  <div style="text-align:right">
-    if(showChangesFromDocument) {
-      "Changes from " <select id="z__docstore_choose_version">
-        each(_changesVersionView) {
-            <option
-                value=url(? version=^{version} from=row.version)
-                selected=if(selected) { "selected" }
-              >
-              std:date(datetime) " (" row.user.name ")"
-            </option>
-        }
-      </select><br>
-      <label><input type="checkbox" id="z__docstore_show_unchanged"> "Show unchanged"</label>
-    } else {
-      <a href=url(? version=version from="previous") class="z__button_link"> "Show changes" </a>
+<div>
+  std:ui:button-link(? *filterParams) { "Filter questions" }
+  std:ui:button-link(? *commentParams) { "Show comments" }
+  std:ui:button-link(? *changesParams) { "Show changes from:" }
+  <select id="z__docstore_choose_version" style="max-width:28%;" disabled=if(notShowingChanges){"disabled"}>
+    each(_changesVersionView) {
+        <option
+            value=url(? *currentParams version=^{version} from=row.version)
+            selected=if(selected) { "selected" }
+          >
+          std:date(datetime) " (" row.user.name ")"
+        </option>
     }
-  </div>
-}
+  </select>
+  if(errorMessage) { <p> errorMessage </p> }
+</div>
 
 unless(document) {
   std:ui:notice("The form has not yet been completed.")
@@ -56,6 +54,11 @@ if(showChangesFromDocument) {
   <div id="z__docstore_previous_version" style="display:none">
     render(_viewerShowChangesFromDocumentDeferred)
   </div>
-  template:std:oforms:changes()
   std:plugin:resources("changes.js")
+  <div id="z__docstore_changes_configuration"
+      data-changes=currentParams.changes
+      data-filter=currentParams.filter
+  >
+    template:std:oforms:changes()
+  </div>
 }

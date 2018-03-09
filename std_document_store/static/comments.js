@@ -10,7 +10,8 @@
             onlyViewingCommentsForForm = configDiv.getAttribute('data-onlyform'),
             canAddComment = !!configDiv.getAttribute('data-add'),
             commentServerUrl = configDiv.getAttribute('data-url'),
-            isViewer = !!configDiv.getAttribute('data-isviewer');
+            isViewer = !!configDiv.getAttribute('data-isviewer'),
+            filterOn = configDiv.getAttribute('data-filter') === "1";
 
         // ------------------------------------------------------------------
 
@@ -59,6 +60,7 @@
 
         // ------------------------------------------------------------------
 
+        viewingComments = configDiv.getAttribute('data-isviewing') === "1";
         // Viewing comments?
         if(viewingComments) {
             var data = {t:(new Date()).getTime()}; // help prevent naughty browsers caching
@@ -81,44 +83,29 @@
                             });
                         });
                     });
-                    updateShowCommentsOnlyUI();
+                    if(!filterOn) {
+                        $('div[data-uname]').show();
+                    } else {
+                        var containers = [];
+                        $('div[data-uname]').each(function() {
+                            if($('div[data-uname]',this).length) {
+                                containers.push(this);
+                            } else {
+                                if($('.z__docstore_comment_container',this).length === 0) {
+                                    $(this).hide();
+                                }
+                            }
+                        });
+                        // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
+                        _.each(containers, function(container) {
+                            if($('div[data-uname]:visible',container).length === 0) {
+                                $(container).hide();
+                            }
+                        });
+                    }
                 }
             });
         }
-
-        var updateShowCommentsOnlyUI = function() {
-            if(!viewingComments || !isViewer) { return; }
-            if($('.z__docstore_comment_container').length) {
-                if($('#z__docstore_show_only_comments').length === 0) {
-                    var showOnlyUI = $('<div><span id="z__docstore_show_only_comments"><label><input type="checkbox">Only show questions with comments</label></span></div>');
-                    $('#z__docstore_body').prepend(showOnlyUI);
-                }
-            }
-        };
-
-        $('#z__docstore_body').on('click', '#z__docstore_show_only_comments input', function() {
-            var show = !this.checked;
-            if(show) {
-                $('div[data-uname]').show();
-            } else {
-                var containers = [];
-                $('div[data-uname]').each(function() {
-                    if($('div[data-uname]',this).length) {
-                        containers.push(this);
-                    } else {
-                        if($('.z__docstore_comment_container',this).length === 0) {
-                            $(this).hide();
-                        }
-                    }
-                });
-                // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
-                _.each(containers, function(container) {
-                    if($('div[data-uname]:visible',container).length === 0) {
-                        $(container).hide();
-                    }
-                });
-            }
-        });
 
         // ------------------------------------------------------------------
 
@@ -182,7 +169,6 @@
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
-                            updateShowCommentsOnlyUI();
                         }
                     });
                 }
