@@ -19,10 +19,10 @@ if(requiresComments) {
 if(additionalUI.top) { render(additionalUI.top) }
 
 <div>
-  std:ui:button-link(? *filterParams) { "Filter questions" }
-  std:ui:button-link(? *commentParams) { "Show comments" }
-  std:ui:button-link(? *changesParams) { "Show changes from:" }
-  <select id="z__docstore_choose_version" style="max-width:28%;" disabled=if(notShowingChanges){"disabled"}>
+  if(currentParams.filter) { std:ui:button-link(url ? *currentParams !filter) { "Filtering questions" } } else { std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" } }
+  if(currentParams.comment) { std:ui:button-link(url ? *currentParams !comment) { "Showing comments" } } else { std:ui:button-link(url ? *currentParams comment="1") { "Show comments" } }
+  if(currentParams.changes) { std:ui:button-link(url ? *currentParams !changes) { "Showing changes from:" } } else { std:ui:button-link(url ? *currentParams changes="1") { "Show changes from:" } }
+  <select id="z__docstore_choose_version" style="max-width:19%;" disabled=if(notShowingChanges){"disabled"}>
     each(_changesVersionView) {
         <option
             value=url(? *currentParams version=^{version} from=row.version)

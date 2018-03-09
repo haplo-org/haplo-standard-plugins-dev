@@ -27,6 +27,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     var currentParams = E.request.parameters;
     this.currentParams = currentParams;
     this.notShowingChanges = true;
+    this.url = options.url;
     // Requested version?
     if("version" in this.options) {
         this.version = this.options.version;
@@ -135,14 +136,6 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             }
         }
     }
-
-    var params = ["filter", "comment", "changes"];
-    var that = this;
-    _.each(params, function(p) {
-        var property = p+"Params";
-        that[property] = _.clone(currentParams);
-        that[property][p] = that[property][p] === '1' ? '0' : '1';
-    });
 
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;

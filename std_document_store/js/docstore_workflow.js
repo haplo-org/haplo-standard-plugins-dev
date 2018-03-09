@@ -427,7 +427,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
             hideCommentsByDefault: delegate.enablePerElementComments ? M.selected(spec.hideCommentsByDefault||DEFAULT_HIDE_COMMENTS_WHEN) : true,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
-                spec.name)
+                spec.name),
+            url: spec.path+'/view/'+workUnit.id
         });
         if(canEdit) {
             E.appendSidebarHTML(P.template("std:ui:panel").render({
