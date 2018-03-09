@@ -1,5 +1,18 @@
 std:plugin:resources("viewer.css")
 
+if(showChangesFromDocument) {
+  <div id="z__docstore_previous_version" style="display:none">
+    render(_viewerShowChangesFromDocumentDeferred)
+  </div>
+  std:plugin:resources("changes.js")
+  <div id="z__docstore_changes_configuration"
+      data-changes=currentParams.changes
+      data-filter=currentParams.filter
+  >
+    template:std:oforms:changes()
+  </div>
+}
+
 if(requiresComments) {
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system
@@ -49,16 +62,3 @@ unless(document) {
 }
 
 if(additionalUI.bottom) { render(additionalUI.bottom) }
-
-if(showChangesFromDocument) {
-  <div id="z__docstore_previous_version" style="display:none">
-    render(_viewerShowChangesFromDocumentDeferred)
-  </div>
-  std:plugin:resources("changes.js")
-  <div id="z__docstore_changes_configuration"
-      data-changes=currentParams.changes
-      data-filter=currentParams.filter
-  >
-    template:std:oforms:changes()
-  </div>
-}

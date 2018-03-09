@@ -113,7 +113,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     }
 
     // Commenting? (but only if we're not showing changes)
-    if(!(this.showChangesFrom) && (this.options.viewComments || this.options.addComment)) {
+    if(this.options.viewComments || this.options.addComment) {
         this.requiresComments = true;
         if(!this.options.commentsUrl) {
             throw new Error("viewComments or addComment used in docstore viewer, but commentsUrl not specified");
@@ -182,7 +182,7 @@ DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerShowChangesFromDocumentDeferred", function() {
-    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_');
+    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_', this.requiresComments /* so needs unames */);
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
