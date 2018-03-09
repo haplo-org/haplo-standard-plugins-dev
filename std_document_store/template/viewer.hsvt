@@ -1,12 +1,11 @@
 std:plugin:resources("viewer.css")
 
-if(showChangesFromDocument) {
+if(currentParams.changes) {
   <div id="z__docstore_previous_version" style="display:none">
     render(_viewerShowChangesFromDocumentDeferred)
   </div>
   std:plugin:resources("changes.js")
   <div id="z__docstore_changes_configuration"
-      data-changes=currentParams.changes
       data-filter=currentParams.filter
   >
     template:std:oforms:changes()
@@ -24,6 +23,7 @@ if(requiresComments) {
         data-isviewer="1"
         data-isviewing=currentParams.comment
         data-filter=currentParams.filter
+        data-changes=currentParams.changes
     >
         std:form:token()
     </div>

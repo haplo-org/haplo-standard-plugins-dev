@@ -11,7 +11,8 @@
             canAddComment = !!configDiv.getAttribute('data-add'),
             commentServerUrl = configDiv.getAttribute('data-url'),
             isViewer = !!configDiv.getAttribute('data-isviewer'),
-            filterOn = configDiv.getAttribute('data-filter') === "1";
+            filterOn = configDiv.getAttribute('data-filter') === "1",
+            showingChanges = configDiv.getAttribute('data-changes') === "1";
 
         // ------------------------------------------------------------------
 
@@ -91,8 +92,12 @@
                             if($('div[data-uname]',this).length) {
                                 containers.push(this);
                             } else {
-                                if($('.z__docstore_comment_container',this).length === 0) {
+                                // if not showing changes, need to hide if no comments
+                                if($('.z__docstore_comment_container',this).length === 0 && !showingChanges) {
                                     $(this).hide();
+                                // if showing changes, need to un hide if has comments
+                                } else if ($('.z__docstore_comment_container',this).length !== 0 && showingChanges) {
+                                    $(this).show();
                                 }
                             }
                         });

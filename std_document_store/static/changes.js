@@ -5,7 +5,6 @@
 
         // Configuration
         var configDiv = $('#z__docstore_changes_configuration')[0],
-            show = configDiv.getAttribute('data-changes') === "1",
             filterOn = configDiv.getAttribute('data-filter') === "1";
 
         $('#z__docstore_body .z__docstore_form_display').each(function() {
@@ -15,15 +14,13 @@
             }
         });
 
-        if(!filterOn) {
-            $('#z__docstore_body .z__docstore_form_display').each(function() {
-                oFormsChanges.unchangedVisibility(this, show);
-            });
-        }
+        $('#z__docstore_body .z__docstore_form_display').each(function() {
+            oFormsChanges.unchangedVisibility(this, !filterOn);
+        });
 
-        if(show) {
+        if(filterOn) {
             var link = $('#z__docstore_choose_version').value;
-            if(show && link && link.charAt(0) === '?') {
+            if(filterOn && link && link.charAt(0) === '?') {
                 window.location.href = link;
             }
         }
