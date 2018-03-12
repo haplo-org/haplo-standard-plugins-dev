@@ -61,9 +61,8 @@
 
         // ------------------------------------------------------------------
 
-        viewingComments = configDiv.getAttribute('data-isviewing') === "1";
-        // Viewing comments?
-        if(viewingComments) {
+        var showComments = isViewer ? configDiv.getAttribute('data-showcomments') === "1" : viewingComments;
+        if(showComments) {
             var data = {t:(new Date()).getTime()}; // help prevent naughty browsers caching
             if(onlyViewingCommentsForForm) {
                 data.onlyform = onlyViewingCommentsForForm;

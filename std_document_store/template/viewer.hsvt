@@ -21,7 +21,7 @@ if(requiresComments) {
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
         data-isviewer="1"
-        data-isviewing=currentParams.comment
+        data-showcomments=currentParams.comment
         data-filter=currentParams.filter
         data-changes=currentParams.changes
     >
