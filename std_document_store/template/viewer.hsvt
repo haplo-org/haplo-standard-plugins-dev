@@ -1,6 +1,6 @@
 std:plugin:resources("viewer.css")
 
-if(showChangesFrom) {
+if(showChanges) {
   <div id="z__docstore_previous_version" style="display:none">
     render(_viewerShowChangesFromDocumentDeferred)
   </div>
