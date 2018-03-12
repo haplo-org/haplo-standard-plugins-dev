@@ -77,13 +77,18 @@
                         return;
                     }
                     userNameLookup = data.users || {};
+                    var hasCommentsToDisplay = false;
                     _.each(data.forms, function(elements, formId) {
                         _.each(elements, function(comments, uname) {
                             _.each(comments, function(comment) {
                                 displayComment(formId, uname, comment);
+                                hasCommentsToDisplay = true;
                             });
                         });
                     });
+                    if(!hasCommentsToDisplay) {
+                        $('#z__no_comments_warning').show();
+                    }
                     if(!filterOn) {
                         $('div[data-uname]').show();
                     } else {
