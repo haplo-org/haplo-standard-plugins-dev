@@ -220,7 +220,8 @@ DocumentViewer.prototype.__defineGetter__("_changesVersionView", function() {
     var changesVersion = this.showChangesFrom;
     var selectedVersion = this.version;
     vv.forEach(function(version) {
-        if(version.row.version < selectedVersion && !version.editedVersion) {
+        // selectedVersion is undefined if it is being edited, but then it will be the latest
+        if(!version.editedVersion && (!selectedVersion || version.row.version < selectedVersion)) {
             options.push({
                 row: version.row,
                 selected: changesVersion === version.row.version,
