@@ -26,7 +26,6 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
 
     var currentParams = E.request.parameters;
     this.currentParams = currentParams;
-    this.notShowingChanges = true;
     this.url = options.url;
     // Requested version?
     if("version" in this.options) {
@@ -38,7 +37,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     // Requested change?
     if("showChangesFrom" in this.options) {
         this.showChangesFrom = this.options.showChangesFrom;
-    } else if(this.options.showVersions && E.request.parameters.changes === '1') {
+    } else if(this.options.showVersions) {
         if(!E.request.parameters.from) {
             var v = store.versionsTable.select().
                 where("keyId","=",instance.keyId).
@@ -109,7 +108,6 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             O.stop("Requested previous version does not exist");
         }
         this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
-        this.notShowingChanges = false;
     }
 
     // Commenting? (but only if we're not showing changes)
@@ -220,14 +218,13 @@ DocumentViewer.prototype.__defineGetter__("_changesVersionView", function() {
     var vv = this._versionsView; // cached
     var options = [];
     var changesVersion = this.showChangesFrom;
-    var currentParams = this.currentParams;
+    var selectedVersion = this.version;
     vv.forEach(function(version) {
-        if(!version.selected && !version.editedVersion) {
+        if(version.row.version < selectedVersion && !version.editedVersion) {
             options.push({
                 row: version.row,
                 selected: changesVersion === version.row.version,
-                datetime: version.datetime,
-                currentParams: currentParams
+                datetime: version.datetime
             });
         }
     });
