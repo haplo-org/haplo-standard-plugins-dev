@@ -136,7 +136,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             }
         }
     }
-
+    this.canFilter = currentParams.comment || currentParams.changes; // can only filter if have something to look at
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
     if(delegate.getAdditionalUIForViewer) {

@@ -32,19 +32,37 @@ if(requiresComments) {
 if(additionalUI.top) { render(additionalUI.top) }
 
 <div>
-  if(currentParams.filter) { std:ui:button-link(url ? *currentParams !filter) { "Filtering questions" } } else { std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" } }
-  if(options.viewComments) { if(currentParams.comment) { std:ui:button-link(url ? *currentParams !comment) { "Showing comments" } } else { std:ui:button-link(url ? *currentParams comment="1") { "Show comments" } } }
-  if(currentParams.changes) { std:ui:button-link(url ? *currentParams !changes) { "Showing changes from:" } } else { std:ui:button-link(url ? *currentParams changes="1") { "Show changes from:" } }
-  <select id="z__docstore_choose_version" style="max-width:19%;" disabled=if(notShowingChanges){"disabled"}>
-    each(_changesVersionView) {
-        <option
-            value=url(? *currentParams version=^{version} from=row.version)
-            selected=if(selected) { "selected" }
-          >
-          std:date(datetime) " (" row.user.name ")"
-        </option>
+  if(canFilter) {
+    if(currentParams.filter) {
+      std:ui:button-link:active(url ? *currentParams !filter) { "Filtering questions" }
+    } else {
+      std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" }
     }
-  </select>
+  } else {
+    std:ui:button-link:disabled() { "Filter questions" }
+  }
+  if(options.viewComments) {
+    if(currentParams.comment) {
+      std:ui:button-link:active(url ? *currentParams !comment) { "Showing comments" }
+    } else {
+      std:ui:button-link(url ? *currentParams comment="1") { "Show comments" }
+    }
+  }
+  if(currentParams.changes) {
+    std:ui:button-link:active(url ? *currentParams !changes) { "Changes from:" }
+    <select id="z__docstore_choose_version" style="max-width:19%;" disabled=if(notShowingChanges){"disabled"}>
+      each(_changesVersionView) {
+          <option
+              value=url(? *currentParams version=^{version} from=row.version)
+              selected=if(selected) { "selected" }
+            >
+            std:date(datetime) " (" row.user.name ")"
+          </option>
+      }
+    </select>
+  } else {
+    std:ui:button-link(url ? *currentParams changes="1") { "Show changes" }
+  }
   <div id="z__no_comments_warning" style="display:none;">std:ui:notice("No comments to display")</div>
 </div>
 
