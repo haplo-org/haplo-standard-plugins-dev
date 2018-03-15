@@ -356,7 +356,7 @@ P.globalTemplateFunction("M:switch-role", function(user) {
     var M = this.view.M;
     var haveRenderedBlock = false;
     this.getAllNamedBlockNames().forEach(function(name) {
-        if(M.hasRole(user, name)) {
+        if((user.isGroup && user.code === name) || M.hasRole(user, name)) {
             this.writeBlock(name);
             haveRenderedBlock = true;
         }
