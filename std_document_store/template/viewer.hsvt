@@ -67,6 +67,7 @@ if(additionalUI.top) { render(additionalUI.top) }
   } else {
     std:ui:button-link:disabled() { "Show changes" }
   }
+  <div id="z__no_changes_warning" style="display:none;">std:ui:notice("No changes to display")</div>
   <div id="z__no_comments_warning" style="display:none;">std:ui:notice("No comments to display")</div>
 </div>
 
