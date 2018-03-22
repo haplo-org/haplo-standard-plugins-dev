@@ -106,7 +106,8 @@
                             }
                         });
                         // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
-                        _.each(containers, function(container) {
+                        // In reverse so parent containers can be hidden if all child containers are
+                        _.each(containers.reverse(), function(container) {
                             if($('div[data-uname]:visible',container).length === 0) {
                                 $(container).hide();
                             }
