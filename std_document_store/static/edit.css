@@ -28,6 +28,10 @@ button.z__docstore_nav_selected {
     border:1px solid #ffebcd;
 }
 
+button.z__docstore_nav_comments {
+    background: #aaa;
+}
+
 .z__docstore_save {
     margin: 8px 0 16px 0;
 }
