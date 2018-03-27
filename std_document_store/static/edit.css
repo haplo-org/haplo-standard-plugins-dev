@@ -28,8 +28,14 @@ button.z__docstore_nav_selected {
     border:1px solid #ffebcd;
 }
 
-button.z__docstore_nav_comments {
-    background: #aaa;
+button.z__docstore_nav_comments::after {
+    display: inline-block;
+    content: "";
+    margin-left: 4px;
+    width: 12px;
+    height: 11px;
+    background: transparent url(comment.svg) no-repeat;
+    background-position-y: 1px;
 }
 
 .z__docstore_save {
