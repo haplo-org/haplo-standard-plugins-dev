@@ -32,15 +32,6 @@ if(requiresComments) {
 if(additionalUI.top) { render(additionalUI.top) }
 
 <div>
-  if(canFilter) {
-    if(currentParams.filter) {
-      std:ui:button-link:active(url ? *currentParams !filter) { "Filtering questions" }
-    } else {
-      std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" }
-    }
-  } else {
-    std:ui:button-link:disabled() { "Filter questions" }
-  }
   if(options.viewComments) {
     if(currentParams.comment) {
       std:ui:button-link:active(url ? *currentParams !comment) { "Showing comments" }
@@ -64,9 +55,16 @@ if(additionalUI.top) { render(additionalUI.top) }
     } else {
       std:ui:button-link(url ? *currentParams changes="1") { "Show changes" }
     }
-  } else {
-    std:ui:button-link:disabled() { "Show changes" }
   }
+  <div style="float:right;">
+  if(canFilter) {
+    if(currentParams.filter) {
+      std:ui:button-link:active(url ? *currentParams !filter) { "Filtering questions" }
+    } else {
+      std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" }
+    }
+  }
+  </div>
   <div id="z__no_changes_warning" style="display:none;">std:ui:notice("No changes to display")</div>
   <div id="z__no_comments_warning" style="display:none;">std:ui:notice("No comments to display")</div>
 </div>
