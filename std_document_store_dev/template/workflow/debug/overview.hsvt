@@ -23,7 +23,7 @@
   <tr>
     <td> formId </td>
     <td> formTitle </td>
-    <td> <a href=[^{path} "/admin/form/" ^{M.workUnit.id} "/" formId]>"Edit"</a> </td>
+    <td> <a href=[^{path} "/debug/form/" ^{M.workUnit.id} "/" formId]>"Edit"</a> </td>
   </tr>
   }
 </table>
@@ -48,7 +48,7 @@
   </tr>
   each(instance.history) {
   <tr>
-    <td> <a href=[^{path} "/admin/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
+    <td> <a href=[^{path} "/debug/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
     <td> std:date:time(date) </td>
     <td> user.name </td>
   </tr>
