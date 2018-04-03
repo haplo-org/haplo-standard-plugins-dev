@@ -26,7 +26,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
 
     var currentParams = E.request.parameters;
     this.currentParams = currentParams;
-    this.url = options.url;
+    this.url = this.options.url;
     // Requested version?
     if("version" in this.options) {
         this.version = this.options.version;
