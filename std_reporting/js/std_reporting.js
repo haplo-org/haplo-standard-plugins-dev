@@ -424,7 +424,8 @@ var FactUpdater = function(collection) {
 };
 
 FactUpdater.prototype.updateFacts = function(object) {
-    var collection = this.collection;
+    var updater = this,
+        collection = this.collection;
 
     if($StdReporting.shouldStopUpdating()) {
         var e = new Error("Updates interrupted");
@@ -437,7 +438,7 @@ FactUpdater.prototype.updateFacts = function(object) {
         var logExtra = '';
         // Do query for all matching, to pick up all rows when additional keys are in use
         _.each(collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null), function(row) {
-            row.xImplValidTo = this.timeNow;
+            row.xImplValidTo = updater.timeNow;
             row.save();
             logExtra = "and marking end of validity for existing facts";
         });
