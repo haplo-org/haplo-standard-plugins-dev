@@ -423,6 +423,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
+            addCommentMessage: spec.addCommentMessage,
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
             viewComments: delegate.enablePerElementComments && (can(M, O.currentUser, spec, 'viewCommentsOtherUsers') || can(M, O.currentUser, spec, 'addComment')),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,

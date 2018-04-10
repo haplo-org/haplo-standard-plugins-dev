@@ -120,3 +120,8 @@
     width: 95%; /* needs to be % because width of box is variable (repeating section borders) */
     margin: 6px 0;
 }
+
+.z__docstore_comment_enter_ui p {
+    float: left;
+    padding-left: 10px;
+}

@@ -12,7 +12,8 @@
             commentServerUrl = configDiv.getAttribute('data-url'),
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
-            showingChanges = configDiv.getAttribute('data-changes') === "1";
+            showingChanges = configDiv.getAttribute('data-changes') === "1",
+            addCommentMessage = configDiv.getAttribute('data-addcommentmessage');
 
         // ------------------------------------------------------------------
 
@@ -130,7 +131,11 @@
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
 
-                var commentBox = $('<div class="z__docstore_comment_enter_ui"><span><textarea rows="4"></textarea></span><div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>');
+                // optionally display warning message on comments textbox
+                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui"><span><textarea rows="4"></textarea></span>';
+                if(addCommentMessage) { commentBoxHtml += '<p class="z__docstore_comment_message"><i>'+_.escape(addCommentMessage)+'</i></p>'; }
+                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
+                var commentBox = $(commentBoxHtml);
 
                 var element = $(this).parents('[data-uname]').first();
                 var existingComments = $('.z__docstore_comment_container', element);
