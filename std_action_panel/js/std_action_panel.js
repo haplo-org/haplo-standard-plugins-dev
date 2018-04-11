@@ -25,11 +25,24 @@ var makePriorityDecode = function(priorityLookup) {
     };
 };
 
+var _priorityLookup, _priorityDecode;
+
+var getPriorityDecode = function() {
+    if(!_priorityDecode) {
+        _priorityLookup = _.extend({}, O.$private.$panelBuilderDefaultPriorities);
+        O.serviceMaybe("std:action_panel_priorities", _priorityLookup);
+        _priorityDecode = makePriorityDecode(_priorityLookup);
+    }
+    return _priorityDecode;
+};
+
+P.implementService("std:action_panel_priority_decode", getPriorityDecode);
+
 // -----------------------------------------------------------------------------------------------------
 
 var renderFail = function(response, message) {
     response.title = "";
-    response.html = this.template("std:ui:notice").render({message: message});
+    response.html = P.template("std:ui:notice").render({message: message});
     response.stopChain();
 };
 
@@ -46,23 +59,15 @@ P.implementService("std_action_panel:build_panel", function(panelName, display) 
     if(!display)                        { display = {}; }
     if(!("options" in display))         { display.options = {}; }
     if(!("panel" in display.options))   { display.options.panel = panelName; }
-    return buildPanel.call(this, panelName, display);
+    return buildPanel(panelName, display);
 });
 
 var buildPanel = function(panelName, display) {
-    // Build priority lookups?
-    if(!this.$priorityLookup) {
-        this.$priorityLookup = _.extend({}, O.$private.$panelBuilderDefaultPriorities);
-        if(O.serviceImplemented("std:action_panel_priorities")) {
-            O.service("std:action_panel_priorities", this.$priorityLookup);
-        }
-        this.$priorityDecode = makePriorityDecode(this.$priorityLookup);
-    }
     // Set up the default builder, which is used as a gateway to builders for other panels
     var defaultBuilder = O.ui.panel({
         defaultHighlight: display.options.highlight,
         style: display.style,
-        priorityDecode: this.$priorityDecode
+        priorityDecode: getPriorityDecode()
     });
     // Ask other plugins to add the entries to the action panel, passing the context in which the panel is being displayed
     var serviceNames = [
@@ -97,13 +102,13 @@ P.hook("hElementRender", function(response, name, path, object, style, options) 
     };
     if("style" in optionsDecoded) { display.style = optionsDecoded.style; }
 
-    var defaultBuilder = buildPanel.call(this, optionsDecoded.panel, display);
+    var defaultBuilder = buildPanel(optionsDecoded.panel, display);
 
     // Special case for when the panel style is a link to another page, if the action panel has entries
     if(optionsDecoded.buttonLink) {
         if(defaultBuilder.anyBuilderShouldBeRendered()) {
             response.title = '';
-            response.html = this.template("std:ui:panel").render({
+            response.html = P.template("std:ui:panel").render({
                 highlight: optionsDecoded.highlight,
                 elements: [{label:elementTitle, href:optionsDecoded.buttonLink}]
             });
