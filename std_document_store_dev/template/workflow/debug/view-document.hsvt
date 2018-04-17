@@ -30,7 +30,7 @@
   </tr>
   each(instance.history) {
   <tr>
-    <td> <a href=[^{path} "/admin/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
+    <td> <a href=[^{path} "/debug/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
     <td> std:date:time(date) </td>
     <td> user.name </td>
   </tr>
