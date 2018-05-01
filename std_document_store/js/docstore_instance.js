@@ -55,15 +55,19 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         where("keyId","=",this.keyId).
         order("version", true).
         limit(1);
+    var instance = this,
+        delegate = this.store.delegate;
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
         var isComplete = true;
         var forms = this.forms;
         _.each(forms, function(form) {
-            var instance = form.instance(document);
-            if(!instance.documentWouldValidate()) {
-                isComplete = false;
+            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, document)) {
+                var formInstance = form.instance(document);
+                if(!formInstance.documentWouldValidate()) {
+                    isComplete = false;
+                }
             }
         });
         return isComplete;
