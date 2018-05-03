@@ -211,18 +211,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         workflow.actionPanel({}, function(M, builder) {
             var instance = docstore.instance(M);
             var haveDocument = instance.hasCommittedDocument;
-            if(haveDocument && can(M, O.currentUser, spec, 'view')) {
+            if(instance.currentDocumentIsEdited && can(M, O.currentUser, spec, 'viewDraft')) {
+                var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
+                builder.panel(spec.panel).
+                    link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
+            } else if(haveDocument && can(M, O.currentUser, spec, 'view')) {
                 var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
-            }
-
-            if(can(M, O.currentUser, spec, 'viewDraft')) {
-                if(!haveDocument && instance.currentDocumentIsEdited) {
-                    var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
-                    builder.panel(spec.panel).
-                        link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
-                }
             }
         });
     }
