@@ -447,9 +447,15 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     if(delegate.enablePerElementComments) {
 
-        var checkPermissions = function(M, action) {
+        var checkPermissions = function(M, action, user) {
             if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
                 action = "viewComments";
+            } else if(action === "viewPrivateComments") {
+                if(spec.viewPrivateComments) {
+                    return spec.viewPrivateComments(M, user);
+                } else {
+                    return false;
+                }
             }
             return can(M, O.currentUser, spec, action);
         };

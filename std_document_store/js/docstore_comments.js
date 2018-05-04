@@ -46,6 +46,10 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             order("datetime", true);    // latest comments first
         if(!checkPermissions(key, 'viewCommentsOtherUsers')) {
             allComments.where("userId","=",O.currentUser.id);
+        } else if(!checkPermissions(key, 'viewPrivateComments', O.currentUser)) {
+            allComments.or(function(select) {
+                select.where("isPrivate","=",false).where("isPrivate","=",null);
+            });
         }
         var onlyCommentsForForm = E.request.parameters.onlyform;
         if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
