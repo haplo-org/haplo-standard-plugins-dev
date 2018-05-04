@@ -58,6 +58,9 @@
                     return;
                 }
             }
+            if(comment.isPrivate) {
+                div.addClass("z__docstore_private_comment");
+            }
             element.append(div);
         };
 
@@ -171,6 +174,7 @@
                 evt.preventDefault();
                 var element = $(this).parents('[data-uname]').first();
                 var comment = $.trim($('textarea', element).val());
+                var isPrivate = element.find("#commment_is_private").first().is(":checked");
                 $('.z__docstore_comment_enter_ui', element).remove();
                 $('.z__docstore_add_comment_button', element).show();
 
@@ -184,7 +188,8 @@
                             version: displayedVersion,
                             form: formId,
                             uname: uname,
-                            comment: comment
+                            comment: comment,
+                            private: isPrivate
                         },
                         dataType: "json",
                         success: function(data) {
@@ -193,6 +198,7 @@
                                 return;
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
+                            // TODO: why does the comment not immediately display the red bar?
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         }
                     });
@@ -202,7 +208,7 @@
             // Reflect privacy of comment
             $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=checkbox]', function() {
                 var element = $(this).parents("div.z__docstore_comment_enter_ui").first();
-                if(this.checked) {
+                if($(this).is(":checked")) {
                     element.addClass("z__docstore_private_comment");
                 } else {
                     element.removeClass("z__docstore_private_comment");

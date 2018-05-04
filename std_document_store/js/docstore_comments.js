@@ -30,7 +30,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 datetime: new Date(),
                 formId: formId,
                 elementUName: elementUName,
-                comment: comment
+                comment: comment,
+                isPrivate: isPrivate(E.request.parameters)
             });
             row.save();
             response.comment = rowForClient(row);
@@ -74,6 +75,15 @@ var rowForClient = function(row) {
         uid: row.userId,
         version: row.version,
         datetime: (new XDate(row.datetime)).toString("dd MMM yyyy HH:mm"),
-        comment: row.comment
+        comment: row.comment,
+        isPrivate: row.isPrivate
     };
+};
+
+var isPrivate = function(parameters) {
+    switch(parameters.private) {
+        case "true": return true;
+        case "false": return false;
+        default: return null;
+    }
 };

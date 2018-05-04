@@ -47,7 +47,8 @@ var DocumentStore = P.DocumentStore = function(P, delegate) {
             datetime:     { type:"datetime"},
             formId:       { type:"text" },
             elementUName: { type:"text" },
-            comment:      { type:"text" }
+            comment:      { type:"text" },
+            isPrivate:    { type:"boolean", nullable:true }
         });
         this.commentsTable = P.db[commentsDbName];
     }
