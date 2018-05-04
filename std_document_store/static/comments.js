@@ -13,7 +13,8 @@
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
-            addCommentMessage = configDiv.getAttribute('data-addcommentmessage');
+            addCommentMessage = configDiv.getAttribute('data-addcommentmessage'),
+            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled');
 
         // ------------------------------------------------------------------
 
@@ -131,9 +132,18 @@
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
 
-                // optionally display warning message on comments textbox
-                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui"><span><textarea rows="4"></textarea></span>';
-                if(addCommentMessage) { commentBoxHtml += '<p class="z__docstore_comment_message"><i>'+_.escape(addCommentMessage)+'</i></p>'; }
+                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
+                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"';
+                commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
+                if(privateCommentsEnabled) {
+                    // tickbox for making the note private, ticked by default
+                    commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                    commentBoxHtml += 'Private note'; // TODO: make customisable (and escaped)
+                    commentBoxHtml += '</label>';
+                } else if(addCommentMessage) {
+                    // optionally display warning message on comments textbox
+                    commentBoxHtml += '<p class="z__docstore_comment_message"><i>'+_.escape(addCommentMessage)+'</i></p>';
+                }
                 commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
                 var commentBox = $(commentBoxHtml);
 
@@ -157,7 +167,7 @@
             });
 
             // Submit a comment
-            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input', function(evt) {
+            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=submit]', function(evt) {
                 evt.preventDefault();
                 var element = $(this).parents('[data-uname]').first();
                 var comment = $.trim($('textarea', element).val());
@@ -186,6 +196,16 @@
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         }
                     });
+                }
+            });
+
+            // Reflect privacy of comment
+            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=checkbox]', function() {
+                var element = $(this).parents("div.z__docstore_comment_enter_ui").first();
+                if(this.checked) {
+                    element.addClass("z__docstore_private_comment");
+                } else {
+                    element.removeClass("z__docstore_private_comment");
                 }
             });
 

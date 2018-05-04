@@ -25,6 +25,7 @@ if(requiresComments) {
         data-filter=currentParams.filter
         data-changes=currentParams.changes
         data-addcommentmessage=options.addCommentMessage
+        data-privatecommentsenabled=options.privateCommentsEnabled
     >
         std:form:token()
     </div>

@@ -125,3 +125,12 @@
     float: left;
     padding-left: 10px;
 }
+
+.z__docstore_comment_enter_ui label {
+    float: left;
+    padding-left: 10px;
+}
+
+.z__docstore_private_comment {
+    border-left: 4px solid red;
+}
