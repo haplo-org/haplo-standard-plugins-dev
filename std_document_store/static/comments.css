@@ -91,16 +91,17 @@
 }
 
 .z__docstore_comment_previous_version {
-    border: 2px solid #800;
+    border: 1px solid #800;
 }
 
 .z__docstore_comment_later_version {
-    border: 2px solid #080;
+    border: 1px solid #080;
 }
 
 .z__docstore_comment_different_version_msg {
     text-align: center;
     font-style: italic;
+    line-height: 17px;
 }
 
 .z__docstore_comment_enter_ui div {

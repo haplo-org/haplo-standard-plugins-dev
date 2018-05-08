@@ -38,23 +38,25 @@
                 p = $.trim(p);
                 if(p) { div.append($("<p></p>", {text:p})); }
             });
-            var versionMsg = "";
-            if(comment.isPrivate) {
-                div.addClass("z__docstore_private_comment");
-                versionMsg += _.escape(privateCommentMessage) + " "; // add space after for potential version message
-            }
+            var versionMsg;
             if(comment.version < displayedVersion) {
                 div.addClass("z__docstore_comment_previous_version");
-                versionMsg += 'This comment refers to a previous version of this form.';
+                versionMsg = 'This comment refers to a previous version of this form.';
             } else if(comment.version > displayedVersion) {
                 div.addClass("z__docstore_comment_later_version");
-                versionMsg += 'This comment refers to a later version of this form.';
+                versionMsg = 'This comment refers to a later version of this form.';
             }
-            if(versionMsg !== "") {
-                header.append($('<div></div>', {
-                    "class": "z__docstore_comment_different_version_msg",
-                    text: versionMsg
-                }));
+            var privateMsg;
+            if(comment.isPrivate) {
+                div.addClass("z__docstore_private_comment");
+                privateMsg = _.escape(privateCommentMessage);
+            }
+            if(versionMsg || privateMsg) {
+                var messageDiv = '<div class="z__docstore_comment_different_version_msg">';
+                messageDiv += privateMsg ? privateMsg : '';
+                messageDiv += privateMsg && versionMsg ? '<br>': '';
+                messageDiv += versionMsg ? versionMsg : '';
+                header.append(messageDiv);
             }
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
