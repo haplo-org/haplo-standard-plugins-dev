@@ -14,7 +14,8 @@
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
             addCommentMessage = configDiv.getAttribute('data-addcommentmessage'),
-            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled');
+            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled'),
+            privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
 
         // ------------------------------------------------------------------
 
@@ -141,7 +142,7 @@
                 if(privateCommentsEnabled) {
                     // tickbox for making the note private, ticked by default
                     commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
-                    commentBoxHtml += 'Private note'; // TODO: make customisable (and escaped)
+                    commentBoxHtml += _.escape(privateCommentMessage);
                     commentBoxHtml += '</label>';
                 } else if(addCommentMessage) {
                     // optionally display warning message on comments textbox
