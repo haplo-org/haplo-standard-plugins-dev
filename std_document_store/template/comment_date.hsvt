@@ -1,3 +1,1 @@
-<div class="z__docstore_comment_datetime">
-    std:date:time(commentDate)
-</div>
+std:date:time(commentDate)
