@@ -137,10 +137,9 @@
                 evt.preventDefault();
 
                 var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"';
+                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
                 commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
                 if(privateCommentsEnabled) {
-                    // tickbox for making the note private, ticked by default
                     commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
@@ -196,7 +195,6 @@
                                 return;
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
-                            // TODO: why does the comment not immediately display the red bar?
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         }
                     });
