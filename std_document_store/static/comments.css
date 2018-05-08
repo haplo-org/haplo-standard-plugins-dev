@@ -58,6 +58,8 @@
     position: relative;
     z-index: 8990; /* TODO: fix this hack properly (this obsurces 'delete' in repeating sections, as otherwise they'd overlap) */
     border: 1px solid #ddd;
+    box-shadow: -1px 0 #ddd; /* this is to keep the thin darker border after border-left is applied */
+    border-left: 4px solid #ececec;
     border-radius: 3px;
     margin: 4px 0 4px 24px;
 }
@@ -131,6 +133,8 @@
     padding-left: 10px;
 }
 
-.z__docstore_private_comment {
+.z__docstore_comment_container.z__docstore_private_comment,
+.z__docstore_comment_enter_ui.z__docstore_private_comment {
     border-left: 4px solid red;
+    box-shadow: unset;
 }
