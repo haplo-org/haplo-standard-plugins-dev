@@ -13,7 +13,6 @@
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
-            addCommentMessage = configDiv.getAttribute('data-addcommentmessage'),
             privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled'),
             privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
 
@@ -144,9 +143,6 @@
                     commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
                     commentBoxHtml += _.escape(privateCommentMessage);
                     commentBoxHtml += '</label>';
-                } else if(addCommentMessage) {
-                    // optionally display warning message on comments textbox
-                    commentBoxHtml += '<p class="z__docstore_comment_message"><i>'+_.escape(addCommentMessage)+'</i></p>';
                 }
                 commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
                 var commentBox = $(commentBoxHtml);
