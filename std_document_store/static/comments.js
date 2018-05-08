@@ -13,7 +13,9 @@
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
-            addCommentMessage = configDiv.getAttribute('data-addcommentmessage');
+            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled') === "1",
+            addPrivateCommentLabel = configDiv.getAttribute('data-addprivatecommentlabel'),
+            privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
 
         // ------------------------------------------------------------------
 
@@ -44,11 +46,15 @@
                 div.addClass("z__docstore_comment_later_version");
                 versionMsg = 'This comment refers to a later version of this form.';
             }
-            if(versionMsg) {
-                header.append($('<div></div>', {
-                    "class": "z__docstore_comment_different_version_msg",
-                    text: versionMsg
-                }));
+            var privateMsg;
+            if(comment.isPrivate) {
+                div.addClass("z__docstore_private_comment");
+                privateMsg = privateCommentMessage;
+            }
+            if(versionMsg || privateMsg) {
+                var messageDiv = '<div class="z__docstore_comment_different_version_msg">';
+                messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
+                header.append(messageDiv);
             }
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
@@ -131,9 +137,14 @@
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
 
-                // optionally display warning message on comments textbox
-                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui"><span><textarea rows="4"></textarea></span>';
-                if(addCommentMessage) { commentBoxHtml += '<p class="z__docstore_comment_message"><i>'+_.escape(addCommentMessage)+'</i></p>'; }
+                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
+                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
+                commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
+                if(privateCommentsEnabled) {
+                    commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                    commentBoxHtml += _.escape(addPrivateCommentLabel);
+                    commentBoxHtml += '</label>';
+                }
                 commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
                 var commentBox = $(commentBoxHtml);
 
@@ -157,10 +168,11 @@
             });
 
             // Submit a comment
-            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input', function(evt) {
+            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=submit]', function(evt) {
                 evt.preventDefault();
                 var element = $(this).parents('[data-uname]').first();
                 var comment = $.trim($('textarea', element).val());
+                var isPrivate = element.find("#commment_is_private").first().is(":checked");
                 $('.z__docstore_comment_enter_ui', element).remove();
                 $('.z__docstore_add_comment_button', element).show();
 
@@ -174,7 +186,8 @@
                             version: displayedVersion,
                             form: formId,
                             uname: uname,
-                            comment: comment
+                            comment: comment,
+                            private: isPrivate
                         },
                         dataType: "json",
                         success: function(data) {
@@ -186,6 +199,16 @@
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         }
                     });
+                }
+            });
+
+            // Reflect privacy of comment
+            $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=checkbox]', function() {
+                var element = $(this).parents("div.z__docstore_comment_enter_ui").first();
+                if($(this).is(":checked")) {
+                    element.addClass("z__docstore_private_comment");
+                } else {
+                    element.removeClass("z__docstore_private_comment");
                 }
             });
 
