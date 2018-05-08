@@ -13,7 +13,7 @@
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
-            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled'),
+            privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled') === "1",
             addPrivateCommentLabel = configDiv.getAttribute('data-addprivatecommentlabel'),
             privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
 
@@ -26,7 +26,7 @@
             var div = $('<div class="z__docstore_comment_container"></div>');
             var header = $('<div class="z__docstore_comment_header"></div>');
             div.append(header);
-            header.append(comment.datetimeTemplate);
+            header.append(comment.datetime);
             header.append($('<div></div>', {
                 "class": "z__docstore_comment_username",
                 text: (userNameLookup[comment.uid]||'')
@@ -46,13 +46,11 @@
             var privateMsg;
             if(comment.isPrivate) {
                 div.addClass("z__docstore_private_comment");
-                privateMsg = _.escape(privateCommentMessage);
+                privateMsg = privateCommentMessage;
             }
             if(versionMsg || privateMsg) {
                 var messageDiv = '<div class="z__docstore_comment_different_version_msg">';
-                messageDiv += privateMsg ? privateMsg : '';
-                messageDiv += privateMsg && versionMsg ? '<br>': '';
-                messageDiv += versionMsg ? versionMsg : '';
+                messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
             }
             if(insertAtTop) {

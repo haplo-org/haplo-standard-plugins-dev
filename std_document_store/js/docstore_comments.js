@@ -46,7 +46,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             order("datetime", true);    // latest comments first
         if(!checkPermissions(key, 'viewCommentsOtherUsers')) {
             allComments.where("userId","=",O.currentUser.id);
-        } else if(!checkPermissions(key, 'viewPrivateComments', O.currentUser)) {
+        } else if(!checkPermissions(key, 'viewPrivateComments')) {
             allComments.or(function(select) {
                 select.where("isPrivate","=",false).where("isPrivate","=",null);
             });
@@ -78,7 +78,7 @@ var rowForClient = function(row) {
         id: row.id,
         uid: row.userId,
         version: row.version,
-        datetimeTemplate: P.template("comment_date").render({ commentDate: new Date(row.datetime) }),
+        datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
         comment: row.comment,
         isPrivate: row.isPrivate
     };
@@ -88,6 +88,6 @@ var isPrivate = function(parameters) {
     switch(parameters.private) {
         case "true": return true;
         case "false": return false;
-        default: return null;
+        default: return null; // may be null if private comments aren't enabled
     }
 };

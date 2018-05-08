@@ -419,7 +419,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
-            privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
+            privateCommentsEnabled: !!spec.viewPrivateComments ? "1" : "0", // if someone can see private comments, others can leave private comments
             privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", "This comment is private."),
             addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", "Private comment"),
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
@@ -448,12 +448,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     if(delegate.enablePerElementComments) {
 
-        var checkPermissions = function(M, action, user) {
+        var checkPermissions = function(M, action) {
             if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
                 action = "viewComments";
             } else if(action === "viewPrivateComments") {
                 if(spec.viewPrivateComments) {
-                    return spec.viewPrivateComments(M, user);
+                    return spec.viewPrivateComments(M, O.currentUser);
                 } else {
                     return false;
                 }
