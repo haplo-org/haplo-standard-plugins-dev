@@ -14,6 +14,7 @@
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
             privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled'),
+            addPrivateCommentLabel = configDiv.getAttribute('data-addprivatecommentlabel'),
             privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
 
         // ------------------------------------------------------------------
@@ -37,15 +38,19 @@
                 p = $.trim(p);
                 if(p) { div.append($("<p></p>", {text:p})); }
             });
-            var versionMsg;
+            var versionMsg = "";
+            if(comment.isPrivate) {
+                div.addClass("z__docstore_private_comment");
+                versionMsg += _.escape(privateCommentMessage) + " "; // add space after for potential version message
+            }
             if(comment.version < displayedVersion) {
                 div.addClass("z__docstore_comment_previous_version");
-                versionMsg = 'This comment refers to a previous version of this form.';
+                versionMsg += 'This comment refers to a previous version of this form.';
             } else if(comment.version > displayedVersion) {
                 div.addClass("z__docstore_comment_later_version");
-                versionMsg = 'This comment refers to a later version of this form.';
+                versionMsg += 'This comment refers to a later version of this form.';
             }
-            if(versionMsg) {
+            if(versionMsg !== "") {
                 header.append($('<div></div>', {
                     "class": "z__docstore_comment_different_version_msg",
                     text: versionMsg
@@ -57,9 +62,6 @@
                     existingComments.first().before(div);
                     return;
                 }
-            }
-            if(comment.isPrivate) {
-                div.addClass("z__docstore_private_comment");
             }
             element.append(div);
         };
@@ -141,7 +143,7 @@
                 if(privateCommentsEnabled) {
                     // tickbox for making the note private, ticked by default
                     commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
-                    commentBoxHtml += _.escape(privateCommentMessage);
+                    commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
                 commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';

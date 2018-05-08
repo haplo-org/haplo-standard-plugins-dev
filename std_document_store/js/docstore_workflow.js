@@ -420,7 +420,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
             privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
-            privateCommentMessage: NAME("hres:document_store:private_comment_message", "Private comment"),
+            privateCommentMessage: NAME("hres:document_store:private_comment_message", "This comment is private."),
+            addPrivateCommentLabel: NAME("hres:document_store:add_private_comment_label", "Private comment"),
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
             viewComments: delegate.enablePerElementComments && (can(M, O.currentUser, spec, 'viewCommentsOtherUsers') || can(M, O.currentUser, spec, 'addComment')),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
