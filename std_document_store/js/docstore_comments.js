@@ -78,7 +78,7 @@ var rowForClient = function(row) {
         id: row.id,
         uid: row.userId,
         version: row.version,
-        datetime: (new XDate(row.datetime)).toString("dd MMM yyyy HH:mm"),
+        datetimeTemplate: P.template("comment_date").render({ commentDate: new Date(row.datetime) }),
         comment: row.comment,
         isPrivate: row.isPrivate
     };

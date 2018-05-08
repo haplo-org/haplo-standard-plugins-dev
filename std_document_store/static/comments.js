@@ -26,10 +26,7 @@
             var div = $('<div class="z__docstore_comment_container"></div>');
             var header = $('<div class="z__docstore_comment_header"></div>');
             div.append(header);
-            header.append($('<div></div>', {
-                "class": "z__docstore_comment_datetime",
-                text: comment.datetime
-            }));
+            header.append(comment.datetimeTemplate);
             header.append($('<div></div>', {
                 "class": "z__docstore_comment_username",
                 text: (userNameLookup[comment.uid]||'')
