@@ -55,19 +55,15 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         where("keyId","=",this.keyId).
         order("version", true).
         limit(1);
-    var instance = this,
-        delegate = this.store.delegate;
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
         var isComplete = true;
-        var forms = this.forms;
+        var forms = this._editForms(document);
         _.each(forms, function(form) {
-            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, document)) {
-                var formInstance = form.instance(document);
-                if(!formInstance.documentWouldValidate()) {
-                    isComplete = false;
-                }
+            var formInstance = form.instance(document);
+            if(!formInstance.documentWouldValidate()) {
+                isComplete = false;
             }
         });
         return isComplete;
@@ -189,10 +185,20 @@ DocumentInstance.prototype.addInitialCommittedDocument = function(document, user
 DocumentInstance.prototype._displayForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
-    var unfilteredForms = this.store._formsForKey(this.key, this);
+    var unfilteredForms = this.store._formsForKey(key, this);
     if(!delegate.shouldDisplayForm) { return unfilteredForms; }
     return _.filter(unfilteredForms, function(form) {
         return (delegate.shouldDisplayForm(key, form, document));
+    });
+};
+
+DocumentInstance.prototype._editForms = function(document) {
+    var delegate = this.store.delegate;
+    var key = this.key;
+    var unfilteredForms = this.store._formsForKey(key, this);
+    if(!delegate.shouldEditForm) { return unfilteredForms; }
+    return _.filter(unfilteredForms, function(form) {
+        return (delegate.shouldEditForm(key, form, document));
     });
 };
 
@@ -280,10 +286,10 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         pagesWithComments = _.pluck(pagesWithComments, "group");
     }
     var updatePages = function() {
-        forms = instance.store._formsForKey(instance.key, instance, cdocument);
+        // forms = instance.store._formsForKey(instance.key, instance, cdocument);
+        forms = instance._editForms(cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
         pages = [];
-        var j = 0; // pages indexes no longer match forms indexes
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
@@ -294,16 +300,15 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                 }
                 var hasComments = pagesWithComments.indexOf(form.formId) !== -1;
                 pages.push({
-                    index: j,
+                    index: i,
                     form: form,
                     instance: formInstance,
                     complete: formInstance.documentWouldValidate(),
                     hasComments: hasComments
                 });
                 if(form.formId === untrustedRequestedFormId) {
-                    activePage = pages[j];
+                    activePage = pages[i];
                 }
-                j++;
             }
         }
         pages[pages.length - 1].isLastPage = true;
