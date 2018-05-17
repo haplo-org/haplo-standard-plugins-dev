@@ -185,20 +185,20 @@ DocumentInstance.prototype.addInitialCommittedDocument = function(document, user
 DocumentInstance.prototype._displayForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
-    var unfilteredForms = this.store._formsForKey(key, this);
+    var unfilteredForms = this.store._formsForKey(key, this, document);
     if(!delegate.shouldDisplayForm) { return unfilteredForms; }
     return _.filter(unfilteredForms, function(form) {
-        return (delegate.shouldDisplayForm(key, form, document));
+        return (delegate.shouldDisplayForm(key, form, document || this.currentDocument));
     });
 };
 
 DocumentInstance.prototype._editForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
-    var unfilteredForms = this.store._formsForKey(key, this);
+    var unfilteredForms = this.store._formsForKey(key, this, document);
     if(!delegate.shouldEditForm) { return unfilteredForms; }
     return _.filter(unfilteredForms, function(form) {
-        return (delegate.shouldEditForm(key, form, document));
+        return (delegate.shouldEditForm(key, form, document || this.currentDocument));
     });
 };
 
@@ -286,29 +286,26 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         pagesWithComments = _.pluck(pagesWithComments, "group");
     }
     var updatePages = function() {
-        // forms = instance.store._formsForKey(instance.key, instance, cdocument);
-        forms = instance._editForms(cdocument);
+        forms = actions._showAllForms ? instance.store._formsForKey(instance.key, instance, cdocument) : instance._editForms(cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
         pages = [];
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
             if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
-            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, cdocument) || actions._showAllForms) {
-                if(delegate.prepareFormInstance) {
-                    delegate.prepareFormInstance(instance.key, form, formInstance, "form");
-                }
-                var hasComments = pagesWithComments.indexOf(form.formId) !== -1;
-                pages.push({
-                    index: i,
-                    form: form,
-                    instance: formInstance,
-                    complete: formInstance.documentWouldValidate(),
-                    hasComments: hasComments
-                });
-                if(form.formId === untrustedRequestedFormId) {
-                    activePage = pages[i];
-                }
+            if(delegate.prepareFormInstance) {
+                delegate.prepareFormInstance(instance.key, form, formInstance, "form");
+            }
+            var hasComments = pagesWithComments.indexOf(form.formId) !== -1;
+            pages.push({
+                index: i,
+                form: form,
+                instance: formInstance,
+                complete: formInstance.documentWouldValidate(),
+                hasComments: hasComments
+            });
+            if(form.formId === untrustedRequestedFormId) {
+                activePage = pages[i];
             }
         }
         pages[pages.length - 1].isLastPage = true;
