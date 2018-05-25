@@ -114,10 +114,11 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
             {pathElement:0, as:"workUnit", allUsers:true} // Security check below
         ], function(E, workUnit) {
             var M = getCheckedInstanceForDebugging(workUnit);
-            var select = M.$timeline.select().where("workUnitId","=",M.workUnit.id).order("id",true).limit(2);
+            var select = M.$timeline.select().where("workUnitId","=",M.workUnit.id).
+                where("previousState","!=",null).order("id",true).limit(2);
             var row = select.length > 1 ? select[1] : undefined;
             if(!row) { O.stop(); }
-            M._forceMoveToStateFromTimelineEntry(row, null);
+            M._forceMoveToStateFromTimelineEntry(row, select[0].target);
             return E.response.redirect(M.url);
         });
 
