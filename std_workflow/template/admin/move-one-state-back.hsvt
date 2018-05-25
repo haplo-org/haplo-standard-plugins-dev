@@ -1,0 +1,6 @@
+pageTitle("Move one state back: " M.title)
+backLink(M.url)
+
+<p> "Confirming will move to the following state: " <b> entryText </b></p>
+
+template:std:ui:confirm()

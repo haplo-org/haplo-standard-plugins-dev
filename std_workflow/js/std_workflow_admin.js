@@ -30,7 +30,8 @@ P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder
         panel.
             link(1, "/do/workflow/administration/full-info/"+this.workUnit.id, "Full info").
             link(2, "/do/workflow/administration/timeline/"+this.workUnit.id, "Timeline").
-            link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state");
+            link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state").
+            link(4, "/do/workflow/administration/move-one-state-back/"+this.workUnit.id, "Move one state back");
     }
     if(visibility) {
         panel.
@@ -168,6 +169,30 @@ P.respond("GET,POST", "/do/workflow/administration/move-state", [
         M: M,
         timeline: timeline
     }, "admin/move-state");
+});
+
+// --------------------------------------------------------------------------
+
+P.respond("GET,POST", "/do/workflow/administration/move-one-state-back", [
+    {pathElement:0, as:"workUnit", allUsers:true}, // Security check below
+], function(E, workUnit) {
+    var M = getCheckedInstanceForAdmin(workUnit);
+    // First entry would be the current state, so we want the second entry
+    var entries = M.timelineSelect().where("previousState","!=",null).
+        order("datetime","DESC").limit(2);
+    if(entries.length < 2) { O.stop("No previous state to move back to"); }
+    var entry = entries[1];
+    if(E.request.method === "POST") {
+        // Target for state is saved into the next entry
+        M._forceMoveToStateFromTimelineEntry(entry, entries[0].target);
+        return E.response.redirect(M.url);
+    }
+    E.render({
+        M: M,
+        entryText: M._getText(['status'], [entry.state]),
+        text: "Confirm moving back a state",
+        options: [{label:"Confirm"}]
+    }, "admin/move-one-state-back");
 });
 
 // --------------------------------------------------------------------------
