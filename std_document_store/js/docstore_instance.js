@@ -282,7 +282,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     instance.store._updateDocumentBeforeEdit(instance.key, instance, cdocument);
     if(instance.store.enablePerElementComments) {
         pagesWithComments = instance.store.commentsTable.select().where("keyId", "=", instance.keyId).
-            aggregate("COUNT", "id", "formId");
+            where("isPrivate", "<>", true).aggregate("COUNT", "id", "formId");
         pagesWithComments = _.pluck(pagesWithComments, "group");
     }
     var updatePages = function() {
