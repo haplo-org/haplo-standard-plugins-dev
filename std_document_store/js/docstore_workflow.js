@@ -431,6 +431,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 spec.name),
             url: spec.path+'/view/'+workUnit.id
         });
+        if(spec.enableSidebarPanel) {
+            var builder = O.ui.panel();
+            M.workflowServiceMaybe("std:document_store:sidebar_panel", builder);
+            E.appendSidebarHTML(builder.render());
+        }
         if(canEdit) {
             E.appendSidebarHTML(P.template("std:ui:panel").render({
                 elements: [{href:spec.path+'/form/'+workUnit.id, label:"Edit",
