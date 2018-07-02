@@ -32,13 +32,12 @@ DashboardList.prototype.columns = function(priority, columns) {
 };
 
 DashboardList.prototype.hasColumnBasedOnFact = function(fact) {
-    var groups = this.columnGroups;
-    for(var i = groups.length - 1; i >= 0; --i) {
-        var cols = groups[i].columns;
-        for(var j = cols.length - 1; j >= 0; --j) {
-            if(cols[j].fact === fact) {
-                return true;
-            }
+    var accumulator = this.columnGroups.slice();
+    while(accumulator.length > 0) {
+        var entry = accumulator.pop();
+        if(entry.fact === fact) { return true; }
+        else if("columns" in entry) {
+            accumulator.push.apply(accumulator, entry.columns);
         }
     }
     return false;
