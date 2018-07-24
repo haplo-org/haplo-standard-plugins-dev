@@ -52,6 +52,11 @@ P.$renderFileIdentifierValue = function(fileIdentifier) {
     return renderingContext.publication._renderFileIdentifierValue(fileIdentifier);
 };
 
+P.$isPublicationOnRootForHostname = function(host) {
+    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    return !!(publication && (publication._homePageUrlPath === '/'));
+};
+
 // --------------------------------------------------------------------------
 
 P.onLoad = function() {
@@ -349,12 +354,17 @@ Publication.prototype.urlForObject = function(object) {
 
 Publication.prototype._generateRobotsTxt = function() {
     var lines = ["User-agent: *"];
-    for(var l = 0; l < this._paths.length; ++l) {
-        var allow = this._paths[l].robotsTxtAllowPath;
-        if(allow) {
-            lines.push("Allow: "+allow);
+    if(this._homePageUrlPath === '/') {
+        // If home page of the publication is at the root, allow everything
+        lines.push("Allow: /");
+    } else {
+        for(var l = 0; l < this._paths.length; ++l) {
+            var allow = this._paths[l].robotsTxtAllowPath;
+            if(allow) {
+                lines.push("Allow: "+allow);
+            }
         }
+        lines.push("Disallow: /", "");  // must be last for maximum compatibility
     }
-    lines.push("Disallow: /", "");  // must be last for maximum compatibility
     return lines.join("\n");
 };
