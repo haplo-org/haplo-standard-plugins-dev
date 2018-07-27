@@ -81,6 +81,9 @@ unless(document) {
       std:ui:notice(_uncommittedChangesWarningText)
     }
   }
+  if(approvedVersion) {
+    std:ui:notice("You are viewing the version of this document when this workflow was closed")
+  }
   <div id="z__docstore_body">
     render(_viewerBody)
   </div>

@@ -134,6 +134,8 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             }
         }
     }
+
+    this.approvedVersion = this.options.approvedVersion;
     this.canFilter = currentParams.comment || currentParams.changes; // can only filter if have something to look at
     this.showChanges = currentParams.changes && this.showChangesFrom;
     // Get any additional UI to display

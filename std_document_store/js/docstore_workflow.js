@@ -134,7 +134,7 @@ var isOptional = function(M, user, list) {
 
 // ----------------------------------------------------------------------------
 
-P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec) {
+P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec, docstore) {
 
     var plugin = workflow.plugin;
     if(!("defineDocumentStore" in plugin)) {
@@ -148,7 +148,10 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         delegate.enablePerElementComments = true;
     }
 
-    var docstore = plugin.defineDocumentStore(delegate);
+    if(!docstore) {
+        docstore = plugin.defineDocumentStore(delegate);
+    }
+
     if(!("documentStore" in workflow)) {
         workflow.documentStore = {};
         workflow.actionPanel({}, function(M, builder) {
@@ -403,8 +406,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     // ----------------------------------------------------------------------
 
     plugin.respond("GET", spec.path+'/view', [
-        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
-    ], function(E, workUnit) {
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true},
+        {parameter:"version", as:"int", optional:true}
+    ], function(E, workUnit, version) {
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var M = workflow.instance(workUnit);
         if(!can(M, O.currentUser, spec, 'view')) {
@@ -415,7 +419,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(!(canEdit || instance.hasCommittedDocument)) {
             O.stop("Form hasn't been completed yet.");
         }
-        var ui = instance.makeViewerUI(E, {
+        var defaultVersion = workUnit.data[spec.name+"Version"];
+        var viewerSpec = {
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
@@ -430,7 +435,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name),
             url: spec.path+'/view/'+workUnit.id
-        });
+        };
+        if(defaultVersion && (!version || defaultVersion === version)) {
+            viewerSpec.version = defaultVersion;
+            viewerSpec.approvedVersion = true;
+        }
+        var ui = instance.makeViewerUI(E, viewerSpec);
         if(spec.enableSidebarPanel) {
             var builder = O.ui.panel();
             M.workflowServiceMaybe("std:document_store:sidebar_panel", builder);
