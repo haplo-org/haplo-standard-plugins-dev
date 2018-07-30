@@ -21,7 +21,7 @@ var getKeyboards = function() {
 
 var toKeyboardsDocument = function(keyboards) {
     var k = [];
-    _.each(keyboards, (characters, name) => {
+    _.each(keyboards, function(characters, name) {
         k.push({name:name, characters:characters});
     });
     return {keyboards:k};
@@ -59,7 +59,7 @@ P.respond("GET,POST", "/do/std-editor-symbol-keyboard/edit", [
     var form = KeyboardsForm.handle(document, E.request);
     if(form.complete) {
         var d = {};
-        document.keyboards.forEach((k) => {
+        document.keyboards.forEach(function(k) {
             d[k.name] = k.characters;
         });
         P.data.keyboards = d;
