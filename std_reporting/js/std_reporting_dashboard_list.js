@@ -49,6 +49,7 @@ DashboardList.prototype.removeColumnsBasedOnFact = function(fact) {
         this.$removeColumnsBasedOnFact = [];
     }
     this.$removeColumnsBasedOnFact.push(fact);
+    return this;
 };
 
 DashboardList.prototype.__defineGetter__("columnCount", function() {
