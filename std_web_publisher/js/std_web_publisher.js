@@ -33,6 +33,12 @@ P.$generateRobotsTxt = function(host) {
     return publication ? publication._generateRobotsTxt() : null;
 };
 
+P.$downloadFileChecksAndObserve = function(host, file, isThumbnail) {
+    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    if(!publication) { return false; }
+    return publication._downloadFileChecksAndObserve(file, isThumbnail);
+};
+
 P.$renderObjectValue = function(object) {
     var href;
     if(renderingContext) {
@@ -358,6 +364,10 @@ Publication.prototype._generateRobotsTxt = function() {
         // If home page of the publication is at the root, allow everything
         lines.push("Allow: /");
     } else {
+        if(this._fileDownloadPermissionFunctions) {
+            // Special case because file downloads don't use normal publisher handlers
+            lines.push("Allow: /download/");
+        }
         for(var l = 0; l < this._paths.length; ++l) {
             var allow = this._paths[l].robotsTxtAllowPath;
             if(allow) {

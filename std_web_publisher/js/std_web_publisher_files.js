@@ -7,6 +7,10 @@
 
 var DEFAULT_THUMBNAIL_SIZE = 64;
 
+// Files download handlers are handled by the platform on /download and
+// /thumnail. The normal FileController handling calls into this plugin
+// to check permissions and send notifications.
+
 // --------------------------------------------------------------------------
 
 P.Publication.prototype.setFileThumbnailSize = function(size) {
@@ -84,64 +88,16 @@ resetPermittedDownloadCache();
 P.Publication.prototype._setupForFileDownloads = function() {
     this._fileThumbnailSize = DEFAULT_THUMBNAIL_SIZE;
     this._fileDownloadPermissionFunctions = [];
-    var publication = this;
-    this._paths.push({
-        path: "/download",
-        robotsTxtAllowPath: "/download/",
-        matches: function(t) { return t.startsWith("/download/"); },
-        fn: function(E) {
-            publication._handleFileDownload(E);
-        }
-    });
-    this._paths.push({
-        path: "/thumbnail", // not in robots.txt
-        matches: function(t) { return t.startsWith("/thumbnail/"); },
-        fn: function(E) {
-            publication._handleThumbnailRequest(E);
-        }
-    });
 };
 
-P.Publication.prototype._handleFileDownload = function(E) {
-    var pe = E.request.extraPathElements;
-    if(pe.length < 3) { return null; }
-    var digest = pe[0],
-        fileSize = parseInt(pe[1],10),
-        filename = pe[2],
-        file;
-    try {
-        file = O.file(digest, fileSize);
-    } catch(e) {
-        // Not in store
-        console.log("Error looking up file in store, probably incorrect file requested: ", E.request.path, e);
-        return;
-    }
-    if(!file) { return; }
-    var checkResult = this._checkFileDownloadPermitted(file);
-    if(checkResult) {
-        O.serviceMaybe("std:web-publisher:observe:file-download", this, E, checkResult);
-        E.response.setExpiry(86400); // 24 hours
-        E.response.body = file;
-    }
-    // NOTE: 404s are returns if file isn't permitted, to avoid revealing any info about files in the store
-};
-
-P.Publication.prototype._handleThumbnailRequest = function(E) {
-    var pe = E.request.extraPathElements;
-    if(pe.length < 2) { return null; }
-    var digest = pe[0],
-        fileSize = parseInt(pe[1],10),
-        file;
-    try { file = O.file(digest, fileSize); }
-    catch(e) { /* ignore */ }
-    if(!file) { return; }
-    if(this.isFileDownloadPermitted(file)) {
-        var thumbnail = file.thumbnailFile;
-        if(thumbnail) {
-            E.response.setExpiry(86400); // 24 hours
-            E.response.body = thumbnail;
+P.Publication.prototype._downloadFileChecksAndObserve = function(file, isThumbnail) {
+    if(this._checkFileDownloadPermitted(file)) {
+        if(!isThumbnail) {
+            O.serviceMaybe("std:web-publisher:observe:file-download", this, file);
         }
+        return true;
     }
+    return false;
 };
 
 // --------------------------------------------------------------------------
