@@ -265,6 +265,7 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
 var RenderingContext = function(publication) {
     this.publication = publication;
     this.hint = {};
+    this._blocks = {};
     this._pagePartOptions = {};
 };
 
@@ -318,15 +319,14 @@ Publication.prototype._handleRequest2 = function(method, path) {
     var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
     renderingContext.$E = E;
     handler.fn(E, renderingContext);
-    if(!E.response.body) {
+    if(E.response.body === undefined) {
         return null;    // 404
     }
     if(this._layoutRenderer && E.response.kind === "html") {
         renderingContext.pageTitle = E.response.pageTitle;
         var fn = this._layoutRenderer;
-        var blocks = {
-            body: new GenericDeferredRender(function() { return E.response.body; })
-        };
+        var blocks = renderingContext._blocks;
+        blocks.body = new GenericDeferredRender(function() { return E.response.body; });
         var sidebarHTML = $host.getRightColumnHTML();
         if(sidebarHTML) { blocks.sidebar = new GenericDeferredRender(function() { return sidebarHTML; }); }
         var renderedWithLayout = fn(E, renderingContext, blocks);

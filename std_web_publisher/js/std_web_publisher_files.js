@@ -15,6 +15,7 @@ var DEFAULT_THUMBNAIL_SIZE = 64;
 
 P.Publication.prototype.setFileThumbnailSize = function(size) {
     this._fileThumbnailSize = 1*size;
+    return this;
 };
 
 // Register a function which will be called with a File or FileIdentifier, and a result object.
@@ -163,13 +164,9 @@ var makeThumbnailViewForFile = P.makeThumbnailViewForFile = function(publication
         w = h = desiredSize;    // unknown thumbnail image
     }
     // Calculate size of thumbnail
-    var heightBigger = h < w;
-    var adjustedDimension = heightBigger ? h : w;
-    var scalingDimension = heightBigger ? w : h;
-    if(scalingDimension === 0) { scalingDimension = 1; } // no divide by zero
-    adjustedDimension = desiredSize * (adjustedDimension / scalingDimension);
-    view.width =  Math.round(heightBigger ? desiredSize : adjustedDimension);
-    view.height = Math.round(heightBigger ? adjustedDimension : desiredSize);
+    var scale = desiredSize / ((w < h) ? h : w);
+    view.width =  Math.round(w * scale);
+    view.height = Math.round(h * scale);
     return view;
 };
 
