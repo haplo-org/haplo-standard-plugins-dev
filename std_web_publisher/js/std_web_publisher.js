@@ -33,10 +33,10 @@ P.$generateRobotsTxt = function(host) {
     return publication ? publication._generateRobotsTxt() : null;
 };
 
-P.$downloadFileChecksAndObserve = function(host, file, isThumbnail) {
+P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publication) { return false; }
-    return publication._downloadFileChecksAndObserve(file, isThumbnail);
+    return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
 };
 
 P.$renderObjectValue = function(object) {
