@@ -138,11 +138,12 @@ P.Publication.prototype._setupForFileDownloads = function() {
 };
 
 P.Publication.prototype._downloadFileChecksAndObserve = function(path, file, isThumbnail) {
-    if(this._checkFileDownloadPermitted(file)) {
+    var permittingResult = this._checkFileDownloadPermitted(file);
+    if(permittingResult) {
         if(!isThumbnail) {
             if(O.serviceImplemented("std:web-publisher:observe:file-download")) {
                 var request = new $Exchange.$Request({method:"GET", path:path, extraPathElements:[]});
-                O.service("std:web-publisher:observe:file-download", this, file, request);
+                O.service("std:web-publisher:observe:file-download", this, file, request, permittingResult.permittingRef);
             }
         }
         return true;

@@ -109,6 +109,12 @@ P.provideFeature("std:web-publisher", function(plugin) {
     consumerFeature.widget = new Widgets(plugin);
     plugin.webPublication = consumerFeature;
 });
+P.implementService("std:web_publisher:get_publication", function(name) {
+    if(!(name in publications)) {
+        throw new Error("No publiation registered for "+name);
+    }
+    return publications[name];
+});
 
 // --------------------------------------------------------------------------
 
