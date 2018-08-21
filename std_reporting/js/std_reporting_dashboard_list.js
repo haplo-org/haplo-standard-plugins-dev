@@ -278,6 +278,20 @@ ColumnBase.prototype._prepare = function(dashboard) {
     }
 };
 
+ColumnBase.prototype.isKindOf = function(columnBaseInstance) {
+    var accumulator = [this];
+    while(accumulator.length > 0) {
+        var instance = accumulator.pop();
+        if(instance instanceof columnBaseInstance) { return true; }
+        else if("column" in instance) {
+            // Some columns delegate to others e.g. LinkedColumn
+            // but we can read them on top of the stack.
+            accumulator.push(instance.column);
+        }
+    }
+    return false;
+};
+
 ColumnBase.prototype.prepare = function(dashboard) {
 };
 
@@ -770,30 +784,72 @@ var JsonColumn = makeColumnType({
             if(typeof(colspec.column.type) !== "string") {
                 throw new Error("When using the column property for json columns, you must specify a column type");
             }
-            var innerColspec = _.clone(colspec.column);
-            innerColspec.fact = "_FAKEFACTVALUE";
-            var column = makeColumn(collection, innerColspec);
+            var passSuccessFactToDelegate = "successFact" in colspec;
+            if(passSuccessFactToDelegate) { this.successFact = colspec.successFact; }
+            var maybePassSuccessFactToDelegate = function(delegateColspec) {
+                if(passSuccessFactToDelegate && delegateColspec.type === "date-with-age-warning") {
+                    delegateColspec.successFact = "_FAKESUCCESSFACTVALUE";
+                }
+            };
+            var realRow;
+            var ensureRealRowAtConsumerMethods = function(delegateColspec) {
+                _.each(delegateColspec, function(property, propertyName) {
+                    var propertyIsMethod = typeof property === "function";
+                    if(propertyIsMethod) {
+                        delegateColspec[propertyName] = function() {
+                            // Replace fakeRow which should be the last argument as we provide
+                            // consumer the most useful arguments first for easy use.
+                            var args = Array.prototype.slice.call(arguments, 0, arguments.length-1);
+                            args.push(realRow);
+                            return property.apply(this, args);
+                        };
+                    }
+                });
+            };
+            var delegateColumnSpec = _.clone(colspec.column);
+            var accumulator = [delegateColumnSpec];
+            while(accumulator.length > 0) {
+                var innerColspec = accumulator.pop();
+                // Pass facts delegate.
+                innerColspec.fact = "_FAKEFACTVALUE";
+                maybePassSuccessFactToDelegate(innerColspec);
+                // row should reach consumer as fakeRow won't be useful to them.
+                ensureRealRowAtConsumerMethods(innerColspec);
+                if("column" in innerColspec) {
+                    innerColspec.column = _.clone(innerColspec.column);
+                    // There may be a number of delegations to register e.g. when delegating
+                    // to LinkedColumn, but we can read them at the top of the stack.
+                    accumulator.push(innerColspec.column);
+                }
+            }
+            var column = makeColumn(collection, delegateColumnSpec);
             // Values need converting
             var valueConversion = function(v) { return (v === undefined) ? null : v; };
             // Dates need special handling
-            if(colspec.column.type.indexOf("date") !== -1) {
+            var columnIsBasedOnDate = column.isKindOf(DateTimeColumn) || column.isKindOf(DateColumn) ||
+                column.isKindOf(EndDateColumn) || column.isKindOf(DateWithAgeWarningsColumn);
+            if(columnIsBasedOnDate) {
                 valueConversion = function(v) {
                     return v ? (new XDate(v, true)).toDate() : null;
                 };
-            } else if(column instanceof NumberColumn) {
+            } else if(column.isKindOf(NumberColumn)) {
                 // Paranoid about numbers
                 valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
-            } else if(column instanceof RefColumn || column instanceof RefPersonNameColumn) {
+            } else if(column.isKindOf(RefColumn) || column.isKindOf(RefPersonNameColumn)) {
                 valueConversion = function(v) { return v ? O.ref(v) : null; };
             }
+            var getValue = function(obj, accessor) { return obj ? valueConversion(obj[accessor]) : null; };
             // Delegate this object to the column
             this.renderCell = function(row) {
-                var obj = row[this.fact];
-                return column.renderCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)});
+                realRow = row;
+                var fakeRow = {_FAKEFACTVALUE:getValue(row[this.fact], this.valueProperty)};
+                if(passSuccessFactToDelegate) {
+                    fakeRow._FAKESUCCESSFACTVALUE = getValue(row[this.successFact], this.valueProperty);
+                }
+                return column.renderCell(fakeRow);
             };
             this.exportCell = function(row, xls) {
-                var obj = row[this.fact];
-                column.exportCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)}, xls);
+                column.exportCell({_FAKEFACTVALUE:getValue(row[this.fact], this.valueProperty)}, xls);
             };
             this.__defineGetter__("exportWidth", function() { return column.exportWidth; });
         }
