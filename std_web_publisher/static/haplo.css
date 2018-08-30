@@ -22,3 +22,13 @@ img.haplo-file-thumbnail {
     padding-top: 20px;
     border-top: 2px solid #ddd;
 }
+
+/* ---------------------------------------------------------------------- */
+/* search */
+
+.haplo-results-paging-prev {
+    float: left;
+}
+.haplo-results-paging-next {
+    float: right;
+}
