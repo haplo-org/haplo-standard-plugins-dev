@@ -74,7 +74,6 @@ ObjectWidget.prototype._setAttributeList = function(list, types) {
 // --------------------------------------------------------------------------
 
 const SEARCH_PAGE_SIZE = 20;
-const SEARCH_DEFAULT_SORT_BY = "relevance";
 
 P.WIDGETS.search = function(E, spec) {
     return new SearchWidget(E, spec);
@@ -85,20 +84,21 @@ var SearchWidget = function(E, spec) {
     this.spec = spec || {};
     var params = E.request.parameters;
     var q = params.q;
-    if(!spec.formOnly && q && q.match(/\S/)) {
+    if((!spec.formOnly && q && q.match(/\S/)) || spec.alwaysSearch) {
         this.query = q;
-        this._storeQuery = O.query(q);
+        this._storeQuery = q ? O.query(q) : O.query();
         if(spec.modifyQuery) {
             spec.modifyQuery(this._storeQuery);
         }
-        this._sort = params.sort || SEARCH_DEFAULT_SORT_BY;
+        this._sort = params.sort || (spec.hideRelevanceSort ? "date" : "relevance");
         this._results = this._storeQuery.sortBy(this._sort).setSparseResults(true).execute();
+        this._pageSize = spec.pageSize || SEARCH_PAGE_SIZE;
         this._start = 0;
-        this._end = (this._results.length > SEARCH_PAGE_SIZE) ? SEARCH_PAGE_SIZE : this._results.length;
+        this._end = (this._results.length > this._pageSize) ? this._pageSize : this._results.length;
         if(params.page) {
             this._pageNumber = parseInt(params.page, 10);
-            this._start = (this._pageNumber - 1) * SEARCH_PAGE_SIZE;
-            this._end = this._start + SEARCH_PAGE_SIZE;
+            this._start = (this._pageNumber - 1) * this._pageSize;
+            this._end = this._start + this._pageSize;
             if(this._end > this._results.length) { this._end = this._results.length; }
         }
         // Load page of objects in one go
@@ -120,6 +120,7 @@ var SearchWidget = function(E, spec) {
         if(this._end < this._results.length) {
             this._nextPage = _.extend({}, this._params, {page: this._params.page + 1});
         }
+        this._displayResults = true;
     }
 };
 

@@ -1,17 +1,23 @@
-if(query) {
+if(_displayResults) {
     <div class="haplo-results-info">
-      <div class="haplo-results-count">
-          _resultsCount
-          switch(_resultsCount)
-                { " results found" }
-              1 { " result found" }
-      </div>
-      <div class="haplo-result-sort">
-          "Sort by"
-          std:web-publisher:search:__sort__(. "relevance" "Relevance")
-          std:web-publisher:search:__sort__(. "date" "Date")
-          std:web-publisher:search:__sort__(. "title" "Title")
-      </div>
+      unless(spec.hideResultsCount) {
+        <div class="haplo-results-count">
+            _resultsCount
+            switch(_resultsCount)
+                  { " results found" }
+                1 { " result found" }
+        </div>
+      }
+      if(_page) {
+        <div class="haplo-result-sort">
+            "Sort by"
+            unless(spec.hideRelevanceSort) {
+              std:web-publisher:search:__sort__(. "relevance" "Relevance")
+            }
+            std:web-publisher:search:__sort__(. "date" "Date")
+            std:web-publisher:search:__sort__(. "title" "Title")
+        </div>
+      }
     </div>
     std:web-publisher:widget:query:list:search-result(_resultsRender)
     ifAny(_prevPage _nextPage) {
