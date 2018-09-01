@@ -66,9 +66,10 @@ P.Publication.prototype._checkFileDownloadPermitted = function(fileOrIdentifier)
     return (result.allow && !(result.deny)) ? result : null;
 };
 
-P.Publication.prototype.urlForFileDownload = function(fileOrIdentifier) {
+P.Publication.prototype.urlForFileDownload = function(fileOrIdentifier, options) {
     return P.template("value/file/url").render({
         hostname: this.urlHostname,
+        options: options,
         file: fileOrIdentifier
     });
 };
