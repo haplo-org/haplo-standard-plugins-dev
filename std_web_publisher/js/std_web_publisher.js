@@ -16,6 +16,10 @@ P.getRenderingContext = function() { return renderingContext; };
 
 // --------------------------------------------------------------------------
 
+var MAX_SLUG_LENGTH = 200;
+
+// --------------------------------------------------------------------------
+
 // Platform support
 P.$webPublisherHandle = function(host, method, path) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
@@ -243,7 +247,12 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
             return handlerFunction(E, renderingContext, object);
         },
         urlForObject: function(object) {
-            return path+"/"+object.ref+"/"+object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+            var slug = object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+            if(slug.length > MAX_SLUG_LENGTH) {
+                // Trucate slug, making sure last 'word' is not truncated
+                slug = slug.substring(0,MAX_SLUG_LENGTH).replace(/-\w+?$/,'');
+            }
+            return path+"/"+object.ref+"/"+slug;
         }
     };
     var objectTypeHandler = this._objectTypeHandler;
