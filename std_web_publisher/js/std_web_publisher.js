@@ -252,6 +252,9 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 // Trucate slug, making sure last 'word' is not truncated
                 slug = slug.substring(0,MAX_SLUG_LENGTH).replace(/-\w+?$/,'');
             }
+            if(slug.endsWith('-')) {
+                slug = slug.replace(/-$/,''); // Don't end with a '-', as that's ugly when titles end with punctuation
+            }
             return path+"/"+object.ref+"/"+slug;
         }
     };
