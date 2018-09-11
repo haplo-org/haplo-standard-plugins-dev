@@ -376,11 +376,24 @@ Publication.prototype.urlForObject = function(object) {
     return 'https://'+this.urlHostname+path;
 };
 
+Publication.prototype.addRobotsTxtDisallow = function(path) {
+    var p = this._robotsTxtDisallowPaths;
+    if(!p) { p = this._robotsTxtDisallowPaths = []; }
+    p.push(path);
+    return this;
+};
+
 Publication.prototype._generateRobotsTxt = function() {
     var lines = ["User-agent: *"];
+    var endLines = [];
     if(this._homePageUrlPath === '/') {
         // If home page of the publication is at the root, allow everything
         lines.push("Allow: /");
+        endLines.push("Disallow: /do/");
+        endLines.push("Disallow: /api/");
+        if(this._fileDownloadPermissionFunctions) {
+            endLines.push("Disallow: /thumbnail/");
+        }
     } else {
         if(this._fileDownloadPermissionFunctions) {
             // Special case because file downloads don't use normal publisher handlers
@@ -392,7 +405,14 @@ Publication.prototype._generateRobotsTxt = function() {
                 lines.push("Allow: "+allow);
             }
         }
-        lines.push("Disallow: /", "");  // must be last for maximum compatibility
+        endLines.push("Disallow: /");
     }
-    return lines.join("\n");
+    // Disallows are after Allows for maximum compatibility
+    if(this._robotsTxtDisallowPaths) {
+        this._robotsTxtDisallowPaths.forEach(function(p) {
+            endLines.push("Disallow: "+p);
+        });
+    }
+    endLines.push("");
+    return lines.concat(endLines).join("\n");
 };
