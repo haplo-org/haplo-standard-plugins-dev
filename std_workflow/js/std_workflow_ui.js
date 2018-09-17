@@ -153,7 +153,6 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     },
 
     _renderTimelineEntries: function(timeline) {
-        var layout = P.template('timeline/entry-layout');
         var entries = [];
         for(var i = 0; i < timeline.length; ++i) {
             var entry = timeline[i];
@@ -166,7 +165,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                     this._renderTimelineEntryDeferredBuiltIn(entry);
             }
             if(text || special) {
-                var deferred = layout.deferredRender({
+                var deferred = P.template('timeline/entry-layout').deferredRender({
                     entry: entry,
                     text: text,
                     special: special
