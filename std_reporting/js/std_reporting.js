@@ -673,7 +673,8 @@ P.callback("$update", function() {
             console.log("Updating, caught error: "+e.message+", in: "+e.fileName+" at line: "+e.lineNumber);
             if(reportNextExceptionFromUpdates) {
                 O.reportHealthEvent("Exception in std_reporting collection update",
-                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message+"\n\nLocation: "+e.fileName+" line "+e.lineNumber+"\n\nCollection: "+lastCollectionTried);
+                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message+"\n\nLocation: "+e.fileName+" line "+e.lineNumber+"\n\nCollection: "+lastCollectionTried,
+                    e);
                 reportNextExceptionFromUpdates = false; // don't send too many, just one per runtime gives the right idea
             }
             // In the error state, fall through to clearing updates, so it's not retried
