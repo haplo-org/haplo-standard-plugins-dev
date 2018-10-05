@@ -15,6 +15,7 @@ P.registerWorkflowFeature("std:transition_form", function(workflow, spec) {
     if(!form) { throw new Error("form must be specified."); }
     var onTransitionCallback = spec.onTransition;
     var prepareFormInstance = spec.prepareFormInstance;
+    var makeDocumentForInstance = spec.makeDocumentForInstance;
 
     var doNotShowForm = function(ui) {
         if(showForTransitions && (-1 === showForTransitions.indexOf(ui.requestedTransition))) {
@@ -23,6 +24,11 @@ P.registerWorkflowFeature("std:transition_form", function(workflow, spec) {
     };
 
     var getFormInstance = function(M, E, ui) {
+        if(makeDocumentForInstance) {
+            // Maintain previous behaviour by copying properties
+            // from created document into ui.transitionData
+            _.extend(ui.transitionData, makeDocumentForInstance(M));
+        }
         var instance = form.instance(ui.transitionData);
         if(prepareFormInstance) { prepareFormInstance(M, instance); }
         instance.update(E.request);
