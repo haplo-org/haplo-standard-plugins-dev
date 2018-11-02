@@ -130,7 +130,7 @@ PageParts.prototype._setup = function() {
         _.each(this.$removeFromCategory, function(remove) {
             var l = pp.categories[remove.category];
             if(l) {
-                pp.categories[remove.category] = _.filter(l, (p) => p.name !== remove.name);
+                pp.categories[remove.category] = _.filter(l, function(p) { return p.name !== remove.name; });
             }
         });
     }
