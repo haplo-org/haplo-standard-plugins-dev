@@ -147,7 +147,7 @@
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
-                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
+                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Save comment"></div></div>';
                 var commentBox = $(commentBoxHtml);
 
                 var element = $(this).parents('[data-uname]').first();
