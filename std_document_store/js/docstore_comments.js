@@ -18,7 +18,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         var version = parseInt(E.request.parameters.version,10),
             formId = E.request.parameters.form,
             elementUName = E.request.parameters.uname,
-            comment = E.request.parameters.comment;
+            comment = E.request.parameters.comment,
+            supersedesId = E.request.parameters.supersedesid;
         if(!(version && formId && elementUName && comment && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
             response.result = "error";
             response.method = "Bad parameters";
@@ -36,6 +37,14 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             row.save();
             response.comment = rowForClient(row);
             response.commentUserName = O.currentUser.name;
+            if(supersedesId) {
+                var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
+                if(oldCommentQ.length) {
+                    var oldCommentRow = oldCommentQ[0];
+                    oldCommentRow.supersededBy = row.id;
+                    oldCommentRow.save();
+                }
+            }
         }
 
     } else {
@@ -58,7 +67,10 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             if(!form) { form = forms[row.formId] = {}; }
             var comments = form[row.elementUName];
             if(!comments) { comments = form[row.elementUName] = []; }
-            comments.push(rowForClient(row));
+            var commentRow = rowForClient(row);
+            if(commentRow) {
+                comments.push(commentRow);
+            }
             var uid = row.userId;
             if(!users[uid]) {
                 users[uid] = O.user(uid).name;
@@ -74,14 +86,17 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
 // --------------------------------------------------------------------------
 
 var rowForClient = function(row) {
-    return {
-        id: row.id,
-        uid: row.userId,
-        version: row.version,
-        datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
-        comment: row.comment,
-        isPrivate: row.isPrivate
-    };
+    // return info if the comment is not superseded by another comment
+    if(!row.supersededBy) {
+        return {
+            id: row.id,
+            uid: row.userId,
+            version: row.version,
+            datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
+            comment: row.comment,
+            isPrivate: row.isPrivate
+        };
+    }
 };
 
 var isPrivate = function(parameters) {
