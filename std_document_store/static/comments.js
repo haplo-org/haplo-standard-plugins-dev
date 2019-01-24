@@ -35,7 +35,13 @@
                 "class": "z__docstore_comment_username",
                 text: (userNameLookup[comment.uid]||'')
             }));
-            _.each(comment.comment.split(/[\r\n]+/), function(p) {
+            var canEdit = true;
+            var text = comment.comment;
+            if(text === "") {
+                text = "(this comment has been deleted)";
+                canEdit = false;
+            }
+            _.each(text.split(/[\r\n]+/), function(p) {
                 p = $.trim(p);
                 if(p) { div.append($("<p></p>", {text:p})); }
             });
@@ -57,18 +63,18 @@
                 messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
             }
+            // TODO: only show if can edit comment
+            if(canEdit) {
+                var footer = $('<div class="z__docstore_comment_footer"></div>');
+                footer.append('<div class="z__docstore_edit_comment_button"><button href="#">Edit comment</div>');
+                div.append(footer);
+            }
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
                 if(existingComments.length) {
                     existingComments.first().before(div);
                     return;
                 }
-            }
-            // TODO: only show if can edit comment
-            if(true) {
-                var footer = $('<div class="z__docstore_comment_footer"></div>');
-                footer.append('<div class="z__docstore_edit_comment_button"><button href="#">Edit comment</div>');
-                div.append(footer);
             }
             element.append(div);
         };
@@ -144,13 +150,18 @@
 
             var showAddComment = function(that, commentId, text, isPrivate) {
                 var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
+                if(privateCommentsEnabled) {
+                    // if isPrivate is true or undefined, so that we get private comments by default, set private class
+                    commentBoxHtml += (isPrivate !== false) ? ' z__docstore_private_comment"' : '"';
+                }
                 if(commentId) { commentBoxHtml += 'data-commentid="'+commentId+'"'; }
                 commentBoxHtml += '><span><textarea rows="4">'+(text ? text : '')+'</textarea></span>';
                 if(privateCommentsEnabled) {
                     commentBoxHtml += '<label>';
-                    // TODO: reflect current state if editing with isPrivate
-                    commentBoxHtml += addPrivateCommentOnly ? '' : '<input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                    if(!addPrivateCommentOnly) {
+                        commentBoxHtml += '<input type="checkbox" id="commment_is_private" name="private" value="yes"';
+                        commentBoxHtml += (isPrivate !== false) ? 'checked="checked">' : '>';
+                    }
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
@@ -219,9 +230,9 @@
                 var isPrivate = addPrivateCommentOnly ||
                     (privateCommentsEnabled && element.find("#commment_is_private").first().is(":checked"));
                 var commentToSupersede = $(this).parents('.z__docstore_comment_enter_ui').first()[0].getAttribute('data-commentid');
-                restoreCommentControls(this, comment && commentToSupersede);
+                restoreCommentControls(this, commentToSupersede);
 
-                if(comment) {
+                if(comment || commentToSupersede) {
                     var formId = element.parents('.z__docstore_form_display').first()[0].id,
                         uname = element[0].getAttribute('data-uname');
                     $.ajax(commentServerUrl, {

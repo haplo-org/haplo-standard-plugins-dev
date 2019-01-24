@@ -20,7 +20,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             elementUName = E.request.parameters.uname,
             comment = E.request.parameters.comment,
             supersedesId = E.request.parameters.supersedesid;
-        if(!(version && formId && elementUName && comment && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
+        if(!(version && formId && elementUName && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
             response.result = "error";
             response.method = "Bad parameters";
         } else {
@@ -31,7 +31,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 datetime: new Date(),
                 formId: formId,
                 elementUName: elementUName,
-                comment: comment,
+                comment: comment || "",
                 isPrivate: isPrivate(E.request.parameters)
             });
             row.save();
