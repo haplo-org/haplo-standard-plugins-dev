@@ -63,7 +63,6 @@
                 messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
             }
-            // TODO: only show if can edit comment
             if(canEdit) {
                 var footer = $('<div class="z__docstore_comment_footer"></div>');
                 footer.append('<div class="z__docstore_edit_comment_button"><button href="#">Edit comment</div>');
@@ -253,7 +252,6 @@
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
-                            // location.reload();
                         }
                     });
                 }
