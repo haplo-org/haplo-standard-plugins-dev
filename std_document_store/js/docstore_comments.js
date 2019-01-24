@@ -26,9 +26,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
             if(oldCommentQ.length) {
                 oldCommentRow = oldCommentQ[0];
-                if(oldCommentRow.userId === O.currentUser.id) {
-                    userCanEditComment = true;
-                }
+                userCanEditComment = currentUserCanEditComment(oldCommentRow, key);
             }
         }
         if(supersedesId && !userCanEditComment) {
@@ -49,7 +47,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 isPrivate: isPrivate(E.request.parameters)
             });
             row.save();
-            response.comment = rowForClient(row);
+            response.comment = rowForClient(row, key);
             response.commentUserName = O.currentUser.name;
             if(supersedesId) {
                 if(userCanEditComment) {
@@ -79,7 +77,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             if(!form) { form = forms[row.formId] = {}; }
             var comments = form[row.elementUName];
             if(!comments) { comments = form[row.elementUName] = []; }
-            var commentRow = rowForClient(row);
+            var commentRow = rowForClient(row, key);
             if(commentRow) {
                 comments.push(commentRow);
             }
@@ -97,7 +95,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
 
 // --------------------------------------------------------------------------
 
-var rowForClient = function(row) {
+var rowForClient = function(row, key) {
     // return info if the comment is not superseded by another comment
     if(!row.supersededBy) {
         return {
@@ -107,7 +105,7 @@ var rowForClient = function(row) {
             datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
             comment: row.comment,
             isPrivate: row.isPrivate,
-            currentUserCanEdit: O.currentUser.id === row.userId
+            currentUserCanEdit: currentUserCanEditComment(row, key)
         };
     }
 };
@@ -117,5 +115,17 @@ var isPrivate = function(parameters) {
         case "true": return true;
         case "false": return false;
         default: return null; // may be null if private comments aren't enabled
+    }
+};
+
+var currentUserCanEditComment = function(commentRow, M) {
+    if(O.currentUser.id === commentRow.userId) {
+        var lastTransitionTime = M.timelineSelect().
+            where('previousState', '<>', null).
+            order('datetime', true).
+            limit(1)[0].datetime;
+        if(lastTransitionTime < commentRow.datetime) {
+            return true;
+        }
     }
 };
