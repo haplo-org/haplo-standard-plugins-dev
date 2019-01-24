@@ -35,7 +35,7 @@
                 "class": "z__docstore_comment_username",
                 text: (userNameLookup[comment.uid]||'')
             }));
-            var canEdit = true;
+            var canEdit = comment.currentUserCanEdit;
             var text = comment.comment;
             if(text === "") {
                 text = "(this comment has been deleted)";
@@ -207,7 +207,6 @@
                 var element = $(that).parents('[data-uname]').first();
                 $('.z__docstore_comment_enter_ui', element).remove();
                 $('.z__docstore_add_comment_button', element).show();
-                // TODO: might have more than one hidden in the document at a time
                 if(toSupersede) {
                     $('.z__docstore_comment_container:hidden', element).remove();
                 } else {

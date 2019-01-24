@@ -20,7 +20,21 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             elementUName = E.request.parameters.uname,
             comment = E.request.parameters.comment,
             supersedesId = E.request.parameters.supersedesid;
-        if(!(version && formId && elementUName && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
+
+        var oldCommentRow, userCanEditComment;
+        if(supersedesId) {
+            var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
+            if(oldCommentQ.length) {
+                oldCommentRow = oldCommentQ[0];
+                if(oldCommentRow.userId === O.currentUser.id) {
+                    userCanEditComment = true;
+                }
+            }
+        }
+        if(supersedesId && !userCanEditComment) {
+            response.result = "error";
+            response.method = "Not permitted";
+        } else if(!(version && formId && elementUName && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
             response.result = "error";
             response.method = "Bad parameters";
         } else {
@@ -38,9 +52,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             response.comment = rowForClient(row);
             response.commentUserName = O.currentUser.name;
             if(supersedesId) {
-                var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
-                if(oldCommentQ.length) {
-                    var oldCommentRow = oldCommentQ[0];
+                if(userCanEditComment) {
                     oldCommentRow.supersededBy = row.id;
                     oldCommentRow.save();
                 }
@@ -94,7 +106,8 @@ var rowForClient = function(row) {
             version: row.version,
             datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
             comment: row.comment,
-            isPrivate: row.isPrivate
+            isPrivate: row.isPrivate,
+            currentUserCanEdit: O.currentUser.id === row.userId
         };
     }
 };
