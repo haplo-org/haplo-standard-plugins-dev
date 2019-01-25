@@ -384,9 +384,12 @@ Publication.prototype._handleRequest2 = function(method, path) {
 };
 
 Publication.prototype._urlPathForObject = function(object) {
-    var handler = this._objectTypeHandler.get(object.firstType());
-    if(handler) {
-        return handler.urlForObject(object);
+    var types = object.everyType();
+    for(var i = 0; i < types.length; ++i) {
+        var handler = this._objectTypeHandler.get(types[i]);
+        if(handler) {
+            return handler.urlForObject(object);
+        }
     }
 };
 
