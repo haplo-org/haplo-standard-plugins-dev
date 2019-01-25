@@ -252,8 +252,8 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 return null;    // 404 if user can't read object
             }
             var object = ref.load();
-            // Check object is correct type, and 404 if not
-            if(!allowedTypes.get(object.firstType())) {
+            // Check object has any correct type, and 404 if not
+            if(!_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
                 console.log("Web publisher: object has wrong type for this path", object);
                 return null;
             }
