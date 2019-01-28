@@ -91,6 +91,10 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
 
 var replaceableTemplates = {};
 
+P.publisherReplaceableTemplate = function(code, templateName) {
+    replaceableTemplates[code] = [templateName, P];
+};
+
 P.FEATURE.registerReplaceableTemplate = function(code, templateName) {
     if(code in replaceableTemplates) {
         throw new Error("Replaceable template already registered: "+code);

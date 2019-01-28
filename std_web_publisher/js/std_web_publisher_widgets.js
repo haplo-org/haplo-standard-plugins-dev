@@ -75,6 +75,9 @@ ObjectWidget.prototype._setAttributeList = function(list, types) {
 
 const SEARCH_PAGE_SIZE = 20;
 
+P.publisherReplaceableTemplate("std:web-publisher:widget:search:form",      "widget/search/form");
+P.publisherReplaceableTemplate("std:web-publisher:widget:search:results",   "widget/search/results");
+
 P.WIDGETS.search = function(E, spec) {
     return new SearchWidget(E, spec);
 };
@@ -82,6 +85,7 @@ P.WIDGETS.search = function(E, spec) {
 var SearchWidget = function(E, spec) {
     this.E = E;
     this.spec = spec || {};
+    this.renderingContext = P.getRenderingContext();
     var params = E.request.parameters;
     var q = params.q;
     if((!spec.formOnly && q && q.match(/\S/)) || spec.alwaysSearch) {
@@ -129,10 +133,10 @@ SearchWidget.prototype.__defineGetter__("ui", function() {
     return P.template("widget/search/ui").deferredRender(this);
 });
 SearchWidget.prototype.__defineGetter__("form", function() {
-    return P.template("widget/search/form").deferredRender(this);
+    return this.renderingContext.publication.getReplaceableTemplate("std:web-publisher:widget:search:form").deferredRender(this);
 });
 SearchWidget.prototype.__defineGetter__("results", function() {
-    return P.template("widget/search/results").deferredRender(this);
+    return this.renderingContext.publication.getReplaceableTemplate("std:web-publisher:widget:search:results").deferredRender(this);
 });
 
 // Implementation
