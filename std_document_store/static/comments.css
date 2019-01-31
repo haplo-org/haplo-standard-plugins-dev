@@ -85,6 +85,7 @@
 .z__docstore_edit_comment_button {
     text-align: right;
     padding-top: 4px;
+    line-height: 14px;
 }
 
 .z__docstore_comment_username {
