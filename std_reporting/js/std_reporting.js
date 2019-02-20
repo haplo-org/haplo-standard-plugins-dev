@@ -139,6 +139,7 @@ Collection.prototype._ensureSpecGathered = function() {
     this.$factFieldDefinition = {ref:{type:"ref"}};
     this.$factType = {ref:"ref"};
     this.$factDescription = {ref:"Reporting object"};
+    this.$factDefinition = {};
 
     this.$filters = {"$DEFAULT":[],"$ALL":[]};
     this.$statistics = {"count": {
@@ -189,13 +190,14 @@ Collection.prototype.property = function(name, value) {
     return this;
 };
 
-Collection.prototype.fact = function(name, type, description) {
+Collection.prototype.fact = function(name, type, description, definition) {
     if(-1 !== PROHIBITED_DATA_TYPES.indexOf(type)) {
         throw new Error("Data type not permitted for facts: "+type);
     }
     this.$factFieldDefinition[name] = {type:FACT_TYPE_DB_TYPE_EXCEPTIONS[type] || type, nullable:true};
     this.$factType[name] = type;
     this.$factDescription[name] = description;
+    if(definition) { this.$factDefinition[name] = definition; }
     return this;
 };
 
@@ -208,6 +210,13 @@ Collection.prototype.indexedFact = function(name, type, description) {
 Collection.prototype.useFactAsAdditionalKey = function(name) {
     if(!("$additionalKeys" in this)) { this.$additionalKeys = []; }
     this.$additionalKeys.push(name);
+    return this;
+};
+
+Collection.prototype.join = function(table, factsToJoinOn, factsToInclude) {
+    _.each(factsToInclude, (f) => {
+        this.fact(f.name, f.type, f.description, {collection: table, join:factsToJoinOn});
+    });
     return this;
 };
 
@@ -467,6 +476,7 @@ FactUpdater.prototype._updateFactsSingleRow = function(object) {
     this.serviceNames.forEach(function(serviceName) {
         O.service(serviceName, object, row, collection);
     });
+    this.updateRowWithJoins(row);
     return this._conditionalUpdateOfRow(row, existingRow);
 };
 
@@ -495,6 +505,7 @@ FactUpdater.prototype._updateFactsWithAdditionalKeys = function(object) {
         updater.serviceNames.forEach(function(serviceName) {
             O.service(serviceName, object, row, collection);
         });
+        this.updateRowWithJoins(row);
         // Find existing row?
         var q = collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null);
         collection.$additionalKeys.forEach(function(factName) {
@@ -556,6 +567,32 @@ FactUpdater.prototype._conditionalUpdateOfRow = function(row, existingRow) {
 FactUpdater.prototype.invalidate = function(row) {
     row.xImplValidTo = this.timeNow;
     row.save();
+};
+
+FactUpdater.prototype.updateRowWithJoins = function(row) {
+    var joinFacts = this.collection.$factDefinition;
+    _.each(joinFacts, function(def, name) {
+        var joinCollection = getCollection(def.collection);
+        if(joinCollection) {
+            if(!_.find(def.join, function(d) {
+                return row[d[0]];
+            })) {
+                return;
+            }
+            var possibleRows = joinCollection.$table.select().and(function(sq) {
+                    _.each(def.join, function(j) {
+                        var factNameForThisCollection = j[0];
+                        var factNameForJoinCollection = j[1];
+                        sq.where(factNameForJoinCollection, "=", row[factNameForThisCollection]);
+                    });
+                }).
+                where("xImplValidTo", "=", null).
+                limit(1);
+            if(possibleRows.length !== 0) {
+                row[name] = possibleRows[0][name];
+            }
+        }
+    });
 };
 
 // --------------------------------------------------------------------------
