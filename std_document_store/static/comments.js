@@ -65,7 +65,7 @@
             }
             if(canEdit) {
                 var footer = $('<div class="z__docstore_comment_footer"></div>');
-                footer.append('<div class="z__docstore_edit_comment_button"><button href="#">Edit comment</div>');
+                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
                 div.append(footer);
             }
             if(insertAtTop) {
@@ -186,7 +186,7 @@
                 window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
             });
 
-            $('#z__docstore_body').on('click', '.z__docstore_edit_comment_button', function(evt) {
+            $('#z__docstore_body').on('click', '.z__docstore_edit_comment_link', function(evt) {
                 evt.preventDefault();
                 var commentContainer = $($(this).parents('.z__docstore_comment_container').first());
                 var text = _.map(commentContainer.children('p'), function(p) {

@@ -10,6 +10,11 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         return;
     }
 
+    var lastTransitionTime = key.timelineSelect().
+        where('previousState', '<>', null).
+        order('datetime', true).
+        limit(1)[0].datetime;
+
     var instance = docstore.instance(key);
     var response = {result:"success"};
 
@@ -26,7 +31,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
             if(oldCommentQ.length) {
                 oldCommentRow = oldCommentQ[0];
-                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions);
+                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime);
             }
         }
         if(supersedesId && !userCanEditComment) {
@@ -47,7 +52,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 isPrivate: isPrivate(E.request.parameters)
             });
             row.save();
-            response.comment = rowForClient(row, key, checkPermissions);
+            response.comment = rowForClient(row, key, checkPermissions, lastTransitionTime);
             response.commentUserName = O.currentUser.name;
             if(supersedesId) {
                 if(userCanEditComment) {
@@ -72,12 +77,13 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         }
         var onlyCommentsForForm = E.request.parameters.onlyform;
         if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
+
         _.each(allComments, function(row) {
             var form = forms[row.formId];
             if(!form) { form = forms[row.formId] = {}; }
             var comments = form[row.elementUName];
             if(!comments) { comments = form[row.elementUName] = []; }
-            var commentRow = rowForClient(row, key, checkPermissions);
+            var commentRow = rowForClient(row, key, checkPermissions, lastTransitionTime);
             if(commentRow) {
                 comments.push(commentRow);
             }
@@ -95,7 +101,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
 
 // --------------------------------------------------------------------------
 
-var rowForClient = function(row, key, checkPermissions) {
+var rowForClient = function(row, key, checkPermissions, lastTransitionTime) {
     // return info if the comment is not superseded by another comment
     if(!row.supersededBy) {
         return {
@@ -105,7 +111,7 @@ var rowForClient = function(row, key, checkPermissions) {
             datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
             comment: row.comment,
             isPrivate: row.isPrivate,
-            currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions)
+            currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime)
         };
     }
 };
@@ -118,12 +124,8 @@ var isPrivate = function(parameters) {
     }
 };
 
-var currentUserCanEditComment = function(commentRow, M, checkPermissions) {
+var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime) {
     if(checkPermissions(M, 'editComments') && O.currentUser.id === commentRow.userId) {
-        var lastTransitionTime = M.timelineSelect().
-            where('previousState', '<>', null).
-            order('datetime', true).
-            limit(1)[0].datetime;
         if(lastTransitionTime < commentRow.datetime) {
             return true;
         }
