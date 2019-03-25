@@ -82,6 +82,16 @@ P.WIDGETS.search = function(E, spec) {
     return new SearchWidget(E, spec);
 };
 
+// There are two levels of protection against SQL injection below this, but the error when
+// someone tries an 'interesting' sort order raises a health event, which is annoying.
+const ALLOWED_SEARCH_ORDERS = {
+    date:       "date",
+    date_asc:   "date_asc",
+    relevance:  "relevance",
+    title:      "title",
+    title_desc: "title_desc"
+};
+
 var SearchWidget = function(E, spec) {
     this.E = E;
     this.spec = spec || {};
@@ -94,7 +104,7 @@ var SearchWidget = function(E, spec) {
         if(spec.modifyQuery) {
             spec.modifyQuery(this._storeQuery);
         }
-        this._sort = params.sort || (spec.hideRelevanceSort ? "date" : "relevance");
+        this._sort = ALLOWED_SEARCH_ORDERS[params.sort] || (spec.hideRelevanceSort ? "date" : "relevance");
         this._results = this._storeQuery.sortBy(this._sort).setSparseResults(true).execute();
         this._pageSize = spec.pageSize || SEARCH_PAGE_SIZE;
         this._start = 0;
