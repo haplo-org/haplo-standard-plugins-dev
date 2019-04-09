@@ -137,28 +137,32 @@
             });
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
+                if(!$('.z__docstore_comment_enter_ui')[0]) {
+                    var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
+                    commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
+                    commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
+                    if(privateCommentsEnabled) {
+                        commentBoxHtml += '<label>';
+                        commentBoxHtml += addPrivateCommentOnly ? '' : '<input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                        commentBoxHtml += _.escape(addPrivateCommentLabel);
+                        commentBoxHtml += '</label>';
+                    }
+                    commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Save comment"></div></div>';
+                    var commentBox = $(commentBoxHtml);
 
-                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
-                commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
-                if(privateCommentsEnabled) {
-                    commentBoxHtml += '<label>';
-                    commentBoxHtml += addPrivateCommentOnly ? '' : '<input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
-                    commentBoxHtml += _.escape(addPrivateCommentLabel);
-                    commentBoxHtml += '</label>';
-                }
-                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Save comment"></div></div>';
-                var commentBox = $(commentBoxHtml);
-
-                var element = $(this).parents('[data-uname]').first();
-                var existingComments = $('.z__docstore_comment_container', element);
-                if(existingComments.length) {
-                    existingComments.first().before(commentBox);
+                    var element = $(this).parents('[data-uname]').first();
+                    var existingComments = $('.z__docstore_comment_container', element);
+                    if(existingComments.length) {
+                        existingComments.first().before(commentBox);
+                    } else {
+                        element.append(commentBox);
+                    }
+                    $(this).hide(); // hide button to avoid
+                    window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
                 } else {
-                    element.append(commentBox);
+                    window.alert("You must save or discard the existing comment before starting a new one");
+                    $('textarea', $('.z__docstore_comment_enter_ui')[0]).focus();
                 }
-                $(this).hide(); // hide button to avoid
-                window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
             });
 
             // Cancel making comment
