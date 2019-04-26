@@ -154,7 +154,7 @@
                     commentBoxHtml += (isPrivate !== false) ? ' z__docstore_private_comment"' : '"';
                 }
                 if(commentId) { commentBoxHtml += 'data-commentid="'+commentId+'"'; }
-                commentBoxHtml += '><span><textarea rows="4">'+(text ? text : '')+'</textarea></span>';
+                commentBoxHtml += '><span><textarea rows="4">'+(text ? _.escape(text) : '')+'</textarea></span>';
                 if(privateCommentsEnabled) {
                     commentBoxHtml += '<label>';
                     if(!addPrivateCommentOnly) {
