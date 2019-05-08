@@ -149,9 +149,11 @@
 
             var showAddComment = function(that, commentId, text, isPrivate) {
                 var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                if(privateCommentsEnabled) {
+                if(privateCommentsEnabled && (isPrivate !== false)) {
                     // if isPrivate is true or undefined, so that we get private comments by default, set private class
-                    commentBoxHtml += (isPrivate !== false) ? ' z__docstore_private_comment"' : '"';
+                    commentBoxHtml += ' z__docstore_private_comment"';
+                } else {
+                    commentBoxHtml += '"';
                 }
                 if(commentId) { commentBoxHtml += 'data-commentid="'+commentId+'"'; }
                 commentBoxHtml += '><span><textarea rows="4">'+(text ? _.escape(text) : '')+'</textarea></span>';
