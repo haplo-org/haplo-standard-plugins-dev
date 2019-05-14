@@ -39,8 +39,8 @@
             } else {
                 // Nested values from attribute groups
                 each(nestedValues) {
-                    if(first) {
-                        <div> <i> attributeName </i> </div>
+                    if(nestedValuesDisplayAttributeName) {
+                        <div class="haplo-object-nested-attribute-name"> attributeName </div>
                     }
                     <div> render(value) </div>
                 }
