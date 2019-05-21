@@ -118,6 +118,9 @@ P.Publication.prototype.getReplaceableTemplate = function(code) {
         throw new Error("Replaceable template not found: "+code);
     }
     var template = plugin.template(templateName);
+    if($host.templateDebuggingEnabled) {
+        template.addDebugComment("replaceable with "+code);
+    }
     cached[code] = template;
     return template;
 };
