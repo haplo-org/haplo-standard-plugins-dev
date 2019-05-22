@@ -51,11 +51,12 @@ P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", fu
     var fallbackRenderer = function(object) {
         return P.template("widget/query/list-search-result-item-fallback").deferredRender(object);
     };
+    var context = P.getRenderingContext();
     this.render(P.template("widget/query/list-search-result").deferredRender({
         results: _.map(specification.results ? specification.results : specification.query.execute(),
                 function(object) {
                     var r = renderers.get(object.firstType()) || defaultRenderer || fallbackRenderer;
-                    return r(object);
+                    return r(object, context);
                 }
             )
     }));
