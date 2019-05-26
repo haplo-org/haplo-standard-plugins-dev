@@ -90,7 +90,11 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
 // --------------------------------------------------------------------------
 // Replaceable templates
 
-var replaceableTemplates = {};
+var replaceableTemplates = {
+    // Default replaceable templates
+    "std:web-publisher:error:internal": ["error/internal", P],
+    "std:web-publisher:error:stop":     ["error/stop", P]
+};
 
 P.publisherReplaceableTemplate = function(code, templateName) {
     replaceableTemplates[code] = [templateName, P];

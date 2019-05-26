@@ -247,11 +247,12 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
             if(!(pe.length && (ref = O.ref(pe[0])))) {
                 return null;
             }
-            if(!O.currentUser.canRead(ref)) {
-                console.log("Web publisher: user not allowed to read", ref);
-                return null;    // 404 if user can't read object
+            var object = null;
+            try { object = ref.load(); } catch(e) { /* ignore, object won't be set on permissions error */}
+            if(!object) {
+                renderingContext.$overrideStatusCode = HTTP.NOT_FOUND;
+                O.stop("The requested item was not found", "Not found");
             }
-            var object = ref.load();
             // Check object has any correct type, and 404 if not
             if(!_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
                 console.log("Web publisher: object has wrong type for this path", object);
@@ -334,11 +335,69 @@ RenderingContext.prototype.setPagePartOptions = function(pagePartName, options) 
 
 // --------------------------------------------------------------------------
 
+// In debug mode, call without exception handling so errors are reporting using the normal debug stacktraces etc
+var HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING = O.PLUGIN_DEBUGGING_ENABLED && O.application.config["std_web_publisher:show_debug_error_responses"];
+
 Publication.prototype._handleRequest = function(method, path) {
     if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
     var publication = this;
     return O.impersonating(O.serviceUser(this._serviceUserCode), function() {
-        return publication._handleRequest2(method, path);
+        var response, errorRender, statusCode;
+        if(HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING) {
+            response = publication._handleRequest2(method, path);
+        } else {
+            try {
+                response = publication._handleRequest2(method, path);
+            } catch(e if "$haploStopError" in e) {
+                // O.stop() called
+                if(O.PLUGIN_DEBUGGING_ENABLED) {
+                    console.log("Web publisher: O.stop() rendered as production. To see error details, set std_web_publisher:show_debug_error_responses to true in configuration data.");
+                }
+                errorRender = publication.getReplaceableTemplate("std:web-publisher:error:stop").deferredRender({
+                    home: publication._homePageUrlPath,
+                    message: e.$haploStopError.view.message || "An error occurred"
+                });
+                renderingContext.pageTitle = e.$haploStopError.view.pageTitle || "Error";
+                if("$overrideStatusCode" in renderingContext) {
+                    statusCode = renderingContext.$overrideStatusCode;
+                }
+            } catch(e) {
+                // Exception thrown in handling
+                if(O.PLUGIN_DEBUGGING_ENABLED) {
+                    console.log("Web publisher: Exception rendered as production. To see error details, set std_web_publisher:show_debug_error_responses to true in configuration data.");
+                }
+                errorRender = publication.getReplaceableTemplate("std:web-publisher:error:internal").deferredRender({
+                    home: publication._homePageUrlPath
+                });
+                renderingContext.pageTitle = "Error";
+                statusCode = HTTP.INTERNAL_SERVER_ERROR;
+            }
+            if(!response && errorRender && renderingContext.$E) {
+                var E = renderingContext.$E;
+                // An error occured. Render it micely in the publication's layout
+                var rendered;
+                if(publication._layoutRenderer) {
+                    rendered = publication._layoutRenderer(E, renderingContext, {
+                        body: errorRender
+                    });
+                }
+                if(!rendered) {
+                    rendered = P.template("std:render").render(errorRender);
+                }
+                if(rendered) {
+                    E.response.body = rendered;
+                    E.response.kind = 'html';
+                    if(statusCode) {
+                        E.response.statusCode = statusCode;
+                    }
+                    response = E.response;
+                }
+            }
+        }
+        if(response) {
+            response.headers["Server"] = "Haplo Web Publisher";
+        }
+        return response;
     });
 };
 
@@ -378,7 +437,6 @@ Publication.prototype._handleRequest2 = function(method, path) {
             E.response.body = renderedWithLayout;
         }
     }
-    E.response.headers["Server"] = "Haplo Web Publisher";
     O.serviceMaybe("std:web-publisher:observe:request", this, E, renderingContext);
     return E.response;
 };
