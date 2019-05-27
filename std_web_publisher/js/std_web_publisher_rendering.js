@@ -130,6 +130,13 @@ P.Publication.prototype.getReplaceableTemplate = function(code) {
     return template;
 };
 
+// For --turbo option in developer mode
+P.__removeCachedTemplates = function() {
+    _.each(P.allPublications, function(publication) {
+        delete publication._cachedReplaceableTemplates;
+    });
+};
+
 P.globalTemplateFunction("std:web-publisher:template", function(code) {
     var publication = P.getRenderingContext().publication;
     this.renderIncludedTemplate(publication.getReplaceableTemplate(code));
