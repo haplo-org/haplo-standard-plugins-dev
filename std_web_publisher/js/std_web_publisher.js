@@ -174,6 +174,10 @@ Publication.prototype.use = function(name /* arguments */) {
     return this;
 };
 
+Publication.prototype.featureImplemented = function(name) {
+    return name in publisherFeatures;
+};
+
 Publication.prototype.serviceUser = function(serviceUserCode) {
     if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
     this._serviceUserCode = serviceUserCode;
