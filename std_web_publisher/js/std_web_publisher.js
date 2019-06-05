@@ -154,6 +154,7 @@ var Publication = P.Publication = function(name, plugin) {
     this._homePageUrlPath = null;
     this._pagePartOptions = {};
     this._paths = [];
+    this._urlPolicy = O.refdictHierarchical();
     this._objectTypeHandler = O.refdictHierarchical();
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
     this._replacedTemplates = {};
@@ -201,6 +202,15 @@ Publication.prototype.setHomePageUrlPath = function(urlPath) {
 // NOTE: pageTitle from template can be obtained through the context object
 Publication.prototype.layout = function(layoutRenderer) {
     this._layoutRenderer = layoutRenderer;
+    return this;
+};
+
+Publication.prototype.urlPolicyForTypes = function(types, policy) {
+    var urlPolicy = this._urlPolicy;
+    types.forEach(function(type) {
+        urlPolicy.set(type, policy);
+    });
+    return this;
 };
 
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
@@ -242,6 +252,7 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
     checkHandlerArgs(path, handlerFunction);
     var allowedTypes = O.refdictHierarchical();
     var pathPrefix = path+"/";
+    var urlPolicy = this._urlPolicy;
     var handler = {
         path: path,
         robotsTxtAllowPath: pathPrefix,
@@ -266,15 +277,21 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
             return handlerFunction(E, renderingContext, object);
         },
         urlForObject: function(object) {
-            var slug = object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
-            if(slug.length > MAX_SLUG_LENGTH) {
-                // Trucate slug, making sure last 'word' is not truncated
-                slug = slug.substring(0,MAX_SLUG_LENGTH).replace(/-\w+?$/,'');
+            var url = path+"/"+object.ref;
+            var policy = urlPolicy.get(object.firstType()) || {};
+            var slugLength = ("slugLength" in policy) ? policy.slugLength : MAX_SLUG_LENGTH;
+            if(slugLength > 0) {
+                var slug = object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+                if(slug.length > slugLength) {
+                    // Trucate slug, making sure last 'word' is not truncated
+                    slug = slug.substring(0,slugLength).replace(/-\w+?$/,'');
+                }
+                if(slug.endsWith('-')) {
+                    slug = slug.replace(/-$/,''); // Don't end with a '-', as that's ugly when titles end with punctuation
+                }
+                url += "/"+slug;
             }
-            if(slug.endsWith('-')) {
-                slug = slug.replace(/-$/,''); // Don't end with a '-', as that's ugly when titles end with punctuation
-            }
-            return path+"/"+object.ref+"/"+slug;
+            return url;
         }
     };
     var objectTypeHandler = this._objectTypeHandler;
