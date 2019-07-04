@@ -213,8 +213,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
 P.implementService("std:workflow:deferred_render_combined_timeline", function(instances) {
     var entries = [];
     _.each(instances, function(M) {
-        var distinctProcessName = M.workflowServiceMaybe("std:workflow:combined_timeline:title_for_instance");
-        var processName = distinctProcessName || M.getWorkflowProcessName();
+        var instanceProcessName = M.workflowServiceMaybe("std:workflow:combined_timeline:title_for_instance");
+        var processName = instanceProcessName || M.getWorkflowProcessName();
         var renderedEntries = M._renderTimelineEntries(M.timelineSelect());
         renderedEntries.forEach(function(e) { e.processName = processName; });
         entries = entries.concat(renderedEntries);
