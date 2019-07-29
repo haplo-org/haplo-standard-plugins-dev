@@ -43,11 +43,6 @@ P.use("std:workflow");
 //    viewCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the 
 //              comments of other users. Defaults to same value as viewComments.
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
-//    ----------
-//    actionableUserMustReview: (selector) - a selector which specifies when the
-//              current actionable user should be shown the completed document and
-//              prompts the user to review/confirm before progressing use selector
-//              like {pendingTransitions:[...]} to narrow down to individual transitions
 
 // ----------------------------------------------------------------------------
 
@@ -184,7 +179,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     // ------------------------------------------------------------------------
 
-    // If the user has to review the form before submission, redirect to a review page
+    // DEPRECATED FEATURE -- DO NOT USE IN NEW CODE
     if(spec.actionableUserMustReview) {
         workflow.transitionUI(spec.actionableUserMustReview, function(M, E, ui) {
             // if we've reviewed the forms then don't redirect:
@@ -202,7 +197,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 M.pendingTransition;
             ui.redirect(spec.path+"/submit/"+M.workUnit.id);
         });
-    }
+    } // END DEPRECATED FEATURE -- DO NOT USE IN NEW CODE
 
     // ------------------------------------------------------------------------
 
