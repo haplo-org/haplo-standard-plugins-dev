@@ -229,9 +229,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var instance = docstore.instance(M);
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
             var isDone = isOptional(M, O.currentUser, spec.edit) || instance.currentDocumentIsComplete;
+            var editUrl = spec.path+'/form/'+M.workUnit.id;
+            // Allow other plugins to modify the URL needs to start the edit process
+            editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
             builder.
                 link(spec.editPriority || "default",
-                        spec.path+'/form/'+M.workUnit.id,
+                        editUrl,
                         label,
                         isDone ? "standard" : "primary");
         }
@@ -248,14 +251,21 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     var editor = {
         finishEditing: function(instance, E, complete) {
+            var M = instance.key;
             if(complete && spec.onFinishPage) {
-                var redirectUrl = spec.onFinishPage(instance.key);
+                var redirectUrl = spec.onFinishPage(M);
                 if(redirectUrl) { return E.response.redirect(redirectUrl); }
             }
-            if(complete && !(instance.key.transitions.empty) && instance.key.workUnit.isActionableBy(O.currentUser)) {
-                E.response.redirect("/do/workflow/transition/"+instance.key.workUnit.id);
+            if(complete && !(M.transitions.empty) && M.workUnit.isActionableBy(O.currentUser)) {
+                var transitionUrl = {
+                    transition: spec.onFinishTransition,    // may be undefined
+                    extraParameters: {}
+                };
+                // Allow other plugins to set a transition or add things to the URL
+                M.workflowServiceMaybe("std:workflow:transition-url-properties-after-edit", transitionUrl, docstore, spec);
+                E.response.redirect(M.transitionUrl(transitionUrl.transition, transitionUrl.extraParameters));
             } else {
-                E.response.redirect(instance.key.url);
+                E.response.redirect(M.url);
             }
         },
         gotoPage: function(instance, E, formId) {
