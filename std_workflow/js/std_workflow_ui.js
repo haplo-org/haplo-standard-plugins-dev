@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+const NEW_TRANSITION_UI = !!O.application.config["std_workflow:new_transition_ui"];
+
 _.extend(P.Workflow.prototype, {
 
     objectElementActionPanelName: function(name) {
@@ -293,6 +295,12 @@ P.respond("GET,POST", "/do/workflow/transition", [
             ui.transitionProperties = M.transitions.properties(transition);
             M._callHandler('$transitionUI', E, ui);
 
+            if(NEW_TRANSITION_UI) {
+                if(M.transitions.list.length === 1) {
+                    ui.singleTransition = true;
+                }
+            }
+
         } else {
 
             M._callHandler('$transitionUIWithoutTransitionChoice', E, ui);
@@ -333,6 +341,7 @@ var TransitionUI = function(M, transition, target) {
     }
 };
 TransitionUI.prototype = {
+    NEW_TRANSITION_UI: NEW_TRANSITION_UI,
     backLinkText: "Cancel",
     addFormDeferred: function(position, deferred) {
         if(!this.$formDeferred) { this.$formDeferred = []; }
