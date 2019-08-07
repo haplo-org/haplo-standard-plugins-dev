@@ -20,6 +20,7 @@ P.use("std:workflow");
 //    showFormTitlesWhenEditing: show form titles in viewer (TODO consider making this the default)
 //    sortDisplay: The priority for displaying in list of forms, defaulting to
 //          priority if it's a number, or 100 otherwise.
+//    mustCreateNewVersion: selector to specify where a user MUST create a new version before transitioning
 //    ----------
 //          history/view/edit have the concept of "allowing for roles at selectors"
 //                  it is a list of these definition objects, which have properties:
@@ -154,6 +155,21 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     // ------------------------------------------------------------------------
 
+    // Is there a version of the document which allows the transition to happen?
+    var docstoreHasExpectedVersion = function(M, instance) {
+        if(!instance.currentDocumentIsComplete) {
+            return false;
+        }
+        if(spec.mustCreateNewVersion && M.selected(spec.mustCreateNewVersion)) {
+            if(!instance.currentDocumentIsEdited) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    // ------------------------------------------------------------------------
+
     // If a document has been edited when a transition occurs, commit that new version
     workflow.observeExit({}, function(M, transition) {
         var instance = docstore.instance(M);
@@ -169,7 +185,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(t.optional) { return; }
         workflow.filterTransition(t.selector || {}, function(M, name) {
             var instance = docstore.instance(M);
-            if(!instance.currentDocumentIsComplete) {
+            if(!docstoreHasExpectedVersion(M, instance)) {
                 if(!t.transitionsFiltered || t.transitionsFiltered.indexOf(name) !== -1) {
                     return false;
                 }
@@ -223,7 +239,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
-            var isDone = isOptional(M, O.currentUser, spec.edit) || instance.currentDocumentIsComplete;
+            var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
