@@ -372,5 +372,6 @@ TransitionUI.prototype.__defineGetter__('transitionData', function() {
     return data;
 });
 TransitionUI.prototype.__defineGetter__("backLink",             function() { return this.M._call('$taskUrl'); });
+TransitionUI.prototype.__defineGetter__("aboveConfirmFormDeferreds", function() { return this._getFormDeferreds("aboveConfirm"); });
 TransitionUI.prototype.__defineGetter__("bottomFormDeferreds",  function() { return this._getFormDeferreds("bottom"); });
 TransitionUI.prototype.__defineGetter__("topFormDeferreds",     function() { return this._getFormDeferreds("top"); });

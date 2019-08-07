@@ -11,6 +11,8 @@ unless(transition) {
     <input type="hidden" name="transition" value=transition>
     if(requestedTarget) { <input type="hidden" name="target" value=requestedTarget> }
 
+    each(aboveConfirmFormDeferreds) { render(.) }
+
     if(NEW_TRANSITION_UI) {
       <div class="z__workflow_choosen_transition_container">
         do() {
