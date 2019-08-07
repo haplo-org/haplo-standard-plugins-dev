@@ -295,12 +295,6 @@ P.respond("GET,POST", "/do/workflow/transition", [
             ui.transitionProperties = M.transitions.properties(transition);
             M._callHandler('$transitionUI', E, ui);
 
-            if(NEW_TRANSITION_UI) {
-                if(M.transitions.list.length === 1) {
-                    ui.singleTransition = true;
-                }
-            }
-
         } else {
 
             M._callHandler('$transitionUIWithoutTransitionChoice', E, ui);

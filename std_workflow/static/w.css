@@ -46,13 +46,15 @@
     margin-bottom: 24px;
 }
 .z__workflow_confirm_container {
-    margin: 24px 0 32px 0;
     text-align: right;
 }
 .z__workflow_confirm_container a,
 .z__workflow_confirm_container a:visited {
-    color: #666;
+    color: #555;
     margin-right: 24px;
+}
+.z__workflow_confirm_container input[type=submit] {
+    font-size: 1.05em;
 }
 
 

@@ -7,24 +7,27 @@ unless(transition) {
 
 } else {
 
-  if(NEW_TRANSITION_UI) {
-    <div class="z__workflow_choosen_transition_container">
-      within(transitionProperties) { template:std:ui:choose:selected-item() }
-    </div>
-  }
-
   <form method="POST"> std:form:token()
     <input type="hidden" name="transition" value=transition>
     if(requestedTarget) { <input type="hidden" name="target" value=requestedTarget> }
 
+    if(NEW_TRANSITION_UI) {
+      <div class="z__workflow_choosen_transition_container">
+        do() {
+          within(transitionProperties) {
+            template:std:ui:choose:selected-item() { yield:confirm-ui() }
+          }
+        } confirm-ui {
+          <div class="z__workflow_confirm_container">
+            <a href=backLink> "cancel" </a> " " <input type="submit" value=["Confirm: " transitionProperties.label]>
+          </div>
+        }
+      </div>
+    }
+
     each(topFormDeferreds) { render(.) }
 
-    if(NEW_TRANSITION_UI) {
-      <div class="z__workflow_confirm_container">
-        <a href=backLink> "Cancel" </a> " " <input style="font-size:2em" type="submit" value=["Confirm: " transitionProperties.label]>
-      </div>
-
-    } else {
+    unless(NEW_TRANSITION_UI) {
       if(transitionProperties.confirmText) {
         std:text:paragraph(transitionProperties.confirmText)
       }
