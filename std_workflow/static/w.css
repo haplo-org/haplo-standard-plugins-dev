@@ -43,7 +43,7 @@
 /* Transition page */
 
 .z__workflow_choosen_transition_container {
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 .z__workflow_confirm_container {
     text-align: right;
@@ -55,6 +55,13 @@
 }
 .z__workflow_confirm_container input[type=submit] {
     font-size: 1.05em;
+}
+
+.z__workflow_confirm_deferred_holder {
+    padding: 20px 0 16px 0;
+}
+.z__workflow_confirm_deferred_holder + .z__workflow_confirm_deferred_holder {
+    border-top: 1px solid #ddd;
 }
 
 

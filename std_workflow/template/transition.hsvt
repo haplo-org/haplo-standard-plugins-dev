@@ -25,16 +25,31 @@ unless(transition) {
       </div>
     }
 
-    each(topFormDeferreds) { render(.) }
+    if(NEW_TRANSITION_UI) {
 
-    unless(NEW_TRANSITION_UI) {
+      // Top and bottom form deferreds are a concept from the old UI, but treated the same in the new UI
+      each(topFormDeferreds) {
+        <div class="z__workflow_confirm_deferred_holder">
+          render(.)
+        </div>
+      }
+      each(bottomFormDeferreds) {
+        <div class="z__workflow_confirm_deferred_holder">
+          render(.)
+        </div>
+      }
+
+    } else {
+
+      each(topFormDeferreds) { render(.) }
+
       if(transitionProperties.confirmText) {
         std:text:paragraph(transitionProperties.confirmText)
       }
       <p> <input type="submit" value=["Confirm: " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink> "Cancel" </a> </p>
-    }
 
-    each(bottomFormDeferreds) { render(.) }
+      each(bottomFormDeferreds) { render(.) }
+    }
 
   </form>
 }
