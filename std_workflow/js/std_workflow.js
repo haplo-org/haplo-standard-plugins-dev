@@ -445,6 +445,13 @@ WorkflowInstanceBase.prototype = {
                 search[0] = names[n];
                 var text = this._call('$text', search.join(':'));
                 if(typeof(text) === "string") {
+                    // First run the string through the locale's text translation
+                    var translate = this.$i18nTextTranslate;
+                    if(!translate) {
+                        translate = this.$i18nTextTranslate = this.$plugin.locale().text("workflow");
+                    }
+                    text = translate[text];
+                    // Then interpolate the translated string
                     return this._applyFunctionListToValue('$textInterpolate', text) || text;
                 }
             }
