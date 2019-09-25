@@ -758,7 +758,8 @@ Workflow.prototype = {
     // Sometimes it's necessary to get a workflow name without an instance of the workflow being available.
     // A slightly grubby way of getting it, but the full text system is not available without an instance.
     getWorkflowProcessName: function() {
-        return this.$instanceClass.prototype.$textLookup['workflow-process-name'] || 'Workflow';
+        let i = P.locale().text("template");
+        return this.$instanceClass.prototype.$textLookup['workflow-process-name'] || i['Workflow'];
     },
 
     // ----------------------------------------------------------------------

@@ -12,6 +12,11 @@ ExampleUsageWorkflow.use("std:entities:entity_shared_roles", {
     entities: ["user"]
 });
 
+ExampleUsageWorkflow.use("std:notes", {
+    canSeePrivateNotes: function() { return true; },
+    canAddNonTransitionNote: function() { return true; }
+});
+
 ExampleUsageWorkflow.start(function(M, initial, properties) {
     initial.state = "wait_submit";
 });

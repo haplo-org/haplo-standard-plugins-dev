@@ -59,12 +59,17 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
 
     $actionPanelStatusUI: {selector:{}, handler:function(M, builder) {
         var state = this.state;
-        builder.status("top", this._getText(['status'], [state]));
+        let i = P.locale().text("template");
+        builder.element("top", {
+            title: i["Status"],
+            label: this._getText(['status'], [state])
+        });
         if(!this.workUnit.closed) {
             var displayedName = this._callHandler('$currentlyWithDisplayName');
             if(displayedName) {
+                let i = P.locale().text("template");
                 builder.element("top", {
-                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
+                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || i['Currently with'],
                     label: displayedName
                 });
             }
@@ -114,7 +119,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     },
 
     getWorkflowProcessName: function() {
-        return this._getTextMaybe(["workflow-process-name"], [this.state]) || 'Workflow';
+        let i = P.locale().text("template");
+        return this._getTextMaybe(["workflow-process-name"], [this.state]) || i['Workflow'];
     },
 
     getDisplayableStatus: function() {
@@ -336,7 +342,6 @@ var TransitionUI = function(M, transition, target) {
 };
 TransitionUI.prototype = {
     NEW_TRANSITION_UI: NEW_TRANSITION_UI,
-    backLinkText: "Cancel",
     addFormDeferred: function(position, deferred) {
         if(!this.$formDeferred) { this.$formDeferred = []; }
         this.$formDeferred.push({position:position, deferred:deferred});
@@ -360,6 +365,10 @@ TransitionUI.prototype = {
         return this._transitionData;
     }
 };
+TransitionUI.prototype.__defineGetter__('backLinkText', function() {
+    let i = P.locale().text("template");
+    return i["Cancel"];
+});
 TransitionUI.prototype.__defineGetter__('pageTitle', function() {
     var taskTitle = this.M._call("$taskTitle");
     var pageTitle = this.M._getText(['transition-page-title', 'action-label'], [this.M.state]);
