@@ -93,6 +93,7 @@ P.ExampleUsageWorkflow.use("std:document_store", {
     },
     view: [{}],
     edit: [{roles:["user"], selector:{state:"wait_submit"}}],
+    viewDraft: [{roles:["user"]}],
     addComment: [{}],
     viewComments: [{}],
     viewCommentsOtherUsers: [{selector:{closed:true}}]

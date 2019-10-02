@@ -1,4 +1,6 @@
 
+// TODO I18N: client side localisation of docstore comments
+
 (function($) {
 
     $(document).ready(function() {
