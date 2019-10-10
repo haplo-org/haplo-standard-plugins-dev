@@ -22,7 +22,7 @@
   "Save note": "Cadw nodyn",
   "Notes": "Nodiadau",
   "{} automatically sent workflow to updated user": "Anfonodd {} lif gwaith yn awtomatig i'r defnyddiwr a ddiweddarwyd",
-  "entity-replace:set-to": "to",
+  "entity-replace:set-to": "at",
   "{} changed the selected roles for the workflow.": "Newidiodd {} y rolau a ddewiswyd ar gyfer y llif gwaith.",
   "{} hid this task.": "Cuddiodd {} y dasg hon.",
   "{} made this task visible.": "Gwnaeth {} y dasg hon yn weladwy.",
