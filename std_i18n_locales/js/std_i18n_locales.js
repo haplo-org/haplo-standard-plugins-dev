@@ -15,7 +15,7 @@ P.implementService("std:i18n:locales:active:id", function() {
     if(!activeLocales) {
         let locales = O.application.config["std:i18n:locales:active"];
         if(!locales) {
-            locales = P.locale().id;
+            locales = $i18n_defaults.locale_id;
         }
         activeLocales = locales.split(',');
         Object.freeze(activeLocales);
