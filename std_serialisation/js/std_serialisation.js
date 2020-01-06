@@ -29,6 +29,10 @@ descTypeNames[O.T_IDENTIFIER_CONFIGURATION_NAME] = "configuration-name";
 
 // --------------------------------------------------------------------------
 
+const UNKNOWN = "UNKNOWN";
+
+// --------------------------------------------------------------------------
+
 var formatDate = function(d) {
     return d ? (new XDate(d)).toISOString() : null;
 };
@@ -80,9 +84,9 @@ P.implementService("std:serialisation:encode", function(object) {
         let typeInfo = SCHEMA.getTypeInfo(type);
         if(typeInfo) {
             serialised.type = {
-                code: typeInfo.code,
-                name: typeInfo.name,
-                rootCode: SCHEMA.getTypeInfo(typeInfo.rootType).code,
+                code: typeInfo.code || UNKNOWN,
+                name: typeInfo.name || UNKNOWN,
+                rootCode: SCHEMA.getTypeInfo(typeInfo.rootType).code || UNKNOWN,
                 annotations: typeInfo.annotations
             };
         }
@@ -90,9 +94,9 @@ P.implementService("std:serialisation:encode", function(object) {
     if(!serialised.type) {
         // Provide some defaults, so consumer code can rely on the type property existing
         serialised.type = {
-            code: "UNKNOWN",
-            name: "UNKNOWN",
-            rootCode: "UNKNOWN",
+            code: UNKNOWN,
+            name: UNKNOWN,
+            rootCode: UNKNOWN,
             annotations: []
         };
     }
