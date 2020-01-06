@@ -9,6 +9,7 @@ P.respond("GET", "/do/std-serialisation-dev/object-json", [
     {pathElement:0, as:"object"}
 ], function(E, object) {
     if(!O.currentUser.isSuperUser) { O.stop("Not permitted"); }
-    E.response.body = JSON.stringify(O.service("std:serialisation:encode", object), undefined, 2);
+    let serialiser = O.service("std:serialisation:serialiser").useAllSources();
+    E.response.body = JSON.stringify(serialiser.encode(object), undefined, 2);
     E.response.kind = "json";
 });

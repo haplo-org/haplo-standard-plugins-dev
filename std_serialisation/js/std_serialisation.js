@@ -1,7 +1,11 @@
 
-var INCLUDE_WORKFLOWS = O.featureImplemented("std:workflow");
+P.implementService("std:serialisation:serialiser", function() {
+    return new Serialiser();
+});
 
-var descLookup, labelLookup;
+// --------------------------------------------------------------------------
+
+var descLookup, labelLookup, sources;
 
 // TODO: Ensure these match types in schema requirements
 var descTypeNames = {};
@@ -39,19 +43,77 @@ var formatDate = function(d) {
 
 // --------------------------------------------------------------------------
 
-P.implementService("std:serialisation:encode", function(object) {
-    if(!descLookup) {
-        descLookup = {};
-        for(let k in SCHEMA.ATTR) { descLookup[SCHEMA.ATTR[k]] = k; }
-    }
-    if(!labelLookup) {
-        labelLookup = O.refdict();
-        for(let k in SCHEMA.LABEL) { labelLookup.set(SCHEMA.LABEL[k], k); }
-    }
+var Serialiser = function() {
+    this.$useAllSources = false;
+    this.$useSources = [];
+    this.$excludeSources = [];
+};
+
+Serialiser.prototype = {  
+
+    useAllSources() {
+        this._checkNotSetup();
+        this.$useAllSources = true;
+        return this;
+    },
+
+    useSource(name) {
+        this._checkNotSetup();
+        this.$useSources.push(name);
+        return this;
+    },
+
+    excludeSource(name) {
+        this._checkNotSetup();
+        this.$excludeSources.push(name);
+        return this;
+    },
+
+    _checkNotSetup() {
+        if(this.$doneSetup) {
+            throw new Error("Cannot change options after serialiser has been used.");
+        }
+    },
+
+    _setup() {
+        if(this.$doneSetup) { return; }
+
+        if(!descLookup) {
+            descLookup = {};
+            for(let k in SCHEMA.ATTR) { descLookup[SCHEMA.ATTR[k]] = k; }
+        }
+        if(!labelLookup) {
+            labelLookup = O.refdict();
+            for(let k in SCHEMA.LABEL) { labelLookup.set(SCHEMA.LABEL[k], k); }
+        }
+        if(!sources) {
+            let s = [];
+            O.serviceMaybe("std:serialiser:discover-sources", (source) => {
+                s.push(source);
+            });
+            sources = _.sortBy(s, 'sort');
+        }
+
+        this.$sources = _.select(sources, (s) => {
+            return this.$useAllSources ||
+                ((-1 !== this.$useSources.indexOf(s.name)) && (-1 === this.$excludeSources.indexOf(s.name)));
+        });
+
+        this.$doneSetup = true;
+    },
+
+    formatDate: formatDate
+};
+
+// --------------------------------------------------------------------------
+
+Serialiser.prototype.encode = function(object) {
+    this._setup();
 
     // Serialise basics about this object
     let serialised = {
-        kind: "haplo:object:0"
+        kind: "haplo:object:0",
+        sources: this.$sources.map((s) => s.name)
     };
     let ref = object.ref;
     if(ref) {
@@ -190,36 +252,9 @@ P.implementService("std:serialisation:encode", function(object) {
         }
     });
 
-    if(INCLUDE_WORKFLOWS) {
-        let workflows = serialised.workflows = [];
-        let workunits = O.work.query().
-            ref(object.ref).
-            isEitherOpenOrClosed().
-            isVisible();
-        _.each(workunits, (wu) => {
-            let wdefn = O.service("std:workflow:definition_for_name", wu.workType);
-            if(wdefn) {
-                let M = wdefn.instance(wu);
-                let work = {
-                    workType: wu.workType,
-                    createdAt: formatDate(wu.createdAt),
-                    openedAt: formatDate(wu.openedAt),
-                    deadline: formatDate(wu.deadline),
-                    closed: wu.closed,
-                    data: _.extend({}, wu.data), // data and tags are special objects
-                    tags: _.extend({}, wu.tags),
-                    state: M.state,
-                    target: M.target,
-                    url: O.application.url + M.url,
-                    documents: {}
-                };
-                _.each(wdefn.documentStore, (store, name) => {
-                    work.documents[name] = store.instance(M).lastCommittedDocument;
-                });
-                workflows.push(work);
-            }
-        });
-    }
+    this.$sources.forEach((s) => {
+        s.apply(this, object, serialised);
+    });
 
     return serialised;
-});
+};
