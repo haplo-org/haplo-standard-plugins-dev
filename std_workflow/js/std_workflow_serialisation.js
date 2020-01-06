@@ -2,6 +2,8 @@
 P.implementService("std:serialiser:discover-sources", function(source) {
     source({
         name: "std:workflow",
+        sort: 1000,
+        setup(serialiser) {},
         apply(serialiser, object, serialised) {
             let workflows = serialised.workflows = [];
             let workunits = O.work.query().

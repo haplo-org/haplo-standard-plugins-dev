@@ -47,6 +47,7 @@ var Serialiser = function() {
     this.$useAllSources = false;
     this.$useSources = [];
     this.$excludeSources = [];
+    this.$expandValue = {};
 };
 
 Serialiser.prototype = {  
@@ -67,6 +68,18 @@ Serialiser.prototype = {
         this._checkNotSetup();
         this.$excludeSources.push(name);
         return this;
+    },
+
+    expandValue(typecode, fn) {
+        let existing = this.$expandValue[typecode];
+        if(existing) {
+            this.$expandValue[typecode] = function(value, valueSerialised) {
+                existing(value, valueSerialised);
+                fn(value, valueSerialised);
+            };
+        } else {
+            this.$expandValue[typecode] = fn;
+        }
     },
 
     _checkNotSetup() {
@@ -97,6 +110,9 @@ Serialiser.prototype = {
         this.$sources = _.select(sources, (s) => {
             return this.$useAllSources ||
                 ((-1 !== this.$useSources.indexOf(s.name)) && (-1 === this.$excludeSources.indexOf(s.name)));
+        });
+        this.$sources.forEach((s) => {
+            s.setup(this);
         });
 
         this.$doneSetup = true;
@@ -165,6 +181,7 @@ Serialiser.prototype.encode = function(object) {
 
     // Serialise the attributes
     let attributes = serialised.attributes = {};
+    let expandValue = this.$expandValue;
     object.each((v,d,q,x) => {
         let code = descLookup[d];
         if(code) {
@@ -197,11 +214,6 @@ Serialiser.prototype.encode = function(object) {
                         } else {
                             let o = v.load();
                             vs.title = o.title;
-                            // Try adding a username from the user sync.
-                            // TODO: This is inefficient, at least only do it for people objects?
-                            // In a real serialiser, this needs to be pluggable.
-                            let un = O.serviceMaybe("haplo_user_sync:ref_to_username", v);
-                            if(un) { vs.username = un; }
                         }
                         break;
 
@@ -247,6 +259,13 @@ Serialiser.prototype.encode = function(object) {
                         vs.value = v.toString();
                         break;
                 }
+
+                // A source may wish to add additional information
+                let expandFn = expandValue[typecode];
+                if(expandFn) {
+                    expandFn(v, vs);
+                }
+
                 values.push(vs);
             }
         }
