@@ -131,6 +131,11 @@ Serialiser.prototype = {
                 ((-1 !== this.$useSources.indexOf(s.name)) && (-1 === this.$excludeSources.indexOf(s.name)));
         });
         this.$sources.forEach((s) => {
+            if(s.depend) {
+                if(!_.find(this.$sources, (source) => source.name === s.depend)) {
+                    throw new Error("Source "+s.name+" depends on "+s.depend+" which has not been used.");
+                }
+            }
             s.setup(this);
         });
 

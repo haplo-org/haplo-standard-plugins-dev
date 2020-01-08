@@ -134,6 +134,7 @@ var isOptional = function(M, user, list) {
 P.implementService("std:serialiser:discover-sources", function(source) {
     source({
         name: "std:workflow:documents",
+        depend: "std:workflow",
         sort: 1100,
         setup(serialiser) {
             serialiser.listen("std:workflow:extend", function(workflowDefinition, M, work) {
