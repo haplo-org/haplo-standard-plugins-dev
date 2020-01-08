@@ -46,6 +46,7 @@ Serialiser.prototype = {
     },
 
     expandValue(typecode, fn) {
+        this._checkNotSetup();
         let existing = this.$expandValue[typecode];
         if(existing) {
             this.$expandValue[typecode] = function(value, valueSerialised) {
@@ -58,6 +59,7 @@ Serialiser.prototype = {
     },
 
     listen(identifier, fn) {
+        this._checkNotSetup();
         let existing = this.$listeners[identifier];
         if(existing) {
             // TODO: Is more than three args needed?
