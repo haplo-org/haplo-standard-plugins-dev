@@ -24,13 +24,9 @@ P.implementService("std:serialiser:discover-sources", function(source) {
                         tags: _.extend({}, wu.tags),
                         state: M.state,
                         target: M.target,
-                        url: O.application.url + M.url,
-                        documents: {}
+                        url: O.application.url + M.url
                     };
-                    // TODO: Refactor this into its own source, which needs to be dependent on std:workflow
-                    _.each(wdefn.documentStore, (store, name) => {
-                        work.documents[name] = store.instance(M).lastCommittedDocument;
-                    });
+                    serialiser.notify("std:workflow:extend", wdefn, M, work);
                     workflows.push(work);
                 }
             });

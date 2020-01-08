@@ -48,6 +48,7 @@ var Serialiser = function() {
     this.$useSources = [];
     this.$excludeSources = [];
     this.$expandValue = {};
+    this.$listeners = {};
 };
 
 Serialiser.prototype = {  
@@ -80,6 +81,24 @@ Serialiser.prototype = {
         } else {
             this.$expandValue[typecode] = fn;
         }
+    },
+
+    listen(identifier, fn) {
+        let existing = this.$listeners[identifier];
+        if(existing) {
+            // TODO: Is more than three args needed?
+            this.$listeners[identifier] = function(a, b, c) {
+                existing(a, b, c);
+                fn(a, b, c);
+            };
+        } else {
+            this.$listeners[identifier] = fn;
+        }
+    },
+
+    notify(identifier, a, b, c) {
+        let fn = this.$listeners[identifier];
+        if(fn) { fn(a, b, c); }
     },
 
     _checkNotSetup() {
