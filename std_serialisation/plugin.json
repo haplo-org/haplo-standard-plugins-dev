@@ -6,6 +6,7 @@
   "displayDescription": "Serialisation of objects",
   "apiVersion": 4,
   "load": [
-      "js/std_serialisation.js"
+      "js/std_serialisation.js",
+      "js/std_serialisation_sources.js"
     ]
 }
