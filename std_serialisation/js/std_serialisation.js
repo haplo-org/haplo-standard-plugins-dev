@@ -7,32 +7,6 @@ P.implementService("std:serialisation:serialiser", function() {
 
 var descLookup, labelLookup, sources;
 
-// TODO: Ensure these match types in schema requirements
-var descTypeNames = {};
-descTypeNames[O.T_OBJREF] = "link";
-descTypeNames[O.T_TEXT_PLUGIN_DEFINED] = "plugin";
-descTypeNames[O.T_DATETIME] = "datetime";
-descTypeNames[O.T_INTEGER] = "integer";
-descTypeNames[O.T_NUMBER] = "number";
-descTypeNames[O.T_ATTRIBUTE_GROUP] = "attribute-group";
-descTypeNames[O.T_TEXT] = "text";
-descTypeNames[O.T_TEXT_PARAGRAPH] = "text-paragraph";
-descTypeNames[O.T_TEXT_DOCUMENT] = "text-document";
-descTypeNames[O.T_TEXT_FORMATTED_LINE] = "text-formatted-line";
-descTypeNames[O.T_TEXT_MULTILINE] = "text-multiline";
-descTypeNames[O.T_IDENTIFIER_FILE] = "file";
-descTypeNames[O.T_IDENTIFIER_ISBN] = "isbn";
-descTypeNames[O.T_IDENTIFIER_EMAIL_ADDRESS] = "email-address";
-descTypeNames[O.T_IDENTIFIER_URL] = "url";
-descTypeNames[O.T_IDENTIFIER_UUID] = "uuid";
-descTypeNames[O.T_IDENTIFIER_POSTCODE] = "postcode";
-descTypeNames[O.T_IDENTIFIER_TELEPHONE_NUMBER] = "telephone-number";
-descTypeNames[O.T_TEXT_PERSON_NAME] = "person-name";
-descTypeNames[O.T_IDENTIFIER_POSTAL_ADDRESS] = "postal-address";
-descTypeNames[O.T_IDENTIFIER_CONFIGURATION_NAME] = "configuration-name";
-
-// --------------------------------------------------------------------------
-
 const UNKNOWN = "UNKNOWN";
 
 // --------------------------------------------------------------------------
@@ -212,7 +186,7 @@ Serialiser.prototype.encode = function(object) {
             let values = attributes[code];
             if(!values) { values = attributes[code] = []; }
             let typecode = O.typecode(v),
-                typecodeName = descTypeNames[typecode];
+                typecodeName = O.TYPECODE_TO_NAME[typecode];
             if(typecodeName) {
                 let vs = {
                     type: typecodeName
