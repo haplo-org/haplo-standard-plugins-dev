@@ -84,3 +84,8 @@ P.implementService("__std:workflow:fallback-timeline-entry-deferrred__", functio
         return P.template("timeline/support-move-back").deferredRender({entry:entry});
     }
 });
+
+// When this is installed, override the admin tools to use this
+P.implementService("__std:workflow:alternative-move-state-interface__", function(M) {
+    return "/do/workflow-support-tools/move-back/"+M.workUnit.id;
+});
