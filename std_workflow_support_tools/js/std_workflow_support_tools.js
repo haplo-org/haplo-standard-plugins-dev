@@ -2,6 +2,10 @@
 // To prevent this support tool from being used in states where it would
 // do unhelpful things, set the __preventSupportMoveBack__ flag.
 
+// To allow groups of users to use these tools, based on the labels of objects,
+// implement the std:workflow:support-tools:discover-allow-by-label
+// service.
+
 // --------------------------------------------------------------------------
 
 var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:allow-for-all-workflows").
@@ -9,16 +13,40 @@ var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:all
     allow("group", Group.Administrators).
     allow("group", Group.WorkflowOverride);
 
-var canUse = function(user) {
-    // TODO: Per label allow move backwards
-    return user.allowed(CanUseSupportToolsForAllWorkflows);
+var canUseWhenLabelled; // array of {groupId:..., label:...}
+
+var canUseSupportToolsFor = function(user, M) {
+    if(user.allowed(CanUseSupportToolsForAllWorkflows)) {
+        return true;
+    }
+    // Discover additional permissions
+    if(undefined === canUseWhenLabelled) {
+        let l = [];
+        O.serviceMaybe("std:workflow:support-tools:discover-allow-by-label", (action, label) => {
+            l.push({action:action, label:label});
+        });
+        canUseWhenLabelled = l;
+    }
+    // Check for per-label permissions
+    let num = canUseWhenLabelled.length;
+    if(num && M.workUnit.ref) {
+        let labels = M.workUnit.ref.load().labels;
+        for(let i = 0; i < num; ++i) {
+            let c = canUseWhenLabelled[i];
+            // Check label first, as it's much quicker than checking an action
+            if(labels.includes(c.label) && O.currentUser.allowed(c.action)) {
+                return true;
+            }
+        }
+    }
+    return false;
 };
 
 // --------------------------------------------------------------------------
 
 // Use private service to extend all workflow UI
 P.implementService("__std:workflow:add-support-actions-to-panel__", function(M, builder) {
-    if(canUse(O.currentUser)) {
+    if(canUseSupportToolsFor(O.currentUser, M)) {
         let i = P.locale().text("template");
         builder.panel(8888887).
             spaceAbove().
@@ -36,9 +64,9 @@ var MoveBack = P.form("move-back", "form/move-back.json");
 P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     {pathElement:0, as:"workUnit", allUsers:true}
 ], function(E, workUnit) {
-    if(!canUse(O.currentUser)) { O.stop("Not permitted"); }
     let workflow = O.service("std:workflow:definition_for_name", workUnit.workType);
     let M = workflow.instance(workUnit);
+    if(!canUseSupportToolsFor(O.currentUser, M)) { O.stop("Not permitted"); }
 
     let entries = M.timelineSelect().or((sq) => {
             sq.where("previousState", "!=", null).
