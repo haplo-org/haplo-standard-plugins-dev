@@ -43,7 +43,8 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     }
     // TODO: Check M.flags.preventSupportMoveBack or something
 
-    let previousEntry = entries[1];
+    let previousEntry = entries[1],
+        actionableUserBeforeMove = workUnit.actionableBy;
 
     let document = {};
     let form = MoveBack.handle(document, E.request);
@@ -52,7 +53,19 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
         // Target for state is saved into the next entry
         M._forceMoveToStateFromTimelineEntry(previousEntry, entries[0].target);
 
-        // TODO: Email old and/or new users
+        // Email affected users
+        M.sendEmail({
+            template: P.template("email/move-back-notification"),
+            to: [
+                actionableUserBeforeMove,
+                M.workUnit.actionableBy // will be de-duplicated
+            ],
+            view: {
+                fullUrl: O.application.url + M.url,
+                reason: document.reason,
+                movedBy: O.currentUser
+            }
+        });
 
         return E.response.redirect(M.url);
     }
