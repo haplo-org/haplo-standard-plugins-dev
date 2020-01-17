@@ -1,4 +1,9 @@
 
+// To prevent this support tool from being used in states where it would
+// do unhelpful things, set the __preventSupportMoveBack__ flag.
+
+// --------------------------------------------------------------------------
+
 var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:allow-for-all-workflows").
     title("Workflow: Use support tools for all workflows").
     allow("group", Group.Administrators).
@@ -40,6 +45,9 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     let notPossible = (why) => E.render({M:M,why:why}, "move-back-not-possible");
     if(entries.length < 2) {
         return notPossible("no-previous");
+    }
+    if(M.flags.__preventSupportMoveBack__) {
+        return notPossible("prevented");
     }
     // TODO: Check M.flags.preventSupportMoveBack or something
 
