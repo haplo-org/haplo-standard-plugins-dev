@@ -29,6 +29,8 @@ P.implementService("__std:workflow:add-support-actions-to-panel__", function(M, 
 
 // --------------------------------------------------------------------------
 
+const MOVE_BACK_ACTION = "SUPPORT-MOVE-BACK";
+
 var MoveBack = P.form("move-back", "form/move-back.json");
 
 P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
@@ -38,13 +40,18 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     let workflow = O.service("std:workflow:definition_for_name", workUnit.workType);
     let M = workflow.instance(workUnit);
 
-    let entries = M.timelineSelect().where("previousState","!=",null).
-        order("datetime","DESC").limit(2);
+    let entries = M.timelineSelect().or((sq) => {
+            sq.where("previousState", "!=", null).
+               where("action", "=", MOVE_BACK_ACTION);
+        }).order("datetime","DESC").limit(2);
 
     // Check that moving back is allowed
     let notPossible = (why) => E.render({M:M,why:why}, "move-back-not-possible");
     if(entries.length < 2) {
         return notPossible("no-previous");
+    }
+    if(_.find(entries, (e) => e.action === MOVE_BACK_ACTION)) {
+        return notPossible("already");
     }
     if(M.flags.__preventSupportMoveBack__) {
         return notPossible("prevented");
@@ -57,7 +64,7 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     let document = {};
     let form = MoveBack.handle(document, E.request);
     if(form.complete) {
-        M.addTimelineEntry('SUPPORT-MOVE-BACK', {reason:document.reason});
+        M.addTimelineEntry(MOVE_BACK_ACTION, {reason:document.reason});
         // Target for state is saved into the next entry
         M._forceMoveToStateFromTimelineEntry(previousEntry, entries[0].target);
 
@@ -88,7 +95,7 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
 });
 
 P.implementService("__std:workflow:fallback-timeline-entry-deferrred__", function(M, entry) {
-    if(entry.action === "SUPPORT-MOVE-BACK") {
+    if(entry.action === MOVE_BACK_ACTION) {
         return P.template("timeline/support-move-back").deferredRender({entry:entry});
     }
 });
