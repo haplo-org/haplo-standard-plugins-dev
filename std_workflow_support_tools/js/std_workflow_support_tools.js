@@ -92,9 +92,9 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     if(M.flags.__preventSupportMoveBack__) {
         return notPossible("prevented");
     }
-    // TODO: Check M.flags.preventSupportMoveBack or something
 
     let previousEntry = entries[1],
+        currentEntry = entries[0],
         actionableUserBeforeMove = workUnit.actionableBy;
 
     let document = {};
@@ -102,7 +102,7 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     if(form.complete) {
         M.addTimelineEntry(MOVE_BACK_ACTION, {reason:document.reason});
         // Target for state is saved into the next entry
-        M._forceMoveToStateFromTimelineEntry(previousEntry, entries[0].target);
+        M._forceMoveToStateFromTimelineEntry(previousEntry, currentEntry.target);
 
         // Email affected users
         M.sendEmail({
@@ -125,7 +125,7 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
         form: form,
         currentStateText: M._getText(['status'], [M.state]),
         previousStateText: M._getText(['status'], [previousEntry.state]),
-        previousUser: previousEntry.user,
+        previousUser: currentEntry.user,
         isError: E.request.method === "POST"
     });
 });
