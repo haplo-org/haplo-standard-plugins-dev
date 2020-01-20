@@ -6,6 +6,10 @@
 // implement the std:workflow:support-tools:discover-allow-by-label
 // service.
 
+// If labels on underlying objects aren't sufficient, implement the
+// std:workflow:support-tools:user-can-use-tools workflow service and return
+// true if the specified user can use the tools.
+
 // --------------------------------------------------------------------------
 
 var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:allow-for-all-workflows").
@@ -38,6 +42,10 @@ var canUseSupportToolsFor = function(user, M) {
                 return true;
             }
         }
+    }
+    // Check for per-workflow custom permissions
+    if(true === M.workflowServiceMaybe("std:workflow:support-tools:user-can-use-tools", user)) {
+        return true;
     }
     return false;
 };
