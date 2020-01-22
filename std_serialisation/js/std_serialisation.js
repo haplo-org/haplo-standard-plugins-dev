@@ -38,18 +38,31 @@ Serialiser.prototype = {
         return this;
     },
 
+    restrictObject() {
+        this._checkNotSetup();
+        this.$restrictObject = true;
+        return this;
+    },
+
     // Safe to use with untrusted data
     // Uses "sources" as comma separated list, or sources=ALL or sources=NONE
-    configureSourcesFromParameters(parameters) {
+    // transform=restrict to call restrictedCopy() before serialisation
+    configureFromParameters(parameters) {
         this._checkNotSetup();
         let sources = parameters.sources;
         if((typeof(sources) === "string") && (sources.length < 1024)) {
             if(sources === "ALL") {
-                return this.useAllSources();
-            } else if(sources === "NONE") {
-                return this;
+                this.useAllSources();
+            } else if(sources !== "NONE") {
+                sources.split(',').forEach((s) => this.useSource(s));
             }
-            sources.split(',').forEach((s) => this.useSource(s));
+        }
+        if("transform" in parameters) {
+            if(parameters.transform === "restrict") {
+                this.restrictObject();
+            } else {
+                throw new Error("Unknown transform specified: "+parameters.transform);
+            }
         }
         return this;
     },
@@ -135,11 +148,17 @@ Serialiser.prototype = {
 Serialiser.prototype.encode = function(object) {
     this._setup();
 
-    // Serialise basics about this object
     let serialised = {
         kind: "haplo:object:0",
         sources: this.$sources.map((s) => s.name)
     };
+
+    if(this.$restrictObject) {
+        object = object.restrictedCopy(O.currentUser);
+        serialised.transform = ["restrict"];
+    }
+
+    // Serialise basics about this object
     let ref = object.ref;
     if(ref) {
         serialised.ref = ref.toString();
