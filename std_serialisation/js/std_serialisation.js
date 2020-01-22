@@ -20,7 +20,6 @@ var formatDate = function(d) {
 var Serialiser = function() {
     this.$useAllSources = false;
     this.$useSources = [];
-    this.$excludeSources = [];
     this.$expandValue = {};
     this.$listeners = {};
 };
@@ -39,9 +38,19 @@ Serialiser.prototype = {
         return this;
     },
 
-    excludeSource(name) {
+    // Safe to use with untrusted data
+    // Uses "sources" as comma separated list, or sources=ALL or sources=NONE
+    configureSourcesFromParameters(parameters) {
         this._checkNotSetup();
-        this.$excludeSources.push(name);
+        let sources = parameters.sources;
+        if((typeof(sources) === "string") && (sources.length < 1024)) {
+            if(sources === "ALL") {
+                return this.useAllSources();
+            } else if(sources === "NONE") {
+                return this;
+            }
+            sources.split(',').forEach((s) => this.useSource(s));
+        }
         return this;
     },
 
@@ -102,9 +111,9 @@ Serialiser.prototype = {
             sources = _.sortBy(s, 'sort');
         }
 
+        // NOTE: Source names may be untrusted data
         this.$sources = _.select(sources, (s) => {
-            return this.$useAllSources ||
-                ((-1 !== this.$useSources.indexOf(s.name)) && (-1 === this.$excludeSources.indexOf(s.name)));
+            return this.$useAllSources || (-1 !== this.$useSources.indexOf(s.name));
         });
         this.$sources.forEach((s) => {
             if(s.depend) {
