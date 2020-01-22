@@ -5,7 +5,7 @@ P.implementService("std:serialisation:serialiser", function() {
 
 // --------------------------------------------------------------------------
 
-var descLookup, labelLookup, sources;
+var descLookup, qualLookup, labelLookup, sources;
 
 const UNKNOWN = "UNKNOWN";
 
@@ -111,6 +111,11 @@ Serialiser.prototype = {
         if(!descLookup) {
             descLookup = {};
             for(let k in SCHEMA.ATTR) { descLookup[SCHEMA.ATTR[k]] = k; }
+        }
+        if(!qualLookup) {
+            qualLookup = {};
+            for(let k in SCHEMA.QUAL) { qualLookup[SCHEMA.QUAL[k]] = k; }
+            delete qualLookup[SCHEMA.QUAL["std:qualifier:null"]];
         }
         if(!labelLookup) {
             labelLookup = O.refdict();
@@ -221,6 +226,10 @@ Serialiser.prototype.encode = function(object) {
                 let vs = {
                     type: typecodeName
                 };
+                if(q) {
+                    let qualCode = qualLookup[q];
+                    if(qualCode) { vs.qualifier = qualCode; }
+                }
                 if(x) {
                     vs.extension = {
                         desc: x.desc,
