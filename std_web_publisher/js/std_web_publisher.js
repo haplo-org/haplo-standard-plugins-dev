@@ -484,6 +484,8 @@ Publication.prototype.__defineGetter__("urlHostname", function() {
 });
 
 Publication.prototype.urlForObject = function(object) {
+    // Check for rendering as publication won't request links it can't see.
+    if(!P.$isRenderingForWebPublisher() && !O.serviceUser(this._serviceUserCode).canRead(object)) { return; }
     var path = this._urlPathForObject(object);
     if(!path) { return; }
     return 'https://'+this.urlHostname+path;
