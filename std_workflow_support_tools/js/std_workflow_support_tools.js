@@ -15,7 +15,7 @@
 var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:allow-for-all-workflows").
     title("Workflow: Use support tools for all workflows").
     allow("group", Group.Administrators).
-    allow("group", Group.WorkflowOverride);
+    allow("group", Group.WorkflowMoveBack);
 
 var canUseWhenLabelled; // array of {groupId:..., label:...}
 
