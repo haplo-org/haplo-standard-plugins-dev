@@ -2,5 +2,4 @@
 group std:group:administrators as Administrators
 
 group std:group:workflow-move-back as WorkflowMoveBack
-    REMOVE title: Workflow Move Back
     title: Workflow move back
