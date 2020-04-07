@@ -156,6 +156,7 @@ var Publication = P.Publication = function(name, plugin) {
     this._paths = [];
     this._urlPolicy = O.refdictHierarchical();
     this._objectTypeHandler = O.refdictHierarchical();
+    this.__TEMP__objectLabelHandlerRegistry = [];
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
     this._replacedTemplates = {};
     this._setupForFileDownloads();
@@ -248,7 +249,14 @@ Publication.prototype.respondToDirectoryAllowingPOST = function(path, handlerFun
     return this._respondToDirectory(true, path, handlerFunction);
 };
 
-Publication.prototype.respondWithObject = function(path, types, handlerFunction) {
+Publication.prototype.respondWithObject = function(path, spec, handlerFunction) {
+    var types, labelStatements;
+    if("__TEMP__labelStatementsBuilder" in spec) {
+        types = spec.types;
+        labelStatements = spec.__TEMP__labelStatementsBuilder.toLabelStatements();
+    } else {
+        types = spec;
+    }
     checkHandlerArgs(path, handlerFunction);
     var allowedTypes = O.refdictHierarchical();
     var pathPrefix = path+"/";
@@ -269,9 +277,17 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 renderingContext.$overrideStatusCode = HTTP.NOT_FOUND;
                 O.stop("The requested item was not found", "Not found");
             }
-            // Check object has any correct type, and 404 if not
-            if(!_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
-                console.log("Web publisher: object has wrong type for this path", object);
+            // Check object has any correct type, or read is allowed from the object labels
+            // (if __TEMP__labelStatementsBuilder set) - 404 if not
+            var validTypeOrLabels = false;
+            if(_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
+                validTypeOrLabels = true;
+            }
+            if(labelStatements && labelStatements.allow("read", object.labels)) {
+                validTypeOrLabels = true;
+            }
+            if(!validTypeOrLabels) {
+                console.log("Web publisher: object has wrong type or labels for this path", object);
                 return null;
             }
             renderingContext.object = object;    // allow Page Parts to get the object we're rendering
@@ -300,6 +316,13 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
         allowedTypes.set(type, true); // for checking
         objectTypeHandler.set(type, handler);   // for lookups by object type
     });
+    if(labelStatements) {
+        this.__TEMP__objectLabelHandlerRegistry.push(function(object) {
+            if(labelStatements.allow("read", object.labels)) {
+                return handler;
+            }
+        });
+    }
     this._paths.push(handler);
 };
 
@@ -473,6 +496,12 @@ Publication.prototype._urlPathForObject = function(object) {
         var handler = this._objectTypeHandler.get(types[i]);
         if(handler) {
             return handler.urlForObject(object);
+        }
+    }
+    for(var j = 0; j < this.__TEMP__objectLabelHandlerRegistry.length; ++j) {
+        var objectLabelHandler = this.__TEMP__objectLabelHandlerRegistry[j](object);
+        if(objectLabelHandler) {
+            return objectLabelHandler.urlForObject(object);
         }
     }
 };
