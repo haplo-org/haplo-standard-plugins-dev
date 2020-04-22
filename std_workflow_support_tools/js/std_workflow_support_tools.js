@@ -23,6 +23,9 @@ var canUseSupportToolsFor = function(user, M) {
     if(user.allowed(CanUseSupportToolsForAllWorkflows)) {
         return true;
     }
+    if(O.application.config["std:workflow:support-tools:ignore-application-configuration"]) {
+        return false;
+    }
     // Discover additional permissions
     if(undefined === canUseWhenLabelled) {
         let l = [];
