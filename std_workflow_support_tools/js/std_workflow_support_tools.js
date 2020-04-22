@@ -23,7 +23,7 @@ var canUseSupportToolsFor = function(user, M) {
     if(user.allowed(CanUseSupportToolsForAllWorkflows)) {
         return true;
     }
-    if(O.application.config["workflow_support:disable_default_support_groups"]) {
+    if(O.application.config["std:workflow:support-tools:disable_default_support_groups"]) {
         return false;
     }
     // Discover additional permissions
