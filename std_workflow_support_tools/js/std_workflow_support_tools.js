@@ -123,12 +123,23 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
 
         return E.response.redirect(M.url);
     }
+
+    let previousStateText = M._getText(['status'], [previousEntry.state]);
+    let previousUser = currentEntry.user.name;
+    if(M._getText(['move-state'], [previousEntry.state]) !== "????") {
+        previousStateText = M._getText(['move-state'], [previousEntry.state]);
+    }
+
+    if(M._getText(['previous-user'], [previousEntry.state]) !== "????") {
+        previousUser =  M._getText(['previous-user'], [previousEntry.state]);
+    }
+
     E.render({
         M: M,
         form: form,
         currentStateText: M._getText(['status'], [M.state]),
-        previousStateText: M._getText(['status'], [previousEntry.state]),
-        previousUser: currentEntry.user,
+        previousStateText: previousStateText,
+        previousUser: previousUser,
         isError: E.request.method === "POST"
     });
 });
