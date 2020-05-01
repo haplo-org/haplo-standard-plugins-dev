@@ -125,13 +125,13 @@ P.respond("GET,POST", "/do/workflow-support-tools/move-back", [
     }
 
     let previousStateText = M._getText(['status'], [previousEntry.state]);
-    let previousUser = currentEntry.user.name;
-    if(M._getText(['move-state'], [previousEntry.state]) !== "????") {
-        previousStateText = M._getText(['move-state'], [previousEntry.state]);
+    if(M.getTextMaybe("status-move-back:"+previousEntry.state)) {
+        previousStateText = M._getText(["status-move-back:"+previousEntry.state]);
     }
 
-    if(M._getText(['previous-user'], [previousEntry.state]) !== "????") {
-        previousUser =  M._getText(['previous-user'], [previousEntry.state]);
+    let previousUser = currentEntry.user.name;
+    if(M.getTextMaybe("assignee-move-back:"+previousEntry.state)) {
+        previousUser = M._getText(["assignee-move-back:"+previousEntry.state]);
     }
 
     E.render({
