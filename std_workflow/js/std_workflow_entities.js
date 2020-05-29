@@ -130,6 +130,17 @@ P.registerWorkflowFeature("std:entities:add_entities", function(workflow, entity
     });
 });
 
+P.registerWorkflowFeature("std:entities:modify_entities", function(workflow, entityDefinitions) {
+    var definitions = this.constructEntitiesObject.$Entities.prototype.$entityDefinitions;
+    _.each(entityDefinitions, function(value, key) {
+        if(key in definitions) {
+            definitions[key] = value;
+        } else {
+            throw new Error('Entity "'+key+'" is not defined, did you mean to use the std:entities:add_entities feature?');
+        }
+    });
+});
+
 // --------------------------------------------------------------------------
 
 // Returns an entities object for the given ref.
