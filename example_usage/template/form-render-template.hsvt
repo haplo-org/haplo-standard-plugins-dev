@@ -1,0 +1,32 @@
+<h2> "render-template element" </h2>
+<p> "Showing data from the " <a href="https://docs.haplo.org/plugin/form/specification/render-template" target="_blank" rel="noopener"> "view" </a> "." </p>
+<table>
+  <tr>
+    <th> "formPlugin.pluginName" </th>
+    <td> formPlugin.pluginName </td>
+  </tr>
+  <tr>
+    <th> "isRenderingForm" </th>
+    <td> isRenderingForm </td>
+  </tr>
+  <tr>
+    <th> "view.example-value" </th>
+    <td> view.example-value </td>
+  </tr>
+  <tr>
+    <th> "externalData." <b> "std_document_store:store" </b> ".delegate.name" </th>
+    <td> externalData.std_document_store:store.delegate.name </td>
+  </tr>
+  <tr>
+    <th> "externalData." <b> "std_document_store:instance" </b> ".key.workUnit.id" </th>
+    <td> externalData.std_document_store:instance.key.workUnit.id </td>
+  </tr>
+  <tr>
+    <th> "externalData." <b> "std_document_store:key" </b> ".workUnit.id" </th>
+    <td> externalData.std_document_store:key.workUnit.id </td>
+  </tr>
+  <tr>
+    <th> "context.description" </th>
+    <td> context.description </td>
+  </tr>
+</table>

@@ -1,0 +1,13 @@
+{
+    "specificationVersion": 0,
+    "formId": "exForm1",
+    "formTitle": "Details",
+    "elements": [
+        {
+            "type": "paragraph",
+            "path":" furtherInfo",
+            "label": "Further info",
+            "required": true
+        }
+    ]
+}
