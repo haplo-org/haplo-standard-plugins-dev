@@ -275,7 +275,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 
     // Steps UI may need to redirect away if not complete
     var stepsUI = M.transitionStepsUI;
-    var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI._nextRequiredRedirect());
+    var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI.nextRequiredRedirect());
     if(stepsUIrdr) {
         return E.response.redirect(stepsUIrdr);
     }

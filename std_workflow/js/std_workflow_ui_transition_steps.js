@@ -50,11 +50,11 @@ TransitionStepsUI.prototype = {
     },
 
     nextRedirect: function() {
-        var reqRdr = this._nextRequiredRedirect();
+        var reqRdr = this.nextRequiredRedirect();
         return reqRdr ? reqRdr : this.M.transitionUrl();
     },
 
-    _nextRequiredRedirect: function() {
+    nextRequiredRedirect: function() {
         if(this._unused) { return; }
 
         var currentStep = this._currentStep();

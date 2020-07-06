@@ -9,6 +9,9 @@
 if(!O.featureImplemented("std:workflow")) { return; }
 P.use("std:workflow");
 
+const USE_TRANSITION_STEPS_UI = !!O.application.config["std_document_store:use_transition_steps_ui"];
+
+
 // workflow.use("std:document_store", spec)
 //
 // where spec is an object with properties:
@@ -203,17 +206,19 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     // ----------------------------------------------------------------------
 
     // If the document is required, then don't allow a transition until it's complete
-    _.each(spec.edit, function(t) {
-        if(t.optional) { return; }
-        workflow.filterTransition(t.selector || {}, function(M, name) {
-            var instance = docstore.instance(M);
-            if(!docstoreHasExpectedVersion(M, instance)) {
-                if(!t.transitionsFiltered || t.transitionsFiltered.indexOf(name) !== -1) {
-                    return false;
+    if(!USE_TRANSITION_STEPS_UI) {
+        _.each(spec.edit, function(t) {
+            if(t.optional) { return; }
+            workflow.filterTransition(t.selector || {}, function(M, name) {
+                var instance = docstore.instance(M);
+                if(!docstoreHasExpectedVersion(M, instance)) {
+                    if(!t.transitionsFiltered || t.transitionsFiltered.indexOf(name) !== -1) {
+                        return false;
+                    }
                 }
-            }
+            });
         });
-    });
+    }
 
     // ------------------------------------------------------------------------
 
@@ -257,6 +262,21 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         });
     }
 
+    if(USE_TRANSITION_STEPS_UI) {
+        workflow.transitionStepsUI({}, function(M, step) {
+            step({
+                sort: spec.transitionStepsSort || 500,
+                url: function(M, stepsUI) {
+                    return spec.path+'/form/'+M.workUnit.id;
+                },
+                complete: function(M, stepsUI) {
+                    var instance = docstore.instance(M);
+                    return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+                }
+            });
+        });
+    }
+
     workflow.actionPanelTransitionUI({}, function(M, builder) {
         if(can(M, O.currentUser, spec, 'edit')) {
             let i = P.locale().text("template");
@@ -265,6 +285,10 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || i["Edit"]+" "+spec.title.toLowerCase();
             var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
+            if(USE_TRANSITION_STEPS_UI) {
+                var stepsReqRdr = M.transitionStepsUI.nextRequiredRedirect();
+                if(stepsReqRdr) { editUrl = stepsReqRdr; }
+            }
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
             builder.
@@ -296,9 +320,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                     transition: spec.onFinishTransition,    // may be undefined
                     extraParameters: {}
                 };
-                // Allow other plugins to set a transition or add things to the URL
-                M.workflowServiceMaybe("std:workflow:transition-url-properties-after-edit", transitionUrl, docstore, spec);
-                E.response.redirect(M.transitionUrl(transitionUrl.transition, transitionUrl.extraParameters));
+                if(USE_TRANSITION_STEPS_UI) {
+                    E.response.redirect(M.transitionStepsUI.nextRedirect());
+                } else {
+                    // Allow other plugins to set a transition or add things to the URL
+                    M.workflowServiceMaybe("std:workflow:transition-url-properties-after-edit", transitionUrl, docstore, spec);
+                    E.response.redirect(M.transitionUrl(transitionUrl.transition, transitionUrl.extraParameters));
+                }
             } else {
                 E.response.redirect(M.url);
             }
