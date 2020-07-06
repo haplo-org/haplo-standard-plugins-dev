@@ -56,18 +56,17 @@ TransitionStepsUI.prototype = {
 
     nextRequiredRedirect: function() {
         if(this._unused) { return; }
-
         var currentStep = this._currentStep();
         if(currentStep) {
             return this._callStepFn(currentStep, 'url');
         }
     },
 
-    _commit: function() {
+    _commit: function(transition) {
         if(this._unused) { return; }
         var ui = this;
         this._steps.forEach(function(step) {
-            ui._callStepFn(step, 'commit');
+            ui._callStepFn(step, 'commit', transition);
         });
         // Delete all the pending data for this workflow, including
         // for any other users who may have started the process.
