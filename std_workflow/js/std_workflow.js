@@ -811,6 +811,7 @@ implementHandlerList('currentlyWithDisplayName');
 implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
+implementHandlerList('transitionStepsUI');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionUIWithoutTransitionChoice');
 implementHandlerList('transitionFormSubmitted');

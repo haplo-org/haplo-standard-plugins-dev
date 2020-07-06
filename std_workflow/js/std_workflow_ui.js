@@ -273,6 +273,13 @@ P.respond("GET,POST", "/do/workflow/transition", [
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
 
+    // Steps UI may need to redirect away if not complete
+    var stepsUI = M.transitionStepsUI;
+    var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI._nextRequiredRedirect());
+    if(stepsUIrdr) {
+        return E.response.redirect(stepsUIrdr);
+    }
+
     if(M.transitions.list.length === 1) {
         // If there is only one transition available, automatically select it to avoid
         // a confusing page with only one option.
@@ -306,6 +313,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
                     }
 
                     M._callHandler('$transitionFormPreTransition', E, ui);
+                    stepsUI._commit();
                     M.transition(transition, ui._getTransitionDataMaybe(), overrideTarget);
                     var redirectTo = ui._redirect;
                     if(!redirectTo && M.workUnit.isActionableBy(O.currentUser)) {
