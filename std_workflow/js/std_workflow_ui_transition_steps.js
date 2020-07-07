@@ -131,11 +131,35 @@ P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function(
 
 // --------------------------------------------------------------------------
 
+P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M, currentId) {
+    let stepsUI = M.transitionStepsUI;
+    // Only display navigation if there's more than one step
+    if(!stepsUI._unused && stepsUI._steps.length > 1) {
+        this.render(P.template("steps/navigation").deferredRender({
+            finalStep: currentId === "std:workflow:final-confirm-step",
+            steps: stepsUI._steps.map(function(step) {
+                return {
+                    url: stepsUI._callStepFn(step, 'url'),
+                    title: stepsUI._callStepFn(step, 'title') || 'Step',
+                    current: currentId === step.id
+                };
+            })
+        }));
+    }
+});
+
+// --------------------------------------------------------------------------
+
 P.registerWorkflowFeature("std:transitions-choice-as-transition-step", function(workflow, spec) {
 
     workflow.transitionStepsUI(spec.selector, function(M, step) {
         step({
+            id: "std:workflow:transitions-choice",
             sort: spec.transitionStepsSort || 1001,
+            title: function(M, stepsUI) {
+                let i = P.locale().text("template");
+                return i["Decision"];
+            },
             url: function(M, stepsUI) {
                 return "/do/workflow/choose-transition/"+M.workUnit.id;
             },

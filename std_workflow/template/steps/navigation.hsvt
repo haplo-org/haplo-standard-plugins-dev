@@ -1,0 +1,16 @@
+
+<div style="margin:0 0 16px 0;padding:4px 8px;border:1px solid #ddd;border-radius:4px">
+  each(steps) {
+    if(current) {
+      <b> title </b>
+    } else {
+      <a href=url> title </a>
+    }
+    " &raquo; "
+  }
+  if(finalStep) {
+    <b> "Confirm" </b>
+  } else {
+    "Confirm"
+  }
+</div>

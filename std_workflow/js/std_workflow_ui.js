@@ -396,6 +396,9 @@ TransitionUI.prototype = {
         return this._transitionData;
     }
 };
+TransitionUI.prototype.__defineGetter__('usingStepsUI', function() {
+    return !this.M.transitionStepsUI._unused;
+});
 TransitionUI.prototype.__defineGetter__('backLinkText', function() {
     let i = P.locale().text("template");
     return i["Cancel"];

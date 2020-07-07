@@ -1,2 +1,4 @@
 
+std:workflow:transition-steps:navigation(M "std:workflow:transitions-choice")
+
 template:std:ui:choose()

@@ -264,16 +264,22 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     if(USE_TRANSITION_STEPS_UI) {
         workflow.transitionStepsUI({}, function(M, step) {
-            step({
-                sort: spec.transitionStepsSort || 500,
-                url: function(M, stepsUI) {
-                    return spec.path+'/form/'+M.workUnit.id;
-                },
-                complete: function(M, stepsUI) {
-                    var instance = docstore.instance(M);
-                    return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
-                }
-            });
+            if(can(M, O.currentUser, spec, 'edit')) {
+                step({
+                    id: "std:document_store:"+spec.path,
+                    sort: spec.transitionStepsSort || 500,
+                    title: function(M, stepsUI) {
+                        return spec.title;
+                    },
+                    url: function(M, stepsUI) {
+                        return spec.path+'/form/'+M.workUnit.id;
+                    },
+                    complete: function(M, stepsUI) {
+                        var instance = docstore.instance(M);
+                        return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+                    }
+                });
+            }
         });
     }
 
@@ -337,6 +343,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         render: function(instance, E, deferredForm) {
             var M = workflow.instance(O.work.load(E.request.extraPathElements[0]));
             E.render({
+                USE_TRANSITION_STEPS_UI: USE_TRANSITION_STEPS_UI,
                 spec: spec,
                 instance: instance,
                 deferredForm: deferredForm,
