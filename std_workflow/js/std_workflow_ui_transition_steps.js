@@ -110,6 +110,15 @@ TransitionStepsUI.prototype.__defineGetter__('data', function() {
     return this._data.data;
 });
 
+TransitionStepsUI.prototype.__defineGetter__('requestedTransition', function() {
+    return this._data.transition;
+});
+
+TransitionStepsUI.prototype.__defineSetter__('requestedTransition', function(transition) {
+    this._data.transition = transition;
+    this.saveData();
+});
+
 // --------------------------------------------------------------------------
 
 P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function() {
@@ -118,4 +127,48 @@ P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function(
         this._stepsUI = stepsUI = new TransitionStepsUI(this);
     }
     return stepsUI;
+});
+
+// --------------------------------------------------------------------------
+
+P.registerWorkflowFeature("std:transitions-choice-as-transition-step", function(workflow, spec) {
+
+    workflow.transitionStepsUI(spec.selector, function(M, step) {
+        step({
+            sort: spec.transitionStepsSort || 1001,
+            url: function(M, stepsUI) {
+                return "/do/workflow/choose-transition/"+M.workUnit.id;
+            },
+            complete: function(M, stepsUI) {
+                return !!stepsUI.requestedTransition;
+            }
+        });
+    });
+
+});
+
+P.respond("GET,POST", "/do/workflow/choose-transition", [
+    {pathElement:0, as:"workUnit"},
+    {parameter:"transition", as:"string", optional:true}
+], function(E, workUnit, transition) {
+    var workflow = P.allWorkflows[workUnit.workType];
+    if(!workflow) { O.stop("Workflow not implemented"); }
+    var M = workflow.instance(workUnit);
+    var stepsUI = M.transitionStepsUI;
+    if(transition && M.transitions.has(transition)) {
+        // TODO: Choose transition needs to set transition on a POST
+        stepsUI.requestedTransition = transition;
+        return E.response.redirect(stepsUI.nextRedirect());
+    }
+    var ui = new P.TransitionUI(M);   // TODO: What about the requestedTarget?
+    ui.options = _.map(M.transitions.list, function(transition) {
+        return {
+            // TODO: Better action URL?
+            action: "/do/workflow/choose-transition/"+M.workUnit.id+"?transition="+transition.name,
+            label: transition.label,
+            notes: transition.notes,
+            indicator: transition.indicator
+        };
+    });
+    E.render(ui, "steps/choose-transition");
 });

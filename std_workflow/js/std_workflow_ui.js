@@ -286,6 +286,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
         transition = M.transitions.list[0].name;
     }
 
+    // Transition might have been requested during steps UI
+    if(!transition) {
+        transition = stepsUI.requestedTransition;
+    }
+
     if(transition) {
         M._setPendingTransition(transition);
     }
@@ -358,7 +363,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 // --------------------------------------------------------------------------
 
 // Represents the built in UI, and act as the view for rendering.
-var TransitionUI = function(M, transition, target) {
+var TransitionUI = P.TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
     if(target) {
