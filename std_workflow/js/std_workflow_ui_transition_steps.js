@@ -172,14 +172,18 @@ P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M,
 
 // --------------------------------------------------------------------------
 
-P.registerWorkflowFeature("std:transitions-choice-as-transition-step", function(workflow, spec) {
+P.registerWorkflowFeature("std:transition-choice-step", function(workflow, spec) {
 
     var Step = {
         id: "std:workflow:transitions-choice",
         sort: spec.transitionStepsSort || 1001,
         title: function(M, stepsUI) {
-            let i = P.locale().text("template");
-            return i["Decision"];
+            if("title" in spec) {
+                return spec.title;
+            } else {
+                let i = P.locale().text("template");
+                return i["Decision"];
+            }
         },
         url: function(M, stepsUI) {
             return "/do/workflow/choose-transition/"+M.workUnit.id;
