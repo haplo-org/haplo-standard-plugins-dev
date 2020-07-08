@@ -91,7 +91,9 @@ TransitionStepsUI.prototype = {
             l = steps.length;
         for(var i = 0; i < l; ++i) {
             var s = steps[i];
-            if(f(s)) { return s; }
+            if(!this._callStepFn(s, 'skipped')) {
+                if(f(s)) { return s; }
+            }
         }
     },
 
@@ -135,13 +137,16 @@ P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M,
     var stepsUI = M.transitionStepsUI;
     // Only display navigation if there's more than one step
     if(!stepsUI._unused && stepsUI._steps.length > 1) {
-        var steps = stepsUI._steps.map(function(step) {
-            return {
-                url: stepsUI._callStepFn(step, 'url'),
-                title: stepsUI._callStepFn(step, 'title') || 'Step',
-                incomplete: !stepsUI._callStepFn(step, 'complete'),
-                current: currentId === step.id
-            };
+        var steps = [];
+        stepsUI._steps.forEach(function(step) {
+            if(!stepsUI._callStepFn(step, 'skipped')) {
+                steps.push({
+                    url: stepsUI._callStepFn(step, 'url'),
+                    title: stepsUI._callStepFn(step, 'title') || 'Step',
+                    incomplete: !stepsUI._callStepFn(step, 'complete'),
+                    current: currentId === step.id
+                });
+            }
         });
         let i = P.locale().text("template");
         steps.push({
