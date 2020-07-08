@@ -1,8 +1,10 @@
 
 std:plugin:resources("w.css")
 
-if(usingStepsUI) {
-  std:workflow:transition-steps:navigation(M "std:workflow:final-confirm-step")
+unless(isBypassTransition) {
+  if(usingStepsUI) {
+    std:workflow:transition-steps:navigation(M "std:workflow:final-confirm-step")
+  }
 }
 
 unless(transition) {
