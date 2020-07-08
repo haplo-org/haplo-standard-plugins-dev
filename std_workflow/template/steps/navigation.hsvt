@@ -1,16 +1,17 @@
+std:plugin:resources("w.css")
 
-<div style="margin:0 0 16px 0;padding:4px 8px;border:1px solid #ddd;border-radius:4px">
+<div id="z__workflow_steps_container" role="navigation" aria-label=i("Work progress")>
   each(steps) {
-    if(current) {
-      <b> title </b>
-    } else {
-      <a href=url> title </a>
-    }
-    " &raquo; "
-  }
-  if(finalStep) {
-    <b> "Confirm" </b>
-  } else {
-    "Confirm"
+    <form method="GET" action=url>
+      <button class=[
+            if(current) {"z__workflow_steps_current"}
+            if(firstIncomplete) {"z__workflow_steps_first_incomplete"}
+            if(completeLater) {"z__workflow_steps_complete_later"}
+          ]
+          disabled=ifAny(current completeLater) {"disabled"}
+      >
+        title
+      </button>
+    </form>
   }
 </div>

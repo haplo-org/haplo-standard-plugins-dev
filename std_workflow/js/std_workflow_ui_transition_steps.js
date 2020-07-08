@@ -132,18 +132,35 @@ P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function(
 // --------------------------------------------------------------------------
 
 P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M, currentId) {
-    let stepsUI = M.transitionStepsUI;
+    var stepsUI = M.transitionStepsUI;
     // Only display navigation if there's more than one step
     if(!stepsUI._unused && stepsUI._steps.length > 1) {
+        var steps = stepsUI._steps.map(function(step) {
+            return {
+                url: stepsUI._callStepFn(step, 'url'),
+                title: stepsUI._callStepFn(step, 'title') || 'Step',
+                incomplete: !stepsUI._callStepFn(step, 'complete'),
+                current: currentId === step.id
+            };
+        });
+        let i = P.locale().text("template");
+        steps.push({
+            url: M.transitionUrl(),
+            title: i['Confirm'],
+            incomplete: true,
+            current: currentId === "std:workflow:final-confirm-step"
+        });
+        let seenIncomplete = false;
+        steps.forEach(function(step) {
+            if(seenIncomplete) {
+                step.completeLater = true;
+            } else if(step.incomplete) {
+                step.firstIncomplete = true;
+                seenIncomplete = true;
+            }
+        });
         this.render(P.template("steps/navigation").deferredRender({
-            finalStep: currentId === "std:workflow:final-confirm-step",
-            steps: stepsUI._steps.map(function(step) {
-                return {
-                    url: stepsUI._callStepFn(step, 'url'),
-                    title: stepsUI._callStepFn(step, 'title') || 'Step',
-                    current: currentId === step.id
-                };
-            })
+            steps: steps
         }));
     }
 });
