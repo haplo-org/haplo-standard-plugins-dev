@@ -152,21 +152,23 @@ P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M,
 
 P.registerWorkflowFeature("std:transitions-choice-as-transition-step", function(workflow, spec) {
 
+    var Step = {
+        id: "std:workflow:transitions-choice",
+        sort: spec.transitionStepsSort || 1001,
+        title: function(M, stepsUI) {
+            let i = P.locale().text("template");
+            return i["Decision"];
+        },
+        url: function(M, stepsUI) {
+            return "/do/workflow/choose-transition/"+M.workUnit.id;
+        },
+        complete: function(M, stepsUI) {
+            return !!stepsUI.requestedTransition;
+        }
+    };
+
     workflow.transitionStepsUI(spec.selector, function(M, step) {
-        step({
-            id: "std:workflow:transitions-choice",
-            sort: spec.transitionStepsSort || 1001,
-            title: function(M, stepsUI) {
-                let i = P.locale().text("template");
-                return i["Decision"];
-            },
-            url: function(M, stepsUI) {
-                return "/do/workflow/choose-transition/"+M.workUnit.id;
-            },
-            complete: function(M, stepsUI) {
-                return !!stepsUI.requestedTransition;
-            }
-        });
+        step(Step);
     });
 
 });

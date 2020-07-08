@@ -263,22 +263,23 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     }
 
     if(USE_TRANSITION_STEPS_UI) {
+        var Step = {
+            id: "std:document_store:"+spec.path,
+            sort: spec.transitionStepsSort || 500,
+            title: function(M, stepsUI) {
+                return spec.title;
+            },
+            url: function(M, stepsUI) {
+                return spec.path+'/form/'+M.workUnit.id;
+            },
+            complete: function(M, stepsUI) {
+                var instance = docstore.instance(M);
+                return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+            }
+        };
         workflow.transitionStepsUI({}, function(M, step) {
             if(can(M, O.currentUser, spec, 'edit')) {
-                step({
-                    id: "std:document_store:"+spec.path,
-                    sort: spec.transitionStepsSort || 500,
-                    title: function(M, stepsUI) {
-                        return spec.title;
-                    },
-                    url: function(M, stepsUI) {
-                        return spec.path+'/form/'+M.workUnit.id;
-                    },
-                    complete: function(M, stepsUI) {
-                        var instance = docstore.instance(M);
-                        return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
-                    }
-                });
+                step(Step);
             }
         });
     }
