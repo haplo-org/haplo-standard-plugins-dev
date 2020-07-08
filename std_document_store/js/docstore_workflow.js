@@ -273,6 +273,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 return spec.path+'/form/'+M.workUnit.id;
             },
             complete: function(M, stepsUI) {
+                // Only mark as complete when there's been an interaction with the form.
+                // This prevents the form being skipped when a workflow is returned to the
+                // user for editing and the form is complete.
+                if(!(stepsUI.data["std:document_store:has_interaction"]||{})[spec.path]) {
+                    return false;
+                }
                 var instance = docstore.instance(M);
                 return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             }
@@ -376,6 +382,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             configuredEditor.commentsUrl = spec.path+"/comments/"+M.workUnit.id;
         }
         instance.handleEditDocument(E, configuredEditor);
+        // Flag when there's an interaction with the form for the steps UI
+        if(USE_TRANSITION_STEPS_UI && E.request.method === "POST") {
+            var stepsUI = M.transitionStepsUI;
+            var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
+            hasInteraction[spec.path] = true;
+            stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
+            stepsUI.saveData();
+        }
     });
 
     // ------------------------------------------------------------------------
