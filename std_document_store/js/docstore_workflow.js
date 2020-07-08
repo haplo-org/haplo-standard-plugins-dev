@@ -374,6 +374,16 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(!can(M, O.currentUser, spec, 'edit')) {
             O.stop("Not permitted.");
         }
+
+        // Flag when there's an interaction with the form for the steps UI (before the editor does anything so redirects work as expected)
+        if(USE_TRANSITION_STEPS_UI && E.request.method === "POST") {
+            var stepsUI = M.transitionStepsUI;
+            var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
+            hasInteraction[spec.path] = true;
+            stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
+            stepsUI.saveData();
+        }
+
         var instance = docstore.instance(M);
         var configuredEditor = editor;
         if(delegate.enablePerElementComments) {
@@ -382,14 +392,6 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             configuredEditor.commentsUrl = spec.path+"/comments/"+M.workUnit.id;
         }
         instance.handleEditDocument(E, configuredEditor);
-        // Flag when there's an interaction with the form for the steps UI
-        if(USE_TRANSITION_STEPS_UI && E.request.method === "POST") {
-            var stepsUI = M.transitionStepsUI;
-            var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
-            hasInteraction[spec.path] = true;
-            stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
-            stepsUI.saveData();
-        }
     });
 
     // ------------------------------------------------------------------------
