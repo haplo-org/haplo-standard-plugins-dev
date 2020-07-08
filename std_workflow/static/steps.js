@@ -31,6 +31,17 @@
              });
          }
 
+         // -----------------------------------------------------------------
+
+         // JS to turn the transition choice click into a POST
+
+         $('#z__workflow_steps_choose_transition_container').on('click', 'a', function(evt) {
+             evt.preventDefault();
+             var transition = this.href.split('=').pop();
+             $('#z__workflow_steps_choose_transition_post input[name=transition]')[0].value = transition;
+             $('#z__workflow_steps_choose_transition_post').submit();
+         });
+
      });
 
  })(jQuery);

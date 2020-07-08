@@ -207,15 +207,14 @@ P.respond("GET,POST", "/do/workflow/choose-transition", [
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
     var stepsUI = M.transitionStepsUI;
-    if(transition && M.transitions.has(transition)) {
-        // TODO: Choose transition needs to set transition on a POST
+    if(transition && M.transitions.has(transition) && (E.request.method === "POST")) {
         stepsUI.requestedTransition = transition;
         return E.response.redirect(stepsUI.nextRedirect());
     }
-    var ui = new P.TransitionUI(M);   // TODO: What about the requestedTarget?
+    var ui = new P.TransitionUI(M, transition);
     ui.options = _.map(M.transitions.list, function(transition) {
         return {
-            // TODO: Better action URL?
+            // static/steps.js relies on this exact form of the URL
             action: "/do/workflow/choose-transition/"+M.workUnit.id+"?transition="+transition.name,
             label: transition.label,
             notes: transition.notes,
