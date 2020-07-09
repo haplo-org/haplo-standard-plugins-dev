@@ -494,6 +494,29 @@ WorkflowInstanceBase.prototype = {
         return this.$timeline.select().where("workUnitId","=",this.workUnit.id).stableOrder();
     },
 
+    getLastTransitionFromState: function(state, target) {
+        var stateDefinition = this.$states[state];
+        if(!stateDefinition) { throw new Error("Unknown state: "+state); }
+        var transitions = _.map(stateDefinition.transitions||[], function(t) { return t[0]; });
+        var q = this.$timeline.select().
+                    where("workUnitId", "=", this.workUnit.id).
+                    where("previousState", "=", state).
+                    order("id", true). // descending to find last transition
+                    limit(1);
+        if(target) { q.where("target", "=", target); }
+        if(transitions.length === 0) {
+            return undefined;
+        } else if(transitions.length === 1) {
+            q.where("action", "=", transitions[0]);
+        } else {
+            var sq = q.or();
+            _.each(transitions, function(t) {
+                sq.where("action", "=", t);
+            });
+        }
+        return q.length ? q[0].action : undefined;
+    },
+
     _findCurrentActionableByNameFromStateDefinitions: function() {
         var states = this.$states;
         var stateDefinition = states[this.state] || {};
