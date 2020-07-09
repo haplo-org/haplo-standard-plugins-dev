@@ -51,7 +51,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 var query = plugin.db[dbName].select().
                     where("workUnitId", "=", M.workUnit.id).
                     where("name", "=", unreplacedName).
-                    stableOrder();
+                    order("id");
                 _.each(query, function(row) {
                     if(row.replacement) {
                         replacements.set(row.entity, row.replacement);

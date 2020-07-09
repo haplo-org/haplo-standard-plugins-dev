@@ -25,7 +25,7 @@ var tableSharedRolesSelect = function(M, entityName) {
     var q = P.db.sharedRoles.select().
         where("workUnitId","=",M.workUnit.id).
         where("entityName","=",entityName).
-        limit(1).stableOrder();
+        limit(1).order("id");
     return q.length ? q[0] : null;
 };
 

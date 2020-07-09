@@ -101,6 +101,13 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
                 M._getText(['action-label'], [M.state]),
                 "primary"
             );
+            // Bypass transitions are always listed
+            M.transitions.list.forEach(function(t) {
+                if(t.isBypass) {
+                    // transition name in bypass parameter to get bypass UI
+                    builder.link("default", M.transitionUrl(undefined, {bypass:t.name}), t.label, t.indicator);
+                }
+            });
         }
     }}
 
@@ -263,8 +270,9 @@ P.implementService("std:workflow:deferred_render_combined_timeline", function(in
 P.respond("GET,POST", "/do/workflow/transition", [
     {pathElement:0, as:"workUnit", allUsers:true},  // Security check below
     {parameter:"transition", as:"string", optional:true},
-    {parameter:"target", as:"string", optional:true}
-], function(E, workUnit, transition, requestedTarget) {
+    {parameter:"target", as:"string", optional:true},
+    {parameter:"bypass", as:"string", optional:true}
+], function(E, workUnit, transition, requestedTarget, bypass) {
     if(!workUnit.isActionableBy(O.currentUser)) {
         return E.render({}, "transition-not-actionable");
     }
@@ -273,10 +281,34 @@ P.respond("GET,POST", "/do/workflow/transition", [
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
 
+    // Might be bypassing the usual UI?
+    if(bypass) {
+        if((M.transitions.properties(bypass)||{}).isBypass) {
+            transition = bypass;
+        } else {
+            // Code below assumes invalid bypass won't get any further than this
+            O.stop("Cannot bypass workflow");
+        }
+    }
+
+    // Steps UI may need to redirect away if not complete
+    var stepsUI = M.transitionStepsUI;
+    if(!bypass) {
+        var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI.nextRequiredRedirect());
+        if(stepsUIrdr) {
+            return E.response.redirect(stepsUIrdr);
+        }
+    }
+
     if(M.transitions.list.length === 1) {
         // If there is only one transition available, automatically select it to avoid
         // a confusing page with only one option.
         transition = M.transitions.list[0].name;
+    }
+
+    // Transition might have been requested during steps UI
+    if(!transition) {
+        transition = stepsUI.requestedTransition;
     }
 
     if(transition) {
@@ -290,7 +322,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 
             if(E.request.method === "POST") {
                 M._callHandler('$transitionFormSubmitted', E, ui);
-                if(ui._preventTransition) {
+                if(!bypass && ui._preventTransition) {
                     // Feature doesn't want the transition to happen right now, maybe redirect?
                     if(ui._redirect) {
                         return E.response.redirect(ui._redirect);
@@ -306,6 +338,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
                     }
 
                     M._callHandler('$transitionFormPreTransition', E, ui);
+                    stepsUI._commit(transition);
                     M.transition(transition, ui._getTransitionDataMaybe(), overrideTarget);
                     var redirectTo = ui._redirect;
                     if(!redirectTo && M.workUnit.isActionableBy(O.currentUser)) {
@@ -335,8 +368,12 @@ P.respond("GET,POST", "/do/workflow/transition", [
             });
         }
 
-        if(ui._redirect) {
+        if(!bypass && ui._redirect) {
             return E.response.redirect(ui._redirect);
+        }
+
+        if(bypass) {
+            ui.isBypassTransition = true;
         }
 
         E.render(ui);
@@ -350,7 +387,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 // --------------------------------------------------------------------------
 
 // Represents the built in UI, and act as the view for rendering.
-var TransitionUI = function(M, transition, target) {
+var TransitionUI = P.TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
     if(target) {
@@ -383,6 +420,9 @@ TransitionUI.prototype = {
         return this._transitionData;
     }
 };
+TransitionUI.prototype.__defineGetter__('usingStepsUI', function() {
+    return !this.M.transitionStepsUI._unused;
+});
 TransitionUI.prototype.__defineGetter__('backLinkText', function() {
     let i = P.locale().text("template");
     return i["Cancel"];
