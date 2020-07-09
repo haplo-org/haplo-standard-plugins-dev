@@ -109,14 +109,17 @@ TransitionStepsUI.prototype = {
 };
 
 TransitionStepsUI.prototype.__defineGetter__('data', function() {
+    if(this._unused) { throw new Error("Not using transition steps UI"); }
     return this._data.data;
 });
 
 TransitionStepsUI.prototype.__defineGetter__('requestedTransition', function() {
+    if(this._unused) { return; }
     return this._data.transition;
 });
 
 TransitionStepsUI.prototype.__defineSetter__('requestedTransition', function(transition) {
+    if(this._unused) { throw new Error("Not using transition steps UI"); }
     this._data.transition = transition;
     this.saveData();
 });
