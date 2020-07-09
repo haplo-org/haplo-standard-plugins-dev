@@ -490,8 +490,7 @@ WorkflowInstanceBase.prototype = {
 
     timelineSelect: function() {
         // order by ID rather than datetime to make sure always in sequence -- datetime could be equal
-        // TODO: Change platform so order("id") works, then use instead of stableOrder().
-        return this.$timeline.select().where("workUnitId","=",this.workUnit.id).stableOrder();
+        return this.$timeline.select().where("workUnitId","=",this.workUnit.id).order("id");
     },
 
     getLastTransitionFromState: function(state, target) {
