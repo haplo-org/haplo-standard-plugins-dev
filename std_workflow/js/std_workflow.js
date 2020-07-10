@@ -489,8 +489,10 @@ WorkflowInstanceBase.prototype = {
     },
 
     timelineSelect: function() {
-        // order by ID rather than datetime to make sure always in sequence -- datetime could be equal
-        return this.$timeline.select().where("workUnitId","=",this.workUnit.id).order("id");
+        // Use stableOrder() to sort by id, which ensures timeline is always in sequence (datetime
+        // could be equal). Users of this API rely on the platform database interface ignoring
+        // stableOrder() if any order() clauses are added to the query.
+        return this.$timeline.select().where("workUnitId","=",this.workUnit.id).stableOrder();
     },
 
     getLastTransitionFromState: function(state, target) {
