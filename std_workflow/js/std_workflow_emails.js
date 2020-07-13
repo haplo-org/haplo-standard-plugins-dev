@@ -335,6 +335,10 @@ var templateFunctionRenderList = function(t, items) {
 };
 
 
+P.globalTemplateFunction("M:entity-title", function(object) {
+    return templateFunctionNamePart(this, "title", object);
+});
+
 P.globalTemplateFunction("M:first-name", function(object) {
     return templateFunctionNamePart(this, "first", object);
 });
