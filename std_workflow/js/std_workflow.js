@@ -265,7 +265,7 @@ WorkflowInstanceBase.prototype = {
 
     isBypassTransition: function(transition) {
         var bypass = this.$bypassTransitions;
-        return !!_.find(bypass, (e) => {
+        return !!_.find(bypass, function(e) {
             if(typeof(e) === "string") {
                 return e === transition;
             } else if(e.test) {
