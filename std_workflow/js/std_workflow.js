@@ -95,9 +95,7 @@ var Transitions = P.Transitions = function(M) {
             throw new Error("Bad workflow destination resolution");
         }
         var isBypass = M.isBypassTransition(name);
-        var filterResult = isBypass ?
-                true : // Bypass transitions are never filtered
-                M._callHandler('$filterTransition', name);
+        var filterResult = M._callHandler('$filterTransition', name);
         if((filterResult === undefined) || (filterResult === true)) {
             this.list.push(new Transition(M, name, destination, destinationTarget, isBypass));
         }
@@ -266,10 +264,8 @@ WorkflowInstanceBase.prototype = {
     },
 
     isBypassTransition: function(transition) {
-        var bypass = this.$bypassTransitions,
-            length = bypass.length;
-        for(var i = 0; i < length; ++i) {
-            var e = bypass[i];
+        var bypass = this.$bypassTransitions;
+        return !!_.find(bypass, (e) => {
             if(typeof(e) === "string") {
                 return e === transition;
             } else if(e.test) {
@@ -277,8 +273,7 @@ WorkflowInstanceBase.prototype = {
             } else {
                 throw new Error("Unknown bypass transition specification: "+e);
             }
-        }
-        return false;
+        });
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {
