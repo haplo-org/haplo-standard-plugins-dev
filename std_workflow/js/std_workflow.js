@@ -95,7 +95,9 @@ var Transitions = P.Transitions = function(M) {
             throw new Error("Bad workflow destination resolution");
         }
         var isBypass = M.isBypassTransition(name);
-        var filterResult = M._callHandler('$filterTransition', name);
+        var filterResult = isBypass ?
+                true :
+                M._callHandler('$filterTransition', name);
         if((filterResult === undefined) || (filterResult === true)) {
             this.list.push(new Transition(M, name, destination, destinationTarget, isBypass));
         }

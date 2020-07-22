@@ -138,8 +138,7 @@ P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function(
 
 P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M, currentId) {
     var stepsUI = M.transitionStepsUI;
-    // Only display navigation if there's more than one step
-    if(!stepsUI._unused && stepsUI._steps.length > 1) {
+    if(!stepsUI._unused && stepsUI._steps.length > 0) {
         var steps = [];
         stepsUI._steps.forEach(function(step) {
             if(!stepsUI._callStepFn(step, 'skipped')) {
