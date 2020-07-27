@@ -335,7 +335,7 @@ var templateFunctionRenderList = function(t, items) {
 };
 
 
-P.globalTemplateFunction("M:toUser-title", function(object) {
+P.globalTemplateFunction("M:person-name-title", function(object) {
     return templateFunctionNamePart(this, "title", object);
 });
 
