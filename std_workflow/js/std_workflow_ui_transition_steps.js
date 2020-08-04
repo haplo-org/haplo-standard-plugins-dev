@@ -51,7 +51,7 @@ TransitionStepsUI.prototype = {
 
     nextRedirect: function() {
         var reqRdr = this.nextRequiredRedirect();
-        return reqRdr ? reqRdr : this.M.transitionUrl();
+        return reqRdr ? reqRdr : this.M.transitionUrl(this.requestedTransition);
     },
 
     nextRequiredRedirect: function() {

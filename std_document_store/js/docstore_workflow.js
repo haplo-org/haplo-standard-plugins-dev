@@ -281,6 +281,18 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 }
                 var instance = docstore.instance(M);
                 return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+            },
+            skipped: function(M, stepsUI) {
+                if(!stepsUI.requestedTransition) { return false; }
+                var transitionFiltered = false;
+                _.each(spec.edit, function(t) {
+                    if(M.selected(t.selector)) {
+                        if(!t.optional && (!t.transitionsFiltered || t.transitionsFiltered.indexOf(stepsUI.requestedTransition) !== -1)) {
+                            transitionFiltered = true;
+                        }
+                    }
+                });
+                return !transitionFiltered;
             }
         };
         workflow.transitionStepsUI({}, function(M, step) {

@@ -105,7 +105,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
             M.transitions.list.forEach(function(t) {
                 if(t.isBypass) {
                     // transition name in bypass parameter to get bypass UI
-                    builder.link("default", M.transitionUrl(undefined, {bypass:t.name}), t.label, t.indicator);
+                    builder.link("default", M.transitionUrl(undefined, {transition:t.name}), t.label, t.indicator);
                 }
             });
         }
@@ -270,9 +270,8 @@ P.implementService("std:workflow:deferred_render_combined_timeline", function(in
 P.respond("GET,POST", "/do/workflow/transition", [
     {pathElement:0, as:"workUnit", allUsers:true},  // Security check below
     {parameter:"transition", as:"string", optional:true},
-    {parameter:"target", as:"string", optional:true},
-    {parameter:"bypass", as:"string", optional:true}
-], function(E, workUnit, transition, requestedTarget, bypass) {
+    {parameter:"target", as:"string", optional:true}
+], function(E, workUnit, transition, requestedTarget) {
     if(!workUnit.isActionableBy(O.currentUser)) {
         return E.render({}, "transition-not-actionable");
     }
@@ -282,18 +281,19 @@ P.respond("GET,POST", "/do/workflow/transition", [
     var M = workflow.instance(workUnit);
 
     // Might be bypassing the usual UI?
-    if(bypass) {
-        if((M.transitions.properties(bypass)||{}).isBypass) {
-            transition = bypass;
-        } else {
-            // Code below assumes invalid bypass won't get any further than this
-            O.stop("Cannot bypass workflow");
-        }
-    }
+    var transitionIsBypass = (M.transitions.properties(transition)||{}).isBypass;
 
     // Steps UI may need to redirect away if not complete
     var stepsUI = M.transitionStepsUI;
-    if(!bypass) {
+    if(!transitionIsBypass) {
+        if(!stepsUI._unused) {
+            // Set the requestedTransition for backwards compatibility reasons with directToTransitions
+            if(transition) {
+                stepsUI.requestedTransition = transition;
+            } else {
+                stepsUI.requestedTransition = "";
+            }
+        }
         var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI.nextRequiredRedirect());
         if(stepsUIrdr) {
             return E.response.redirect(stepsUIrdr);
@@ -322,7 +322,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 
             if(E.request.method === "POST") {
                 M._callHandler('$transitionFormSubmitted', E, ui);
-                if(!bypass && ui._preventTransition) {
+                if(!transitionIsBypass && ui._preventTransition) {
                     // Feature doesn't want the transition to happen right now, maybe redirect?
                     if(ui._redirect) {
                         return E.response.redirect(ui._redirect);
@@ -369,11 +369,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
             }));
         }
 
-        if(!bypass && ui._redirect) {
+        if(!transitionIsBypass && ui._redirect) {
             return E.response.redirect(ui._redirect);
         }
 
-        if(bypass) {
+        if(transitionIsBypass) {
             ui.isBypassTransition = true;
         }
 
