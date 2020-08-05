@@ -152,7 +152,7 @@ P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M,
         });
         let i = P.locale().text("template");
         steps.push({
-            url: M.transitionUrl(),
+            url: M.transitionUrl(stepsUI.requestedTransition),
             title: i['Confirm'],
             incomplete: true,
             current: currentId === "std:workflow:final-confirm-step"

@@ -105,7 +105,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
             M.transitions.list.forEach(function(t) {
                 if(t.isBypass) {
                     // transition name in bypass parameter to get bypass UI
-                    builder.link("default", M.transitionUrl(undefined, {transition:t.name}), t.label, t.indicator);
+                    builder.link("default", M.transitionUrl(t.name), t.label, t.indicator);
                 }
             });
         }
@@ -281,18 +281,14 @@ P.respond("GET,POST", "/do/workflow/transition", [
     var M = workflow.instance(workUnit);
 
     // Might be bypassing the usual UI?
-    var transitionIsBypass = (M.transitions.properties(transition)||{}).isBypass;
+    var transitionIsBypass = transition ? (M.transitions.properties(transition)||{}).isBypass : false;
 
     // Steps UI may need to redirect away if not complete
     var stepsUI = M.transitionStepsUI;
     if(!transitionIsBypass) {
         if(!stepsUI._unused) {
             // Set the requestedTransition for backwards compatibility reasons with directToTransitions
-            if(transition) {
-                stepsUI.requestedTransition = transition;
-            } else {
-                stepsUI.requestedTransition = "";
-            }
+            stepsUI.requestedTransition = transition || null;
         }
         var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI.nextRequiredRedirect());
         if(stepsUIrdr) {
@@ -304,11 +300,6 @@ P.respond("GET,POST", "/do/workflow/transition", [
         // If there is only one transition available, automatically select it to avoid
         // a confusing page with only one option.
         transition = M.transitions.list[0].name;
-    }
-
-    // Transition might have been requested during steps UI
-    if(!transition) {
-        transition = stepsUI.requestedTransition;
     }
 
     if(transition) {
