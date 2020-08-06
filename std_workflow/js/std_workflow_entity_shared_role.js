@@ -184,11 +184,15 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
             where("entityName","=",actionableBy).
             where("id","!=",row.id).
             deleteAll();
-        var currentActionableUser = workUnit.actionableBy;
+        var previousActionableBy = workUnit.actionableBy;
         // Change actionable by of underlying work unit to user
         workUnit.actionableBy = user;
         M._saveWorkUnit();
-        M.addTimelineEntry("SHARED-ROLE-ACTION", {action: action, previousUserName: currentActionableUser.name});
+        M.addTimelineEntry("SHARED-ROLE-ACTION", {
+            action: action,
+            previousActionableUser: previousActionableBy.id,
+            newActionableUser: user.id
+        });
 
         E.response.redirect(M.url);
     }
@@ -219,6 +223,10 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
 
 P.implementService("__std:workflow:fallback-timeline-entry-deferrred__", function(M, entry) {
     if(entry.action === "SHARED-ROLE-ACTION") {
-        return P.template("timeline/shared-role-action").deferredRender({M: M, entry: entry});
+        return P.template("timeline/shared-role-action").deferredRender({
+            entry: entry,
+            previousUser: O.user(entry.data.previousActionableUser),
+            newUser: O.user(entry.data.newActionableUser)
+        });
     }
 });

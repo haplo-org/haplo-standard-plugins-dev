@@ -1,7 +1,7 @@
 switch(entry.data.action) {
     i("{} took the task over from {previous}")
-      { <i> entry.user.name </i> } previous { <i> entry.data.previousUserName </i> }
+      { <i> entry.user.name </i> } previous { <i> previousUser.name </i> }
 } delegate {
     i("{} delegated the task to {current}")
-        { <i> entry.user.name </i> } current { <i> M.workUnit.actionableBy.name </i> }
+        { <i> entry.user.name </i> } current { <i> newUser.name </i> }
 }
