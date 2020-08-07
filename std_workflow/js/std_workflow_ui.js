@@ -297,7 +297,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
     }
 
     let transitionsWithoutBypass = _.filter(M.transitions.list, function(t) {
-        return !M.isBypassTransition(t.name);
+        return !t.isBypass;
     });
 
     if(!transition && transitionsWithoutBypass.length === 1) {
