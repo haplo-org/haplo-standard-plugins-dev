@@ -300,7 +300,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
         return !M.isBypassTransition(t.name);
     });
 
-    if(transitionsWithoutBypass.length === 1) {
+    if(!transition && transitionsWithoutBypass.length === 1) {
         // If there is only one non-bypass transition available, automatically select it to avoid
         // a confusing page with only one option.
         transition = M.transitions.list[0].name;
