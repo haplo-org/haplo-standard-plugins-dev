@@ -19,11 +19,11 @@ var TransitionStepsUI = function(M) {
     var steps = [];
     M._callHandler('$transitionStepsUI', function(spec) {
         steps.push(spec);
-    });
+    }, this);
 
     // If this workflow isn't using the steps UI, flag as unused
     // and don't do any further initialisation.
-    if(steps.length === 0) {
+    if(steps.length === 0 || !M.workUnit.isActionableBy(O.currentUser)) {
         this._unused = true;
         return;
     }
@@ -60,6 +60,10 @@ TransitionStepsUI.prototype = {
         if(currentStep) {
             return this._callStepFn(currentStep, 'url');
         }
+    },
+
+    hideSteps: function() {
+        this._unused = true;
     },
 
     _commit: function(transition) {
