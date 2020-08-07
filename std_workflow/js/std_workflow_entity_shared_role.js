@@ -221,12 +221,3 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
     E.render(view, "entity-shared-role/confirm-new-role");
 });
 
-P.implementService("__std:workflow:fallback-timeline-entry-deferrred__", function(M, entry) {
-    if(entry.action === "SHARED-ROLE-ACTION") {
-        return P.template("timeline/shared-role-action").deferredRender({
-            entry: entry,
-            previousUser: O.user(entry.data.previousActionableUser),
-            newUser: O.user(entry.data.newActionableUser)
-        });
-    }
-});
