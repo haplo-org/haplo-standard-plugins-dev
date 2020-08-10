@@ -229,6 +229,12 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                 return P.template("timeline/hide").deferredRender({entry:entry,hide:true});
             case "UNHIDE":
                 return P.template("timeline/hide").deferredRender({entry:entry,hide:false});
+            case "SHARED-ROLE-ACTION":
+                return P.template("timeline/shared-role-action").deferredRender({
+                    entry: entry,
+                    previousUser: O.securityPrincipal(entry.data.previousActionableUser),
+                    newUser: O.securityPrincipal(entry.data.newActionableUser)
+                });
         }
         return O.serviceMaybe("__std:workflow:fallback-timeline-entry-deferrred__", this, entry);
     },

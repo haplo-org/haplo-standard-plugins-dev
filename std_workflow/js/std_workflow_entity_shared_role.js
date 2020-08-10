@@ -184,9 +184,15 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
             where("entityName","=",actionableBy).
             where("id","!=",row.id).
             deleteAll();
+        var previousActionableBy = workUnit.actionableBy;
         // Change actionable by of underlying work unit to user
         workUnit.actionableBy = user;
         M._saveWorkUnit();
+        M.addTimelineEntry("SHARED-ROLE-ACTION", {
+            action: action,
+            previousActionableUser: previousActionableBy.id,
+            newActionableUser: user.id
+        });
 
         E.response.redirect(M.url);
     }
