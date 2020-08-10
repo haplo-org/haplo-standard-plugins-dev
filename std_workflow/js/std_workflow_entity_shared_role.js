@@ -220,4 +220,3 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
     }
     E.render(view, "entity-shared-role/confirm-new-role");
 });
-
