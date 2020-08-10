@@ -232,8 +232,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             case "SHARED-ROLE-ACTION":
                 return P.template("timeline/shared-role-action").deferredRender({
                     entry: entry,
-                    previousUser: entry.data.previousActionableUser ? O.user(entry.data.previousActionableUser) : undefined,
-                    newUser: entry.data.newActionableUser ? O.user(entry.data.newActionableUser) : undefined
+                    previousUser: O.securityPrincipal(entry.data.previousActionableUser),
+                    newUser: O.securityPrincipal(entry.data.newActionableUser)
                 });
         }
         return O.serviceMaybe("__std:workflow:fallback-timeline-entry-deferrred__", this, entry);
