@@ -112,6 +112,10 @@ TransitionStepsUI.prototype = {
     }
 };
 
+TransitionStepsUI.prototype.__defineGetter__('unused', function() {
+    return this._unused;
+});
+
 TransitionStepsUI.prototype.__defineGetter__('data', function() {
     if(this._unused) { throw new Error("Not using transition steps UI"); }
     return this._data.data;

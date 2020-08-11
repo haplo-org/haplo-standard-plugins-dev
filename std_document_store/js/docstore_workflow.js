@@ -390,7 +390,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         // Flag when there's an interaction with the form for the steps UI (before the editor does anything so redirects work as expected)
         if(USE_TRANSITION_STEPS_UI && E.request.method === "POST") {
             var stepsUI = M.transitionStepsUI;
-            if(!stepsUI._unused) {
+            if(!stepsUI.unused) {
                 var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
                 hasInteraction[spec.path] = true;
                 stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
