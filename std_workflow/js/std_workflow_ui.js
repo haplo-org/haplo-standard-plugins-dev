@@ -354,7 +354,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
             // Generate std:ui:choose template options from the transition
             var urlExtraParameters = ui._urlExtraParameters;
             ui.options = _.compact(_.map(M.transitions.list, function(transition) {
-                if(M.isBypassTransition(transition.name)) { return; }
+                if(transition.isBypass) { return; }
                 return {
                     action: M.transitionUrl(transition.name, urlExtraParameters),
                     label: transition.label,
