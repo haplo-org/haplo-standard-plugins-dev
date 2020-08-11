@@ -266,10 +266,8 @@ WorkflowInstanceBase.prototype = {
     },
 
     isBypassTransition: function(transition) {
-        var bypass = this.$bypassTransitions,
-            length = bypass.length;
-        for(var i = 0; i < length; ++i) {
-            var e = bypass[i];
+        var bypass = this.$bypassTransitions;
+        return !!_.find(bypass, function(e) {
             if(typeof(e) === "string") {
                 return e === transition;
             } else if(e.test) {
@@ -277,8 +275,7 @@ WorkflowInstanceBase.prototype = {
             } else {
                 throw new Error("Unknown bypass transition specification: "+e);
             }
-        }
-        return false;
+        });
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {

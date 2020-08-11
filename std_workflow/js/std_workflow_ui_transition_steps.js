@@ -19,11 +19,11 @@ var TransitionStepsUI = function(M) {
     var steps = [];
     M._callHandler('$transitionStepsUI', function(spec) {
         steps.push(spec);
-    });
+    }, this);
 
     // If this workflow isn't using the steps UI, flag as unused
     // and don't do any further initialisation.
-    if(steps.length === 0) {
+    if(steps.length === 0 || !M.workUnit.isActionableBy(O.currentUser)) {
         this._unused = true;
         return;
     }
@@ -51,7 +51,7 @@ TransitionStepsUI.prototype = {
 
     nextRedirect: function() {
         var reqRdr = this.nextRequiredRedirect();
-        return reqRdr ? reqRdr : this.M.transitionUrl();
+        return reqRdr ? reqRdr : this.M.transitionUrl(this.requestedTransition);
     },
 
     nextRequiredRedirect: function() {
@@ -60,6 +60,10 @@ TransitionStepsUI.prototype = {
         if(currentStep) {
             return this._callStepFn(currentStep, 'url');
         }
+    },
+
+    hideSteps: function() {
+        this._unused = true;
     },
 
     _commit: function(transition) {
@@ -108,6 +112,10 @@ TransitionStepsUI.prototype = {
     }
 };
 
+TransitionStepsUI.prototype.__defineGetter__('unused', function() {
+    return this._unused;
+});
+
 TransitionStepsUI.prototype.__defineGetter__('data', function() {
     if(this._unused) { throw new Error("Not using transition steps UI"); }
     return this._data.data;
@@ -138,8 +146,7 @@ P.WorkflowInstanceBase.prototype.__defineGetter__("transitionStepsUI", function(
 
 P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M, currentId) {
     var stepsUI = M.transitionStepsUI;
-    // Only display navigation if there's more than one step
-    if(!stepsUI._unused && stepsUI._steps.length > 1) {
+    if(!stepsUI._unused && stepsUI._steps.length > 0) {
         var steps = [];
         stepsUI._steps.forEach(function(step) {
             if(!stepsUI._callStepFn(step, 'skipped')) {
@@ -153,7 +160,7 @@ P.globalTemplateFunction("std:workflow:transition-steps:navigation", function(M,
         });
         let i = P.locale().text("template");
         steps.push({
-            url: M.transitionUrl(),
+            url: M.transitionUrl(stepsUI.requestedTransition),
             title: i['Confirm'],
             incomplete: true,
             current: currentId === "std:workflow:final-confirm-step"

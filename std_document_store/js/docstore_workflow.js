@@ -281,6 +281,18 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 }
                 var instance = docstore.instance(M);
                 return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+            },
+            skipped: function(M, stepsUI) {
+                if(!stepsUI.requestedTransition) { return false; }
+                var transitionFiltered = false;
+                _.each(spec.edit, function(t) {
+                    if(M.selected(t.selector)) {
+                        if(!t.optional && (!t.transitionsFiltered || t.transitionsFiltered.indexOf(stepsUI.requestedTransition) !== -1)) {
+                            transitionFiltered = true;
+                        }
+                    }
+                });
+                return !transitionFiltered;
             }
         };
         workflow.transitionStepsUI({}, function(M, step) {
@@ -378,10 +390,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         // Flag when there's an interaction with the form for the steps UI (before the editor does anything so redirects work as expected)
         if(USE_TRANSITION_STEPS_UI && E.request.method === "POST") {
             var stepsUI = M.transitionStepsUI;
-            var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
-            hasInteraction[spec.path] = true;
-            stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
-            stepsUI.saveData();
+            if(!stepsUI.unused) {
+                var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
+                hasInteraction[spec.path] = true;
+                stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
+                stepsUI.saveData();
+            }
         }
 
         var instance = docstore.instance(M);
