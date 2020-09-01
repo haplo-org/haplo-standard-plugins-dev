@@ -96,7 +96,7 @@ var Transitions = P.Transitions = function(M) {
         }
         var isBypass = M.isBypassTransition(name);
         var filterResult = isBypass ?
-                true : // Bypass transitions are never filtered
+                M._callHandler('$filterBypassTransition', name) ://Bypass transitions can only be filtered via this feature
                 M._callHandler('$filterTransition', name);
         if((filterResult === undefined) || (filterResult === true)) {
             this.list.push(new Transition(M, name, destination, destinationTarget, isBypass));
@@ -858,6 +858,7 @@ implementHandlerList('currentlyWithDisplayName');
 implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
+implementHandlerList('filterBypassTransition');
 implementHandlerList('transitionStepsUI');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionUIWithoutTransitionChoice');
