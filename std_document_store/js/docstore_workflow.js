@@ -310,17 +310,20 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || i["Edit"]+" "+spec.title.toLowerCase();
             var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
-            if(USE_TRANSITION_STEPS_UI && instance.currentDocumentIsEdited) {
+
+            if(USE_TRANSITION_STEPS_UI) {
                 var stepsReqRdr = M.transitionStepsUI.nextRequiredRedirect();
                 if(stepsReqRdr) { editUrl = stepsReqRdr; }
             }
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
-            builder.
-                link(spec.editPriority || "default",
-                        editUrl,
-                        label,
-                        isDone ? "standard" : "primary");
+            if(!USE_TRANSITION_STEPS_UI || (USE_TRANSITION_STEPS_UI && isDone)) {
+                builder.
+                    link(spec.editPriority || "default",
+                            editUrl,
+                            label,
+                            isDone ? "standard" : "primary");
+                }
         }
     });
 
