@@ -96,7 +96,7 @@ var Transitions = P.Transitions = function(M) {
         }
         var isBypass = M.isBypassTransition(name);
         var filterResult = isBypass ?
-                M._callHandler('$filterBypassTransition', name) ://Bypass transitions can only be filtered via this feature
+                M._callHandler('$filterBypassTransition', name) : //Bypass transitions can only be filtered via this feature
                 M._callHandler('$filterTransition', name);
         if((filterResult === undefined) || (filterResult === true)) {
             this.list.push(new Transition(M, name, destination, destinationTarget, isBypass));

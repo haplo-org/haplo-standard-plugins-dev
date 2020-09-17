@@ -310,7 +310,6 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || i["Edit"]+" "+spec.title.toLowerCase();
             var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
-
             if(USE_TRANSITION_STEPS_UI) {
                 var stepsReqRdr = M.transitionStepsUI.nextRequiredRedirect();
                 if(stepsReqRdr) { editUrl = stepsReqRdr; }
@@ -323,7 +322,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                             editUrl,
                             label,
                             isDone ? "standard" : "primary");
-                }
+            }
         }
     });
 
