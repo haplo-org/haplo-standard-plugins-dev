@@ -316,11 +316,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             }
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
-            builder.
-                link(spec.editPriority || "default",
-                        editUrl,
-                        label,
-                        isDone ? "standard" : "primary");
+            if(!USE_TRANSITION_STEPS_UI || (USE_TRANSITION_STEPS_UI && isDone)) {
+                builder.
+                    link(spec.editPriority || "default",
+                            editUrl,
+                            label,
+                            isDone ? "standard" : "primary");
+            }
         }
     });
 
