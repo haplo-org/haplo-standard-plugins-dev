@@ -150,12 +150,12 @@ var ensureDbRowsCreated = function(workflow, M) {
                     where("entity", "=", ref).
                     where("name", "=", unreplacedName);
             if(!dbQuery.count()) {
-                var defaultValue = (typeof(info.defaultValue) === "function") ? info.defaultValue(M) : true;
+                var defaultSelected = (typeof(info.defaultSelected) === "function") ? info.defaultSelected(M, unreplacedName, ref) : true;
                 workflow.plugin.db[dbName].create({
                     workUnitId: M.workUnit.id,
                     name: unreplacedName,
                     entity: ref,
-                    selected: !!defaultValue
+                    selected: !!defaultSelected
                 }).save();
             }
         });
