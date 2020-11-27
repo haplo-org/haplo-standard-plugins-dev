@@ -863,6 +863,7 @@ implementHandlerList('transitionStepsUI');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionUIWithoutTransitionChoice');
 implementHandlerList('transitionFormSubmitted');
+implementHandlerList('bypassTransitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
 implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
