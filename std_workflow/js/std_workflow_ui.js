@@ -322,8 +322,12 @@ P.respond("GET,POST", "/do/workflow/transition", [
         if(transition && M.transitions.has(transition)) {
 
             if(E.request.method === "POST") {
-                M._callHandler('$transitionFormSubmitted', E, ui);
-                if(!transitionIsBypass && ui._preventTransition) {
+                if(transitionIsBypass) {
+                    M._callHandler('$bypassTransitionFormSubmitted', E, ui);
+                } else {
+                    M._callHandler('$transitionFormSubmitted', E, ui);
+                }
+                if(ui._preventTransition) {
                     // Feature doesn't want the transition to happen right now, maybe redirect?
                     if(ui._redirect) {
                         return E.response.redirect(ui._redirect);
