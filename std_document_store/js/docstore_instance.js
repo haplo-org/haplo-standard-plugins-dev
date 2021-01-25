@@ -430,6 +430,8 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             commentsUrl: actions.commentsUrl,
             versionForComments: actions.viewComments ? this.committedVersionNumber : undefined,
             saveButtonStyle: saveButtonStyle,
+            saveButtonLabel: "saveButtonLabel" in delegate ? delegate.saveButtonLabel(saveButtonStyle) : undefined,
+            saveForLaterButtonLabel: delegate.saveForLaterButtonLabel,
             navigationTop: navigationTop,
             navigationBottom: navigationBottom,
             showFormTitles: actions.showFormTitlesWhenEditing,
