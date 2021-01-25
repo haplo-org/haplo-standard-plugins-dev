@@ -295,6 +295,10 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 return !transitionFiltered;
             }
         };
+
+        if("transitionStepsTransitionLabel" in spec) {
+            Step.transitionLabel = spec.transitionStepsTransitionLabel;
+        }
         workflow.transitionStepsUI({}, function(M, step) {
             if(can(M, O.currentUser, spec, 'edit')) {
                 step(Step);
