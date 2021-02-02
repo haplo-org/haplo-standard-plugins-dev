@@ -98,7 +98,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
         if(M.workUnit.isActionableBy(O.currentUser) && !M.transitions.empty) {
             var actionLabel = M._getText(['action-label'], [M.state]);
             var stepsUI = M.transitionStepsUI;
-            if(!(stepsUI._unused || stepsUI._steps.length === 0)) {
+            if(!stepsUI._unused && stepsUI._steps.length > 0) {
                 var step = stepsUI._currentStep();
                 if(!!step) {
                     var stepTransitionLabel = stepsUI._callStepFn(step, "transitionLabel");
