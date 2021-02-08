@@ -311,8 +311,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
             if(USE_TRANSITION_STEPS_UI) {
-                var stepsReqRdr = M.transitionStepsUI.nextRequiredRedirect();
-                if(stepsReqRdr) { editUrl = stepsReqRdr; }
+                var stepsUI = M.transitionStepsUI;
+                var documentStoreStep = stepsUI._findStep((s) => s.id === "std:document_store:"+spec.path);
+                if(documentStoreStep) {
+                    isDone = stepsUI._callStepFn(documentStoreStep, "complete");
+                }
+                var stepsReqRdr = stepsUI.nextRequiredRedirect();
+                // Prevent using the document store to skip past steps
+                if(!isDone && stepsReqRdr) { editUrl = stepsReqRdr; }
             }
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
