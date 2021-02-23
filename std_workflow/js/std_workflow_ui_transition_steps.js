@@ -66,6 +66,16 @@ TransitionStepsUI.prototype = {
         this._unused = true;
     },
 
+    findStepById: function(id) {
+        return this._findStep(function(step) {
+            return step.id === id;
+        });
+    },
+
+    stepIsComplete: function(step) {
+        return this._stepIsComplete(step);
+    },
+
     _commit: function(transition) {
         if(this._unused) { return; }
         var ui = this;
