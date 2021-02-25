@@ -96,16 +96,16 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
 
     $actionPanelTransitionUI: {selector:{}, handler:function(M, builder) {
         if(M.workUnit.isActionableBy(O.currentUser) && !M.transitions.empty) {
-            var actionLabel = M._getText(['action-label'], [M.state]);
+            var actionLabel;
             var stepsUI = M.transitionStepsUI;
             if(!stepsUI._unused && stepsUI._steps.length > 0) {
                 var step = stepsUI._currentStep();
                 if(!!step) {
-                    var stepTransitionLabel = stepsUI._callStepFn(step, "transitionLabel");
-                    if(!!stepTransitionLabel) {
-                        actionLabel = stepTransitionLabel;
-                    }
+                    actionLabel = stepsUI._callStepFn(step, "transitionLabel");
                 }
+            }
+            if(!actionLabel) {
+                actionLabel = M._getText(['action-label'], [M.state]);
             }
             builder.link("default",
                 "/do/workflow/transition/"+M.workUnit.id,
