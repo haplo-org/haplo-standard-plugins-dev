@@ -45,7 +45,7 @@ if(additionalUI.formBottom) { render(additionalUI.formBottom) }
   >
   " "
   <button name="__later" value="s">
-    if(saveForLaterButtonLabel) { i("{}") { saveForLaterButtonLabel } } else { i("Save for later") }
+    if(saveForLaterButtonLabel) { saveForLaterButtonLabel } else { i("Save for later") }
   </button>
 </div>
 
