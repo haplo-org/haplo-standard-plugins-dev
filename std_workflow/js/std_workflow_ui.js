@@ -100,7 +100,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
             var stepsUI = M.transitionStepsUI;
             if(!stepsUI._unused && stepsUI._steps.length > 0) {
                 var step = stepsUI._currentStep();
-                if(!!step) {
+                if(step) {
                     actionLabel = stepsUI._callStepFn(step, "transitionLabel");
                 }
             }
