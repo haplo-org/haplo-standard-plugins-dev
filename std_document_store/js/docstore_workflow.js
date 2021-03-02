@@ -317,7 +317,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var editUrl = spec.path+'/form/'+M.workUnit.id;
             if(USE_TRANSITION_STEPS_UI) {
                 var stepsUI = M.transitionStepsUI;
-                isDone = documentStoreStepIsComplete(M, stepsUI);
+                if(!stepsUI.unused) {
+                    isDone = documentStoreStepIsComplete(M, stepsUI);
+                }
                 var stepsReqRdr = stepsUI.nextRequiredRedirect();
                 // Prevent using the document store to skip past steps
                 if(!isDone && stepsReqRdr) { editUrl = stepsReqRdr; }
