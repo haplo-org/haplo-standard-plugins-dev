@@ -11,6 +11,10 @@ P.use("std:workflow");
 
 const USE_TRANSITION_STEPS_UI = !!O.application.config["std_document_store:use_transition_steps_ui"];
 
+// This is a global setting, because using different defaults for different parts of the application
+// could result in users making the wrong assumption about the default.
+const DEFAULT_COMMENT_IS_PRIVATE = !O.application.config["std_document_store:comments:default_to_visible"];
+
 
 // workflow.use("std:document_store", spec)
 //
@@ -546,6 +550,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
             privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
+            defaultCommentIsPrivate: DEFAULT_COMMENT_IS_PRIVATE,
             addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
             privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", i["This comment is private."]),
             addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", i["Private comment"]),
