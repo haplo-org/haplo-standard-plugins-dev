@@ -280,6 +280,7 @@ WorkflowInstanceBase.prototype = {
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {
+        this.transitionStepsUI._commit();
         this._setPendingTransition(entry.action);
         try {
             this.workUnit.tags.state = entry.state;
