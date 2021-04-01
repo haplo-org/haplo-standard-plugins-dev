@@ -281,7 +281,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             id: "std:document_store:"+spec.path,
             sort: spec.transitionStepsSort || 500,
             title: function(M, stepsUI) {
-                return spec.title;
+                return M.getTextMaybe("docstore-step-title:"+spec.name) || spec.title;
             },
             url: function(M, stepsUI) {
                 return spec.path+'/form/'+M.workUnit.id;
