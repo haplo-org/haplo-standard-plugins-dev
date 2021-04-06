@@ -185,7 +185,7 @@ WorkflowInstanceBase.prototype = {
         var previousState = this.state,
             previousTarget = this.target,
             destination, destinationTarget, stateDefinition;
-        this.transitionStepsUI._commit();
+        this.transitionStepsUI._commit(transition);
         this._setPendingTransition(transition);
         // Select the handlers for transitionComplete based on the initial state of transition.
         // (if it were done on the post transition state, it'd be quite hard to use)
@@ -280,7 +280,7 @@ WorkflowInstanceBase.prototype = {
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {
-        this.transitionStepsUI._commit();
+        this.transitionStepsUI._commit("MOVE");
         this._setPendingTransition(entry.action);
         try {
             this.workUnit.tags.state = entry.state;
