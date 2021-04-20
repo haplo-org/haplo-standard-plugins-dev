@@ -167,16 +167,18 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
     });
 };
 
-P.Dashboard.prototype.display = function(where, deferred) {
+P.Dashboard.prototype.display = function(where, deferred, priority) {
     if(!deferred) { return; }
     if(!where) { where = "above"; }
+    if(priority === null || priority === undefined) { priority = 0; }
     if(!O.isDeferredRender(deferred)) {
         throw new Error("Second argument to where() must be a deferred render.");
     }
     var displays = this.$displays;
     if(!displays) { displays = this.$displays = {}; }
     if(!(where in displays)) { displays[where] = []; }
-    displays[where].push(deferred);
+    displays[where].push({ deferred: deferred, priority: priority });
+    displays[where] = _.sortBy(displays[where], 'priority');
     return this;
 };
 

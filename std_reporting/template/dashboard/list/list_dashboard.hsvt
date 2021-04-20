@@ -2,15 +2,15 @@ std:plugin:resources("tablesort.js")
 
 template:dashboard:common:dashboard-page() {
 
-  each(dashboard.$displays.above-export) { render(.) }
+  each(dashboard.$displays.above-export) { render(deferred) }
 
   template:dashboard:common:export-form() {
 
-    each(dashboard.$displays.above-navigation) { render(.) }
+    each(dashboard.$displays.above-navigation) { render(deferred) }
   
     template:dashboard:common:navigation()
   
-    each(dashboard.$displays.above) { render(.) }
+    each(dashboard.$displays.above) { render(deferred) }
   
     if(widgetsTop) {
       <div class="z__std_reporting_list_widgets_top">
@@ -19,7 +19,7 @@ template:dashboard:common:dashboard-page() {
     }
   }
 
-  each(dashboard.$displays.above-table) { render(.) }
+  each(dashboard.$displays.above-table) { render(deferred) }
 
   <table id="z__std_reporting_list_filterable_table" class=[
         "tablesort"

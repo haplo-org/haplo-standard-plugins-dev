@@ -6,17 +6,17 @@ template:dashboard:common:dashboard-page() {
     std:ui:notice(i("This dashboard does not include all data. Some rows are omitted."))
   }
   
-  each(dashboard.$displays.above-export) { render(.) }
+  each(dashboard.$displays.above-export) { render(deferred) }
 
   template:dashboard:common:export-form() {
 
-    each(dashboard.$displays.above-navigation) { render(.) }
+    each(dashboard.$displays.above-navigation) { render(deferred) }
   
     template:dashboard:common:navigation()
 
-    each(dashboard.$displays.above) { render(.) }
+    each(dashboard.$displays.above) { render(deferred) }
 
-    each(dashboard.$displays.above-table) { render(.) }
+    each(dashboard.$displays.above-table) { render(deferred) }
 
     template:dashboard:aggregate:aggregate-table()
   }
