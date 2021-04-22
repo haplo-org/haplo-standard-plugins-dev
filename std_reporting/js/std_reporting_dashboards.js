@@ -167,18 +167,28 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
     });
 };
 
-P.Dashboard.prototype.display = function(where, deferred, priority) {
+P.Dashboard.prototype.display = function(where, deferred) {
+    var defaultOrder = 10000;
+    var order;
     if(!deferred) { return; }
     if(!where) { where = "above"; }
-    if(priority === null || priority === undefined) { priority = 0; }
-    if(!O.isDeferredRender(deferred)) {
-        throw new Error("Second argument to where() must be a deferred render.");
+    if(O.isDeferredRender(deferred)) {
+        order = defaultOrder;
+    } else if(O.isDeferredRender(deferred.deferred)) {
+        if(deferred.order === null || isNaN(deferred.order)) {
+            order = defaultOrder;
+        } else {
+            order = Number(deferred.order);
+        }
+        deferred = deferred.deferred;
+    } else {
+        throw new Error("Second argument to display() must be a deferred render, or an object with a deferred render as its 'deferred' property.");
     }
     var displays = this.$displays;
     if(!displays) { displays = this.$displays = {}; }
     if(!(where in displays)) { displays[where] = []; }
-    displays[where].push({ deferred: deferred, priority: priority });
-    displays[where] = _.sortBy(displays[where], 'priority');
+    if(!displays[where][order]) { displays[where][order] = []; }
+    displays[where][order].push(deferred);
     return this;
 };
 

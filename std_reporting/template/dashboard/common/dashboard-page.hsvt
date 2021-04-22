@@ -14,10 +14,18 @@ if(dashboard.invalidFactsAtRequested) {
   std:ui:notice(i("Invalid time requested, showing current data."))
 }
 
-each(dashboard.$displays.above-summary) { render(deferred) }
+each(dashboard.$displays.above-summary) {
+  each(.) {
+    render(.)
+  }
+}
 
 template:dashboard:common:summary-display()
 
 yield()
 
-each(dashboard.$displays.below) { render(deferred) }
+each(dashboard.$displays.below) {
+  each(.) {
+    render(.)
+  }
+}
