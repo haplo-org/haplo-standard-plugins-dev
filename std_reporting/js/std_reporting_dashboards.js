@@ -175,7 +175,7 @@ P.Dashboard.prototype.display = function(where, deferred) {
     if(O.isDeferredRender(deferred)) {
         order = defaultOrder;
     } else if(O.isDeferredRender(deferred.deferred)) {
-        if(deferred.order === null || isNaN(deferred.order)) {
+        if(deferred.order === null || isNaN(deferred.order) || !Number.isInteger(Number(deferred.order))) {
             order = defaultOrder;
         } else {
             order = Number(deferred.order);
