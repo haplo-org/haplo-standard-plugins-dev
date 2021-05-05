@@ -199,7 +199,16 @@ P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
         dashboard.$rowAttributeFns.push(function(row, attrs) {
             attrs['data-text-filter'] = facts.map(function(fact) {
                 var value = row[fact], factType = dashboard.collection.$factType[fact];
-                if(factType === "ref") { return (value === null) ? '' : value.load().title; }
+                if(factType === "ref") {
+                    if(value === null) { return ''; }
+                    else {
+                        if(spec.useAllTitlesForRefColumns) {
+                            return value.load().everyTitle().join(' ');
+                        } else {
+                            return value.load().title;
+                        }
+                    }
+                }
                 return (value === null) ? '' : value.toString();
             }).join(' ').toLowerCase();
         });
