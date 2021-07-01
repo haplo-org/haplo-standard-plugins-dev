@@ -100,13 +100,11 @@ P.FEATURE = {
         if(typeof(name) !== "string") {
             throw new Error("Name passed to P.webPublication.register() must be a hostname or P.webPublication.DEFAULT");
         }
-        if(name in publications) {
-            throw new Error(
-                (name === DEFAULT) ? "Default publication already registered." : "Publication "+name+" already registered."
-            );
-        }
         var publication = new Publication(name, this.$plugin);
-        publications[name] = publication;
+        if(!(name in publications)) {
+            publications[name] = [];
+        }
+        publications[name].push(publication);
         return publication;
     },
     feature: function(name, feature) {
@@ -126,7 +124,7 @@ P.provideFeature("std:web-publisher", function(plugin) {
     consumerFeature.widget = new Widgets(plugin);
     plugin.webPublication = consumerFeature;
 });
-P.implementService("std:web_publisher:get_publication", function(name) {
+P.implementService("std:web_publisher:get_publications", function(name) {
     if(!(name in publications)) {
         throw new Error("No publiation registered for "+name);
     }

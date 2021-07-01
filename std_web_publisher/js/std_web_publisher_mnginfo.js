@@ -7,7 +7,7 @@
 
 P.$getPublicationHostnames = function() {
     var publications = [];
-    _.each(P.allPublications, function(publication, hostname) {
+    _.each(P.allPublications, function(publicationsOnHostname, hostname) {
         publications.push(
             (hostname === P.FEATURE.DEFAULT) ? O.application.hostname : hostname
         );
@@ -17,13 +17,17 @@ P.$getPublicationHostnames = function() {
 
 P.$getPublicationInfoHTML = function(givenHostname) {
     var hostname = (givenHostname === O.application.hostname) ? P.FEATURE.DEFAULT : givenHostname;
-    var publication = P.allPublications[hostname];
-    if(!publication) { return '(UNKNOWN)'; }
+    var publications = P.allPublications[hostname];
+    if(!publications) { return ('(UNKNOWN)'); }
     return P.template("mnginfo/publication-info").render({
-        publication: publication,
         hostname: givenHostname,
-        homePageUrl: publication._homePageUrlPath ? "https://"+givenHostname+publication._homePageUrlPath : null,
-        serviceUser: O.serviceUser(publication._serviceUserCode),
-        robotsTxt: publication._generateRobotsTxt()
+        publications: _.map(publications, function(publication) {
+            return {
+                publication: publication,
+                homePageUrl: publication._homePageUrlPath ? "https://"+givenHostname+publication._homePageUrlPath : null,
+                serviceUser: O.serviceUser(publication._serviceUserCode),
+                robotsTxt: publication._generateRobotsTxt()
+            };
+        })
     });
 };

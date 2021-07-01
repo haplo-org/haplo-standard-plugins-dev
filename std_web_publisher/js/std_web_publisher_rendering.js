@@ -132,8 +132,10 @@ P.Publication.prototype.getReplaceableTemplate = function(code) {
 
 // For --turbo option in developer mode
 P.__removeCachedTemplates = function() {
-    _.each(P.allPublications, function(publication) {
-        delete publication._cachedReplaceableTemplates;
+    _.each(P.allPublications, function(publicationsOnHostname, hostname) {
+        _.each(publicationsOnHostname, function(publication) {
+            delete publication._cachedReplaceableTemplates;
+        });
     });
 };
 
