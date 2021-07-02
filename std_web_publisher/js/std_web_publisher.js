@@ -20,9 +20,31 @@ var MAX_SLUG_LENGTH = 200;
 
 // --------------------------------------------------------------------------
 
+var generateRobotsTxtForHost = P.generateRobotsTxtForHost = function(host) {
+    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    if(!publicationsOnHost) { return null; }
+    var lines = [];
+    var endLines = [];
+    _.each(publicationsOnHost, function(publication) {
+        var [publicationLines, publicationEndLines] = publication._collateRobotsTxtLines();
+        lines = _.union(lines, publicationLines);
+        endLines = _.union(endLines, publicationEndLines);
+    });
+    return lines.concat(endLines).join("\n");
+};
+
 // Platform support
 P.$webPublisherHandle = function(host, method, path) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    if(!publicationsOnHost) { return null; }
+    var publicationsWithHandler = _.filter(publicationsOnHost, function(publication) {
+        return publication._canHandleRequest(method, path);
+    });
+    if(!publicationsWithHandler.length) { return null; }
+    if(publicationsWithHandler.length > 1) {
+        throw new Error("Multiple publications attempting to handle the same request.");
+    }
+    var publication = publicationsWithHandler[0];
     if(!publication) { return null; }
     renderingContext = new RenderingContext(publication);
     try {
@@ -33,14 +55,16 @@ P.$webPublisherHandle = function(host, method, path) {
 };
 
 P.$generateRobotsTxt = function(host) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    return publication ? publication._generateRobotsTxt() : null;
+    return generateRobotsTxtForHost(host);
 };
 
 P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    if(!publication) { return false; }
-    return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
+    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    if(!publicationsOnHost) { return false; }
+    // If the publications were on different hosts you'd only need one to allow for the download to proceed
+    return _.any(publicationsOnHost, function(publication) {
+        return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
+    });
 };
 
 P.$renderObjectValue = function(object, desc) {
@@ -76,8 +100,10 @@ P.$renderFileIdentifierValue = function(fileIdentifier) {
 };
 
 P.$isPublicationOnRootForHostname = function(host) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    return !!(publication && (publication._homePageUrlPath === '/'));
+    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    return !!publicationsOnHost && _.any(publicationsOnHost, function(publication) {
+        return publication._homePageUrlPath === '/';
+    });
 };
 
 // --------------------------------------------------------------------------
@@ -370,6 +396,13 @@ RenderingContext.prototype.setPagePartOptions = function(pagePartName, options) 
 // In debug mode, call without exception handling so errors are reporting using the normal debug stacktraces etc
 var HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING = O.PLUGIN_DEBUGGING_ENABLED && O.application.config["std_web_publisher:show_debug_error_responses"];
 
+Publication.prototype._canHandleRequest = function(method, path) {
+    var handler = _.find(this._paths, function(h) {
+        return h.matches(path);
+    });
+    return !!handler && (method === "GET" || handler.allowPOST);
+};
+
 Publication.prototype._handleRequest = function(method, path) {
     if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
     var publication = this;
@@ -506,7 +539,7 @@ Publication.prototype.addRobotsTxtDisallow = function(path) {
     return this;
 };
 
-Publication.prototype._generateRobotsTxt = function() {
+Publication.prototype._collateRobotsTxtLines = function() {
     var lines = ["User-agent: *"];
     var endLines = [];
     if(this._homePageUrlPath === '/') {
@@ -537,5 +570,10 @@ Publication.prototype._generateRobotsTxt = function() {
         });
     }
     endLines.push("");
+    return [lines, endLines];
+};
+
+Publication.prototype._generateRobotsTxt = function() {
+    var [lines, endLines] = this._collateRobotsTxtLines();
     return lines.concat(endLines).join("\n");
 };

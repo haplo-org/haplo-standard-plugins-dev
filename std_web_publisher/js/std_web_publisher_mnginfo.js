@@ -26,8 +26,8 @@ P.$getPublicationInfoHTML = function(givenHostname) {
                 publication: publication,
                 homePageUrl: publication._homePageUrlPath ? "https://"+givenHostname+publication._homePageUrlPath : null,
                 serviceUser: O.serviceUser(publication._serviceUserCode),
-                robotsTxt: publication._generateRobotsTxt()
             };
-        })
+        }),
+        robotsTxt: P.generateRobotsTxtForHost(givenHostname)
     });
 };
