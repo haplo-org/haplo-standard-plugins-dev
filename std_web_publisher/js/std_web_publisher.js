@@ -72,7 +72,7 @@ P.$renderObjectValue = function(object, desc) {
     if(renderingContext) {
         var publication = renderingContext.publication;
         // Publication needs to determine URL
-        href = publication._urlPathForObject(object);
+        href = publication._urlPathForObject(object) || publication._crossoverUrlForObject(object);
         // Publication may want to render object values differently
         var customRenderers = publication._objectValueRenderers;
         if(customRenderers) {
@@ -177,6 +177,7 @@ var Publication = P.Publication = function(name, plugin) {
     this.implementingPlugin = plugin;
     this._homePageUrlPath = null;
     this._pagePartOptions = {};
+    this._publicationCrossoverEnabledTypes = [];
     this._paths = [];
     this._urlPolicy = O.refdictHierarchical();
     this._objectTypeHandler = O.refdictHierarchical();
@@ -235,6 +236,32 @@ Publication.prototype.urlPolicyForTypes = function(types, policy) {
         urlPolicy.set(type, policy);
     });
     return this;
+};
+
+Publication.prototype.enablePublicationCrossoverForTypes = function(types) {
+    var crossoverTypes = this._publicationCrossoverEnabledTypes;
+    types.forEach(function(type) {
+        crossoverTypes.push(type);
+    });
+    return this;
+};
+
+Publication.prototype._crossoverUrlForObject = function(object) {
+    var crossoverEnabledForType = _.any(this._publicationCrossoverEnabledTypes, function(type) {
+        return object.isKindOf(type);
+    });
+    if(crossoverEnabledForType) {
+        for(var host in publications) {
+            var publicationsOnHost = publications[host];
+            for(var i = 0; i < publicationsOnHost.length; ++i) {
+                var publication = publicationsOnHost[i];
+                var publicationPathForObject = publication._urlPathForObject(object);
+                if(publicationPathForObject) {
+                    return 'https://'+publication.urlHostname+publicationPathForObject;
+                }
+            }
+        }
+    }
 };
 
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
@@ -382,7 +409,7 @@ RenderingContext.prototype.publishedObjectUrl = function(object) {
     return this.publication.urlForObject(object);
 };
 RenderingContext.prototype.publishedObjectUrlPath = function(object) {
-    return this.publication._urlPathForObject(object);
+    return this.publication._urlPathForObject(object) || this.publication._crossoverUrlForObject(object);
 };
 
 // NOTE: Can also be set on the publication
@@ -528,7 +555,7 @@ Publication.prototype.__defineGetter__("urlHostname", function() {
 
 Publication.prototype.urlForObject = function(object) {
     var path = this._urlPathForObject(object);
-    if(!path) { return; }
+    if(!path) { return this._crossoverUrlForObject(object); }
     return 'https://'+this.urlHostname+path;
 };
 
