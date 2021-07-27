@@ -30,6 +30,7 @@ var generateRobotsTxtForHost = P.generateRobotsTxtForHost = function(host) {
         lines = _.union(lines, publicationLines);
         endLines = _.union(endLines, publicationEndLines);
     });
+    endLines.push("");
     return lines.concat(endLines).join("\n");
 };
 
@@ -596,11 +597,11 @@ Publication.prototype._collateRobotsTxtLines = function() {
             endLines.push("Disallow: "+p);
         });
     }
-    endLines.push("");
     return [lines, endLines];
 };
 
 Publication.prototype._generateRobotsTxt = function() {
     var [lines, endLines] = this._collateRobotsTxtLines();
+    endLines.push("");
     return lines.concat(endLines).join("\n");
 };
