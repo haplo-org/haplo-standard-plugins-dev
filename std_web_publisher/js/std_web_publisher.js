@@ -39,7 +39,7 @@ P.$webPublisherHandle = function(host, method, path) {
     var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publicationsOnHost) { return null; }
     var publicationsWithHandler = _.filter(publicationsOnHost, function(publication) {
-        return publication._canHandleRequest(method, path);
+        return publication._getHandlerForRequest(method, path);
     });
     if(!publicationsWithHandler.length) { return null; }
     if(publicationsWithHandler.length > 1) {
@@ -62,7 +62,7 @@ P.$generateRobotsTxt = function(host) {
 P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
     var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publicationsOnHost) { return false; }
-    // If the publications were on different hosts you'd only need one to allow for the download to proceed
+    // Treating the publications as if they are on separate hosts here to enforce permissions sensibly
     return _.any(publicationsOnHost, function(publication) {
         return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
     });
@@ -252,10 +252,20 @@ Publication.prototype._crossoverUrlForObject = function(object) {
         return object.isKindOf(type);
     });
     if(crossoverEnabledForType) {
-        for(var host in publications) {
+        var getCrossoverPublicationForHostMaybe = function(hostname) {
             var publicationsOnHost = publications[host];
-            for(var i = 0; i < publicationsOnHost.length; ++i) {
-                var publication = publicationsOnHost[i];
+            var [publication, secondPublication] = _.filter(publicationsOnHost, function(publication) {
+                return publication._urlPathForObject(object);
+            });
+            if(secondPublication) {
+                O.stop("Multiple publications attempting to handle the same request.");
+            } else if(publication) {
+                return publication;
+            }
+        };
+        for(var host in publications) {
+            var publication = getCrossoverPublicationForHostMaybe(host);
+            if(publication) {
                 var publicationPathForObject = publication._urlPathForObject(object);
                 if(publicationPathForObject) {
                     return 'https://'+publication.urlHostname+publicationPathForObject;
@@ -424,11 +434,11 @@ RenderingContext.prototype.setPagePartOptions = function(pagePartName, options) 
 // In debug mode, call without exception handling so errors are reporting using the normal debug stacktraces etc
 var HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING = O.PLUGIN_DEBUGGING_ENABLED && O.application.config["std_web_publisher:show_debug_error_responses"];
 
-Publication.prototype._canHandleRequest = function(method, path) {
+Publication.prototype._getHandlerForRequest = function(method, path) {
     var handler = _.find(this._paths, function(h) {
         return h.matches(path);
     });
-    return !!handler && (method === "GET" || handler.allowPOST);
+    return ((method === "GET") || handler.allowPOST) ? handler : null;
 };
 
 Publication.prototype._handleRequest = function(method, path) {
@@ -500,20 +510,8 @@ Publication.prototype._handleRequest = function(method, path) {
 
 Publication.prototype._handleRequest2 = function(method, path) {
     // Find handler from paths this publication responds to:
-    var handler;
-    for(var l = 0; l < this._paths.length; ++l) {
-        var h = this._paths[l];
-        if(h.matches(path)) {
-            handler = h;
-            break;
-        }
-    }
-    if(!handler) { return null; }
-    if(method !== "GET") {
-        if(!(handler.allowPOST)) {
-            return null; // TODO: Nicer error page
-        }
-    }
+    var handler = this._getHandlerForRequest(method, path);
+    if(!handler) { return null; } // TODO: Nicer error page for POST requests to a GET only handler
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
     var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
@@ -598,10 +596,4 @@ Publication.prototype._collateRobotsTxtLines = function() {
         });
     }
     return [lines, endLines];
-};
-
-Publication.prototype._generateRobotsTxt = function() {
-    var [lines, endLines] = this._collateRobotsTxtLines();
-    endLines.push("");
-    return lines.concat(endLines).join("\n");
 };

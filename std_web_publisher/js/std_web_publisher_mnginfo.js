@@ -18,7 +18,7 @@ P.$getPublicationHostnames = function() {
 P.$getPublicationInfoHTML = function(givenHostname) {
     var hostname = (givenHostname === O.application.hostname) ? P.FEATURE.DEFAULT : givenHostname;
     var publications = P.allPublications[hostname];
-    if(!publications) { return ('(UNKNOWN)'); }
+    if(!publications) { return '(UNKNOWN)'; }
     return P.template("mnginfo/publication-info").render({
         hostname: givenHostname,
         publications: _.map(publications, function(publication) {
