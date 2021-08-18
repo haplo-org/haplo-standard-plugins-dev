@@ -7,27 +7,24 @@
 
 P.$getPublicationHostnames = function() {
     var publications = [];
-    _.each(P.allPublications, function(publicationsOnHostname, hostname) {
-        publications.push(
-            (hostname === P.FEATURE.DEFAULT) ? O.application.hostname : hostname
-        );
+    _.each(P.allPublications, function(publicationsOnHost, host) {
+        for(var index = 0; index < publicationsOnHost.length; ++index) {
+            publications.push(host+","+index);
+        }
     });
     return JSON.stringify(publications);
 };
 
 P.$getPublicationInfoHTML = function(givenHostname) {
-    var hostname = (givenHostname === O.application.hostname) ? P.FEATURE.DEFAULT : givenHostname;
-    var publications = P.allPublications[hostname];
-    if(!publications) { return '(UNKNOWN)'; }
+    var [hostname, index] = givenHostname.split(",");
+    var publicationsOnHost = P.allPublications[hostname.toLowerCase()];
+    if(!publicationsOnHost || !publicationsOnHost[index]) { return '(UNKNOWN)'; }
+    var publication = publicationsOnHost[index];
     return P.template("mnginfo/publication-info").render({
-        hostname: givenHostname,
-        publications: _.map(publications, function(publication) {
-            return {
-                publication: publication,
-                homePageUrl: publication._homePageUrlPath ? "https://"+givenHostname+publication._homePageUrlPath : null,
-                serviceUser: O.serviceUser(publication._serviceUserCode),
-            };
-        }),
-        robotsTxt: P.generateRobotsTxtForHost(givenHostname)
+        hostname: hostname,
+        publication: publication,
+        homePageUrl: publication._homePageUrlPath ? "https://"+hostname+publication._homePageUrlPath : null,
+        serviceUser: O.serviceUser(publication._serviceUserCode),
+        robotsTxt: publication._generateRobotsTxt()
     });
 };

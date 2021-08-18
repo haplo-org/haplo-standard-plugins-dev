@@ -155,7 +155,7 @@ var globalPageParts = new PageParts();
 
 P.setupPageParts = function() {
     globalPageParts._setup();
-    _.each(P.allPublications, function(publicationsOnHostname, hostname) {
+    _.each(P.allPublications, function(publicationsOnHostname) {
         _.each(publicationsOnHostname, function(publication) {
             if(publication._pageParts) {
                 publication._pageParts._setup();

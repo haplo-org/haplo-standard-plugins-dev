@@ -21,7 +21,7 @@ var MAX_SLUG_LENGTH = 200;
 // --------------------------------------------------------------------------
 
 var generateRobotsTxtForHost = P.generateRobotsTxtForHost = function(host) {
-    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()];
     if(!publicationsOnHost) { return null; }
     var lines = [];
     var endLines = [];
@@ -36,7 +36,7 @@ var generateRobotsTxtForHost = P.generateRobotsTxtForHost = function(host) {
 
 // Platform support
 P.$webPublisherHandle = function(host, method, path) {
-    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()];
     if(!publicationsOnHost) { return null; }
     var publicationsWithHandler = _.filter(publicationsOnHost, function(publication) {
         return publication._getHandlerForRequest(method, path);
@@ -60,7 +60,7 @@ P.$generateRobotsTxt = function(host) {
 };
 
 P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
-    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()];
     if(!publicationsOnHost) { return false; }
     // Treating the publications as if they are on separate hosts here to enforce permissions sensibly
     return _.any(publicationsOnHost, function(publication) {
@@ -101,7 +101,7 @@ P.$renderFileIdentifierValue = function(fileIdentifier) {
 };
 
 P.$isPublicationOnRootForHostname = function(host) {
-    var publicationsOnHost = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()];
     return !!publicationsOnHost && _.any(publicationsOnHost, function(publication) {
         return publication._homePageUrlPath === '/';
     });
@@ -119,7 +119,7 @@ var publisherFeatures = {}; // name -> function(publication)
 
 var publications = P.allPublications = {};
 
-var DEFAULT = "$default$";
+var DEFAULT = O.application.hostname;
 
 P.FEATURE = {
     DEFAULT: DEFAULT,
@@ -253,7 +253,7 @@ Publication.prototype._crossoverUrlForObject = function(object) {
     });
     if(crossoverEnabledForType) {
         var getCrossoverPublicationForHostMaybe = function(hostname) {
-            var publicationsOnHost = publications[host];
+            var publicationsOnHost = publications[hostname.toLowerCase()];
             var [publication, secondPublication] = _.filter(publicationsOnHost, function(publication) {
                 return publication._urlPathForObject(object);
             });
@@ -438,7 +438,7 @@ Publication.prototype._getHandlerForRequest = function(method, path) {
     var handler = _.find(this._paths, function(h) {
         return h.matches(path);
     });
-    return ((method === "GET") || handler.allowPOST) ? handler : null;
+    return ((method === "GET") || (handler && handler.allowPOST)) ? handler : null;
 };
 
 Publication.prototype._handleRequest = function(method, path) {
@@ -596,4 +596,10 @@ Publication.prototype._collateRobotsTxtLines = function() {
         });
     }
     return [lines, endLines];
+};
+
+Publication.prototype._generateRobotsTxt = function() {
+    var [lines, endLines] = this._collateRobotsTxtLines();
+    endLines.push("");
+    return lines.concat(endLines).join("\n");
 };
