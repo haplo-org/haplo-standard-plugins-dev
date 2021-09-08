@@ -5,7 +5,11 @@
         if(wasTakeOver) {
             i("This task was taken over")
         } else {
-            i("This task was delegated to {}") { <b> M.workUnit.actionableBy.name </b> }
+            if(delegatedMessage) {
+                delegatedMessage
+            } else {
+                i("This task was delegated to {}") { <b> M.workUnit.actionableBy.name </b> }
+            }
         }
         " " i("shared-role:action-performed-by") " " row.setByUser.name "."
     </p>

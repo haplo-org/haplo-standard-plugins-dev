@@ -122,9 +122,16 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
         if(row) {
             var delegatingUser = row.setByUser;
             if(delegatingUser) {
+                var delegatedMessage = M._getTextMaybe(["shared-role-delegated"], [M.state]);
+                if(delegatedMessage) {
+                    delegatedMessage = O.interpolateString(delegatedMessage, {
+                        personName: M.workUnit.actionableBy.name
+                    });
+                }
                 notify.addHeaderDeferred(P.template("entity-shared-role/notify-header").deferredRender({
                     M:M, row:row,
-                    wasTakeOver: (delegatingUser.ref == row.ref)
+                    wasTakeOver: (delegatingUser.ref == row.ref),
+                    delegatedMessage: delegatedMessage
                 }));
             }
         }
