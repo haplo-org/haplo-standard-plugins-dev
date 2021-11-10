@@ -515,6 +515,7 @@ Publication.prototype._handleRequest = function(method, path) {
     });
 };
 
+var PREVENT_DEVELOPMENT_INDEXING = O.PLUGIN_DEBUGGING_ENABLED && !O.application.config["std_web_publisher:allow_development_indexing"];
 Publication.prototype._handleRequest2 = function(method, path) {
     // Find handler from paths this publication responds to:
     var handler = this._getHandlerForRequest(method, path);
@@ -522,6 +523,10 @@ Publication.prototype._handleRequest2 = function(method, path) {
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
     var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
+    // Prevent development instances from being indexed by default
+    if(PREVENT_DEVELOPMENT_INDEXING) {
+        E.response.headers["X-Robots-Tag"] = "noindex, nofollow";
+    }
     renderingContext.$E = E;
     handler.fn(E, renderingContext);
     if(E.response.body === undefined) {
