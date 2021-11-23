@@ -819,12 +819,12 @@ var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
 P.hook('hScheduleHourly', function(response, year, month, dayOfMonth, hour, dayOfWeek) {
     // In production applications, rebuild every collection each night so that incorrect
     // invalidation doesn't cause reporting to be out of date for more than a day.
-    //Timzone handling is added here, to match how timezone scheduling is handled elsewhere in the codebase
+    // Timezone handling is added here, to match how timezone scheduling is handled elsewhere in the codebase
     let localTimeZone = O.group(GROUP["std:group:everyone"]).getTimeZone();
     let dateTime = new XDate(year, month, dayOfMonth, hour);
     let offset = localTimeZone.getOffset();
-    let datetimeInTimezone = dateTime.addMilliseconds(offset);
-    if(datetimeInTimezone.getHours() === 0 && !O.PLUGIN_DEBUGGING_ENABLED) {
+    let localDatetime = dateTime.addMilliseconds(offset);
+    if((localDatetime.getHours() === 0)&& !O.PLUGIN_DEBUGGING_ENABLED) {
         rebuildAllToCheckFactsHaveBeenKeptUpToDate();
     }
 });
