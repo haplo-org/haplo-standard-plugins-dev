@@ -588,6 +588,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         var checkPermissions = function(M, action) {
             if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
                 action = "viewComments";
+            } else if((action === "viewCommenterName") && !spec.viewCommenterName) {
+                action = "viewComments";
             } else if(action === "viewPrivateComments") {
                 if(spec.viewPrivateComments) {
                     return spec.viewPrivateComments(M, O.currentUser);

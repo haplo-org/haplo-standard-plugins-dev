@@ -92,7 +92,9 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 users[uid] = O.user(uid).name;
             }
         });
-        response.users = users;
+        if(checkPermissions(key, "viewCommenterName")) {
+            response.users = users;
+        }
         response.forms = forms;
     }
 
