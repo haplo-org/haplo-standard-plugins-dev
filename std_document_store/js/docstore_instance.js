@@ -213,7 +213,7 @@ DocumentInstance.prototype._editForms = function(document) {
 };
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix, requiresUNames) {
+DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix, requiresUNames, version) {
     var html = [];
     var delegate = this.store.delegate;
     var dsInstance = this;
@@ -223,7 +223,9 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
-        instance.externalData(dsInstance._formExternalData());
+        instance.externalData(_.extend(dsInstance._formExternalData(), {
+            "std_document_store:version": version
+        }));
         if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -239,7 +241,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     return deferred ? t.deferredRender(view) : t.render(view);
 };
 
-DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId) {
+DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId, version) {
     var delegate = this.store.delegate;
     var key = this.key;
     var forms = this.forms, form;
@@ -250,7 +252,9 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     }
     if(!form) { form = forms[0]; }
     var instance = form.instance(document);
-    instance.externalData(this._formExternalData());
+    instance.externalData(_.extend(this._formExternalData(), {
+        "std_document_store:version": version
+    }));
     if(delegate.prepareFormInstance) {
         delegate.prepareFormInstance(key, form, instance, "document");
     }
@@ -305,7 +309,9 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
-            formInstance.externalData(instance._formExternalData());
+            formInstance.externalData(_.extend(instance._formExternalData(), {
+                "std_document_store:version": version
+            }));
             if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
             if(delegate.prepareFormInstance) {
                 delegate.prepareFormInstance(instance.key, form, formInstance, "form");

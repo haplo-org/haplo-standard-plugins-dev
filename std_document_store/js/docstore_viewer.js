@@ -174,15 +174,15 @@ DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() {
-    return this.instance._renderDocument(this.document, true, undefined, this.requiresComments /* so needs unames */);
+    return this.instance._renderDocument(this.document, true, undefined, this.requiresComments /* so needs unames */, this.version);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {
-    return this.instance._selectedFormInfo(this.document, this.selectedFormId);
+    return this.instance._selectedFormInfo(this.document, this.selectedFormId, this.version);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerShowChangesFromDocumentDeferred", function() {
-    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_', this.requiresComments /* so needs unames */);
+    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_', this.requiresComments /* so needs unames */, this.version);
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
