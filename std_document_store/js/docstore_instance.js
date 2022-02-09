@@ -91,11 +91,12 @@ DocumentInstance.prototype._notifyDelegate = function(fn) {
     }
 };
 
-DocumentInstance.prototype._formExternalData = function() {
+DocumentInstance.prototype._formExternalData = function(version) {
     return {
         "std_document_store:store": this.store,
         "std_document_store:instance": this,
-        "std_document_store:key": this.key
+        "std_document_store:key": this.key,
+        "std_document_store:version": version
     };
 };
 
@@ -223,9 +224,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
-        instance.externalData(_.extend(dsInstance._formExternalData(), {
-            "std_document_store:version": version
-        }));
+        instance.externalData(dsInstance._formExternalData(version));
         if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -252,9 +251,7 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     }
     if(!form) { form = forms[0]; }
     var instance = form.instance(document);
-    instance.externalData(_.extend(this._formExternalData(), {
-        "std_document_store:version": version
-    }));
+    instance.externalData(this._formExternalData(version));
     if(delegate.prepareFormInstance) {
         delegate.prepareFormInstance(key, form, instance, "document");
     }
@@ -309,9 +306,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
-            formInstance.externalData(_.extend(instance._formExternalData(), {
-                "std_document_store:version": version
-            }));
+            formInstance.externalData(instance._formExternalData(version));
             if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
             if(delegate.prepareFormInstance) {
                 delegate.prepareFormInstance(instance.key, form, formInstance, "form");
