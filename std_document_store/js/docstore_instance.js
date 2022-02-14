@@ -63,7 +63,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         var forms = this._editForms(document);
         _.each(forms, function(form) {
             var formInstance = form.instance(document);
-            formInstance.externalData(instance._formExternalData());
+            formInstance.externalData(instance._formExternalData(record.version));
             if(!formInstance.documentWouldValidate()) {
                 isComplete = false;
             }
