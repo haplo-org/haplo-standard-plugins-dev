@@ -49,7 +49,11 @@ const DEFAULT_COMMENT_IS_PRIVATE = !O.application.config["std_document_store:com
 //    addComment: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can comment on the forms
 //    viewComments: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the comments
 //    viewCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the 
-//              comments of other users. Defaults to same value as viewComments.
+//              comments of other users. Defaults to same value as viewComments. Has an additional property
+//               @commenter@ avaliable to specify comment author role for more specific permissions - uses array value.
+//    editCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can edit the 
+//              comments of other users. Has an additional property @commenter@ avaliable to specify comment
+//                author role for more specific permissions - uses array value.
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
 
 // ----------------------------------------------------------------------------

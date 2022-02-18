@@ -102,8 +102,10 @@
                     _.each(data.forms, function(elements, formId) {
                         _.each(elements, function(comments, uname) {
                             _.each(comments, function(comment) {
-                                displayComment(formId, uname, comment);
-                                hasCommentsToDisplay = true;
+                                if(comment.currentUserCanView) {
+                                    displayComment(formId, uname, comment);
+                                    hasCommentsToDisplay = true;
+                                }
                             });
                         });
                     });
