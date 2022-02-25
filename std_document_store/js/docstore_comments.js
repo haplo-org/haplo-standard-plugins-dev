@@ -68,13 +68,6 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         var allComments = docstore.commentsTable.select().
             where("keyId","=",instance.keyId).
             order("datetime", true);    // latest comments first
-        if(!checkPermissions(key, 'viewCommentsOtherUsers')) {
-            allComments.where("userId","=",O.currentUser.id);
-        } else if(!checkPermissions(key, 'viewPrivateComments')) {
-            allComments.or(function(select) {
-                select.where("isPrivate","=",false).where("isPrivate","=",null);
-            });
-        }
         var onlyCommentsForForm = E.request.parameters.onlyform;
         if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
         _.each(allComments, function(row) {
@@ -125,8 +118,14 @@ var isPrivate = function(parameters) {
         default: return null; // may be null if private comments aren't enabled
     }
 };
-
-var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow) {
+ 
+var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow, checkPermissions) {
+    var checkPrivacyPermissionsForRow = function(M, row) {
+        if(!checkPermissions(M, 'viewPrivateComments') && row.isPrivate) {
+            return false;
+        }
+        return true;
+    };
     var hasValidSelectorOrRole = function(obj, commentRow) {
         if(obj.action && !_.contains(["allow", "deny"], obj.action)) {
             throw new Error("The specified action property is not valid. To deny a role viewing permissions use action: 'deny', to allow viewing permissions you can omit the action property, or, to be explicit, use action: 'allow'.");
@@ -140,7 +139,8 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow)
         return isSelected && currentUserMatchesRoleMaybe && commentAuthorMatchesSpecifiedAuthorMaybe;
     };
     //Omitting these objects or specifying an empty list [] means that everyone has permission.
-    if(!permissionsSpec.length) { return true; }
+    //if no viewCommentsOtherUsers check privacy since the select filtering seems to break things
+    if(!permissionsSpec.length) { return checkPrivacyPermissionsForRow(M, commentRow); }
     var denySpecs = _.filter(permissionsSpec, (v) => v.action === "deny");
     if(denySpecs.length) {
         if(_.any(denySpecs,(d) => hasValidSelectorOrRole(d, commentRow))) {
@@ -152,7 +152,7 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow)
                 value();
         }
     }
-    return permissionsSpec.length ? _.any(permissionsSpec, (v) => hasValidSelectorOrRole(v, commentRow)) : true;
+    return permissionsSpec.length ? _.any(permissionsSpec, (v) => hasValidSelectorOrRole(v, commentRow) && checkPrivacyPermissionsForRow(M, commentRow)) : true;
 };
 
 var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime, editCommentsOtherUsers) {
@@ -161,7 +161,7 @@ var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTr
             return true;
         }
     } else if(editCommentsOtherUsers) {
-        return checkAdditionalCommentPermissions(M, editCommentsOtherUsers, commentRow);
+        return checkAdditionalCommentPermissions(M, editCommentsOtherUsers, commentRow, checkPermissions);
     }
 };
 
@@ -170,7 +170,7 @@ var currentUserCanViewComment = function(commentRow, M, checkPermissions, lastTr
         if(lastTransitionTime < commentRow.datetime) {
             return true;
         }
-    } else if(viewCommentsOtherUsers) {
-        return checkAdditionalCommentPermissions(M, viewCommentsOtherUsers, commentRow);
+    } else {
+        return checkAdditionalCommentPermissions(M, viewCommentsOtherUsers, commentRow, checkPermissions);
     }
 };
