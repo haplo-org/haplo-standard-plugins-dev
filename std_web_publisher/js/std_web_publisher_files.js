@@ -160,7 +160,11 @@ var makeThumbnailViewForFile = P.makeThumbnailViewForFile = function(publication
     };
     var desiredSize = publication._fileThumbnailSize;
     var thumbnail = file.properties.thumbnail;
-    if(thumbnail) {
+    view.isAudio = /audio\//i.test(file.mimeType);
+    view.isVideo = /video\//i.test(file.mimeType);
+
+    // The thumbnail for video/audio isn't usable as the platform renders them specially, so render defaults here
+    if(thumbnail && !(view.isAudio || view.isVideo)) {
         view.hasThumbnail = true;
         w = thumbnail.width;
         h = thumbnail.height;
