@@ -1,8 +1,8 @@
 <img
   src=if(transformWidth) {
-      url("/download/" file.digest "/" file.fileSize "/w" transformWidth "/h" transformHeight "/" file.filename)
+      url("/download/" file.digest "/" file.fileSize "/webdisplay/w" transformWidth "/h" transformHeight "/" file.filename)
     } else {
-      url("/download/" file.digest "/" file.fileSize "/" transform file.filename)
+      url("/download/" file.digest "/" file.fileSize "/webdisplay/" transform file.filename)
     }
   width=width
   height=height
