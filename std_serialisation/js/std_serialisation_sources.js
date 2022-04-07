@@ -51,7 +51,7 @@ P.implementService("std:serialiser:discover-sources", function(source) {
         sort: 3000,
         setup(serialiser) {},
         apply(serialiser, object, serialised) {
-            let user = O.user(object.ref.load().ref);
+            let user = O.user(object.ref);
             if(user) {
                 serialised.account = {
                     id: user.id,
