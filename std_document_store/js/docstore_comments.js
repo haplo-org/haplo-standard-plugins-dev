@@ -41,19 +41,25 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             response.result = "error";
             response.method = "Bad parameters";
         } else {
-            var row = docstore.commentsTable.create({
+            var rowProperties = {
                 keyId: instance.keyId,
                 version: version,
-                userId: O.currentUser.id,
+                userId: oldCommentRow ? oldCommentRow.userId : O.currentUser.id,
                 datetime: new Date(),
                 formId: formId,
                 elementUName: elementUName,
                 comment: comment || "",
                 isPrivate: isPrivate(E.request.parameters)
-            });
+            };
+            // i.e. has been edited by another user
+            if(rowProperties.userId !== O.currentUser.id) {
+                rowProperties.lastEditedBy = O.currentUser.id;
+                rowProperties.lastEditedByName = O.currentUser.name;
+            }
+            var row = docstore.commentsTable.create(rowProperties);
             row.save();
             response.comment = rowForClient(row, key, checkPermissions, lastTransitionTime, docstore.delegate);
-            response.commentUserName = O.currentUser.name;
+            response.commentUserName = O.securityPrincipal(row.userId).name;
             if(supersedesId) {
                 if(userCanEditComment) {
                     oldCommentRow.supersededBy = row.id;
@@ -84,9 +90,28 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 users[uid] = O.user(uid).name;
             }
         });
-        if(checkPermissions(key, "viewCommenterName")) {
-            response.users = users;
+        //attempt to omit users (for name display) if deny is specified and spec is matched (no real use at the moment for this to be additive), otherwise allow all names to be viewed
+        if(!checkPermissions(key, "viewCommenterName")) {
+            _.each(docstore.delegate.viewCommenterName, obj => {
+                if(obj.action === "deny") {
+                    var currentUserMatchesRoleMaybe = (!obj.roles || !obj.roles.length) ? true : key.hasAnyRole(O.currentUser, obj.roles);
+                    var isSelectedMaybe = obj.selector ? key.selected(obj.selector) : true;
+                    var commenterRoleSpecified = obj.commenter && obj.commenter.length;
+                    if(currentUserMatchesRoleMaybe && isSelectedMaybe) {
+                        if(!commenterRoleSpecified) {
+                            users = {};
+                        } else {
+                            _.every(_.clone(users), (v, k) => {
+                                if(key.hasAnyRole(O.securityPrincipal(parseInt(k)), obj.commenter)) {
+                                    delete users[k];
+                                }
+                            });
+                        }
+                    }
+                }
+            });
         }
+        response.users = users;
         response.forms = forms;
     }
 
@@ -106,7 +131,8 @@ var rowForClient = function(row, key, checkPermissions, lastTransitionTime, dele
             comment: row.comment,
             isPrivate: row.isPrivate,
             currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime, delegate.editCommentsOtherUsers),
-            currentUserCanView: currentUserCanViewComment(row, key, checkPermissions, lastTransitionTime, delegate.viewCommentsOtherUsers)
+            currentUserCanView: currentUserCanViewComment(row, key, checkPermissions, lastTransitionTime, delegate.viewCommentsOtherUsers),
+            lastEditedBy: row.lastEditedByName
         };
     }
 };
@@ -126,40 +152,50 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
         }
         return true;
     };
+    var checkFlags = function(obj, commentRow) {
+        if(obj.commentFlags && obj.commentFlags.length) {
+            return !!_.intersection(obj.commentFlags, commentRow.commentFlags || []).length;
+        }
+        return true;
+    };
     var hasValidSelectorOrRole = function(obj, commentRow) {
         if(obj.action && !_.contains(["allow", "deny"], obj.action)) {
             throw new Error("The specified action property is not valid. To deny a role viewing permissions use action: 'deny', to allow viewing permissions you can omit the action property, or, to be explicit, use action: 'allow'.");
         }
-        //An empty selector {} will select on all states
-        var isSelected = obj.selector ? M.selected(obj.selector) : true;
+
         //An empty roles property will allow everyone to read the document
         var currentUserMatchesRoleMaybe = (!obj.roles || !obj.roles.length) ? true : M.hasAnyRole(O.currentUser, obj.roles);
         //An empty commenter property will mean all comments are treated the same no matter who authored them
         var commentAuthorMatchesSpecifiedAuthorMaybe = (!obj.commenter || !obj.commenter.length) ? true : M.hasAnyRole(O.securityPrincipal(commentRow.userId), obj.commenter);
-        return isSelected && currentUserMatchesRoleMaybe && commentAuthorMatchesSpecifiedAuthorMaybe;
+        //An empty selector {} will select on all states
+        var isSelectedMaybe = obj.selector ? M.selected(obj.selector) : true;
+
+        return isSelectedMaybe && currentUserMatchesRoleMaybe && commentAuthorMatchesSpecifiedAuthorMaybe;
     };
     //Omitting these objects or specifying an empty list [] means that everyone has permission.
     //if no viewCommentsOtherUsers check privacy since the select filtering seems to break things
     if(!permissionsSpec.length) { return checkPrivacyPermissionsForRow(M, commentRow); }
-    var denySpecs = _.filter(permissionsSpec, (v) => v.action === "deny");
-    if(denySpecs.length) {
-        if(_.any(denySpecs,(d) => hasValidSelectorOrRole(d, commentRow))) {
-            return false;
-        } else {
-            permissionsSpec = _.chain(permissionsSpec).
-                clone(this).
-                difference(this, denySpecs).
-                value();
-        }
-    }
-    return permissionsSpec.length ? _.any(permissionsSpec, (v) => hasValidSelectorOrRole(v, commentRow) && checkPrivacyPermissionsForRow(M, commentRow)) : true;
+    //TODO: clean up the logic for this
+    // deny if explicit action stated, otherwise treat matching specs that contain commentFlag rules but no matching commentFlag on the comment as deny permissions but only if all other parts of spec also match
+    var shouldDeny = _.chain(permissionsSpec).
+        clone().
+        filter(v => ((v.action === "deny") || (!!v.commentFlags ? hasValidSelectorOrRole(v, commentRow) && !checkFlags(v, commentRow) : false))).
+        value();
+    var shouldAllow = _.chain(permissionsSpec).
+        clone().
+        difference(shouldDeny).
+        any(v => hasValidSelectorOrRole(v, commentRow) && (!!v.commentFlags ? checkFlags(v, commentRow) : true) && checkPrivacyPermissionsForRow(M, commentRow)).
+        value();
+    shouldDeny = _.any(shouldDeny, d => hasValidSelectorOrRole(d, commentRow));
+    return shouldAllow && !shouldDeny;
 };
 
 var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime, editCommentsOtherUsers) {
     if(checkPermissions(M, 'editComments') && O.currentUser.id === commentRow.userId) {
-        if(lastTransitionTime < commentRow.datetime) {
+        // as below, will removing this cause issues?
+        // if(lastTransitionTime < commentRow.datetime) {
             return true;
-        }
+        // }
     } else if(editCommentsOtherUsers) {
         return checkAdditionalCommentPermissions(M, editCommentsOtherUsers, commentRow, checkPermissions);
     }
@@ -167,9 +203,10 @@ var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTr
 
 var currentUserCanViewComment = function(commentRow, M, checkPermissions, lastTransitionTime, viewCommentsOtherUsers) {
     if(O.currentUser.id === commentRow.userId) {
-        if(lastTransitionTime < commentRow.datetime) {
+        //will removing this break anything IRL? It seems to hinder viewing your own comments if there has been no change in state
+        // if(lastTransitionTime < commentRow.datetime) {
             return true;
-        }
+        // }
     } else {
         return checkAdditionalCommentPermissions(M, viewCommentsOtherUsers, commentRow, checkPermissions);
     }

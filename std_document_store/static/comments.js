@@ -66,11 +66,14 @@
                 messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
             }
-            if(canEdit) {
-                var footer = $('<div class="z__docstore_comment_footer"></div>');
-                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
-                div.append(footer);
+            var footer = $('<div class="z__docstore_comment_footer"></div>');
+            if(comment.lastEditedBy) {
+                footer.append('<div class="z__docstore_last_edited_by"><i>Last edited by '+comment.lastEditedBy+'</i></div>');
             }
+            if(canEdit) {
+                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
+            }
+            div.append(footer);
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
                 if(existingComments.length) {
