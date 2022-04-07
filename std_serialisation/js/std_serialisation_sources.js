@@ -44,3 +44,22 @@ P.implementService("std:serialiser:discover-sources", function(source) {
         }
     });
 });
+
+P.implementService("std:serialiser:discover-sources", function(source) {
+    source({
+        name: "std:account",
+        sort: 3000,
+        setup(serialiser) {},
+        apply(serialiser, object, serialised) {
+            let user = O.user(object.ref.load().ref);
+            if(user) {
+                serialised.account = {
+                    id: user.id,
+                    email: user.email,
+                    nameFirst: user.nameFirst,
+                    nameLast: user.nameLast
+                };
+            }
+        }
+    });
+});
