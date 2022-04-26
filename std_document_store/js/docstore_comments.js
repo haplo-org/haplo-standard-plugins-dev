@@ -54,7 +54,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             // i.e. has been edited by another user
             if(rowProperties.userId !== O.currentUser.id) {
                 rowProperties.lastEditedBy = O.currentUser.id;
-                rowProperties.lastEditedByName = O.currentUser.name;
+            } else if(oldCommentRow && oldCommentRow.lastEditedBy) {
+                rowProperties.lastEditedBy = oldCommentRow.lastEditedBy;
             }
             var row = docstore.commentsTable.create(rowProperties);
             row.save();
@@ -103,10 +104,14 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                         } else {
                             var commenterRoles = {};
                             var setRoleNames = function(userId, newDisplayName) {
-                                commenterRoles[userId] = commenterRoles[userId] ? commenterRoles[userId].push(newDisplayName) : [newDisplayName];
+                                if(commenterRoles[userId]) {
+                                    commenterRoles[userId].push(newDisplayName);
+                                } else {
+                                    commenterRoles[userId] = [newDisplayName];
+                                }
                                 return commenterRoles;
                             };
-                            _.every(_.clone(users), (v, k) => {
+                            _.each(_.keys(users), k => {
                                 _.each(obj.commenter, commenterRole => {
                                     if(key.hasRole(O.securityPrincipal(parseInt(k)), commenterRole)) {
                                         if(obj.replacementRoleNames && obj.replacementRoleNames[commenterRole]) {
@@ -150,7 +155,7 @@ var rowForClient = function(row, key, checkPermissions, lastTransitionTime, dele
             isPrivate: row.isPrivate,
             currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime, delegate.editCommentsOtherUsers),
             currentUserCanView: currentUserCanViewComment(row, key, checkPermissions, lastTransitionTime, delegate.viewCommentsOtherUsers),
-            lastEditedBy: row.lastEditedByName
+            lastEditedBy: row.lastEditedBy ? O.user(row.lastEditedBy).name : undefined
         };
     }
 };
