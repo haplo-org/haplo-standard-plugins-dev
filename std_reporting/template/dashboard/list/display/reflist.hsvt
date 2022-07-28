@@ -1,0 +1,4 @@
+
+std:text:list:readable(links "en:default") {
+  if(href) { <a href=href> title </a> } else { title }
+}
