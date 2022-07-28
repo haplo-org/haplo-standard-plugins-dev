@@ -29,6 +29,18 @@
                 }
             });
 
+            $('.z__std_reporting_list_object_filter_multiple_container').each(function() {
+                var fact = this.getAttribute('data-fact');
+                var multipleSelectValues = $(this).children('.z__std_reporting_list_object_filter_multiple_select').first().val();
+                if(multipleSelectValues) {
+                    var comparison = $(this).find('input[name=filterOperator-'+fact+']:checked').first().val();
+                    var valueSelectors = _.map(multipleSelectValues, function(valueToSelect) {
+                        return '[data-'+fact+'*='+valueToSelect+']';
+                    });
+                    selector += valueSelectors.join((comparison === "INCLUDES") ? "," : "");
+                }
+            });
+
             if(lastSelector === selector) { return; }
             if(selector) {
                 $('#z__std_reporting_list_filterable_table tbody tr').hide();
@@ -46,12 +58,12 @@
             _.debounce(updateForFilters, 150));
 
         // Update when user selects from an object list
-        $('.z__std_reporting_list_object_filter').on('change', function() {
+        $('.z__std_reporting_list_object_filter,.z__std_reporting_list_object_filter_multiple_select,.z__std_reporting_list_object_filter_multiple_operator input[type="radio"]').on('change', function() {
             var changedDropDown = this;
             // Find dropdowns to the right of this one
             var dropDownsOnRight = [];
             var seenThisDropDown = false;
-            $('.z__std_reporting_list_object_filter').each(function() {
+            $('.z__std_reporting_list_object_filter,.z__std_reporting_list_object_filter_multiple_select').each(function() {
                 if(seenThisDropDown) {
                     dropDownsOnRight.push(this);
                 } else if(changedDropDown === this) {
@@ -75,9 +87,22 @@
                     this.disabled = used[this.value] ? '' : 'disabled';
                 });
             });
-
         });
 
+        // Handle special case of select parameters overwriting each other during serialisation
+        // Adds hidden text element to the form a final parameter with all the values serialised ready for manipulation server-side
+        $('.z__std_reporting_export_form').parent('form').on('submit', function(e) {
+            var formSelector = $(this);
+            formSelector.find('.z__std_reporting_export_serialised_multiple_select').remove();
+            formSelector.find('.z__std_reporting_list_object_filter_multiple_select').each(function() {
+                var values = $(this).val();
+                if(values && values.length > 1) {
+                    $('<input type="text" name="'+this.getAttribute("name")+'-serialised" value="'+values.join(",")+'">').
+                        addClass("z__std_reporting_export_serialised_multiple_select").
+                        hide().
+                        appendTo(formSelector);
+                }
+            });
+        });
     });
-
 })(jQuery);
