@@ -25,7 +25,16 @@
             // Filter on dropdowns
             $('.z__std_reporting_list_object_filter').each(function() {
                 if(this.value) {
-                    selector += '[data-'+this.getAttribute('data-fact')+'='+this.value+']';
+                    var comparison;
+                    switch(this.getAttribute("data-fact-type")) {
+                        case "ref":
+                            comparison = '='; // Exact Match
+                            break;
+                        case "reflist":
+                            comparison = '*='; // Match anywhere in list
+                            break;
+                    }
+                    selector += '[data-'+this.getAttribute('data-fact')+comparison+this.value+']';
                 }
             });
 
