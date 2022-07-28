@@ -1,0 +1,45 @@
+
+.z__std_reporting_list_multiple_object_filter_container {
+    display: inline-block;
+    margin-right: 5px;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+.z__std_reporting_list_multiple_object_filter_select {
+    display: none;
+}
+
+.z__std_reporting_multiselect_source {
+    vertical-align: top;
+    margin-right: 2px;
+}
+
+.z__std_reporting_list_multiple_object_filter_operator {
+    display: table;
+    width: 100%;
+}
+
+.z__std_reporting_list_multiple_object_filter_operator label {
+    display: table-cell;
+}
+
+.z__std_reporting_multiselect_display {
+    max-height: 90px;
+    overflow: auto;
+}
+
+.z__std_reporting_multiselect_display_item {
+    padding: 2px;
+    border: 1px solid #ccc;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 20px;
+}
+
+/* More a button than a link so no need to display specially */
+a.z__std_reporting_multiselect_remove_item,
+a.z__std_reporting_multiselect_remove_item:visited {
+    color: #757575;
+    margin-right: 5px;
+}

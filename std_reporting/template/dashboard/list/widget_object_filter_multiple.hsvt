@@ -1,17 +1,19 @@
-std:plugin:resources("list-filter.js" "filters.css")
+std:plugin:resources("list-filter.js" "filters.css" "multiselect.js")
 
-<div class="z__std_reporting_list_object_filter_multiple_container" data-fact=fact >
-  <select class="z__std_reporting_list_object_filter_multiple_select" name=upperCaseFact multiple="true">
+<div class="z__std_reporting_list_multiple_object_filter_container" data-fact=fact>
+  <div class="z__std_reporting_list_multiple_object_filter_operator" data-fact=fact>
+    each(comparisonOptions) {
+        <label> <input type="radio" name=concat("filterOperator-"^{fact}) value=value checked=if(selected) { "true" }> label </label>
+    }
+  </div>
+  <select class="z__std_reporting_multiselect_target z__std_reporting_list_multiple_object_filter_select" name=upperCaseFact multiple="multiple">
+  </select>
+  <select class="z__std_reporting_multiselect_source">
     <option value=""> placeholder </option>
     each(objects) {
       <option value=ref> title </option>
     }
   </select>
-  <div class="z__std_reporting_list_object_filter_multiple_operator" data-fact=fact>
-    each(comparisonOptions) {
-      <div>
-        <label> <input type="radio" name=concat("filterOperator-"^{fact}) value=value checked=if(selected) { "true" }> label </label>
-      </div>
-    }
+  <div class="z__std_reporting_multiselect_display">
   </div>
 </div>
