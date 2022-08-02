@@ -199,7 +199,11 @@ P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
         dashboard.$rowAttributeFns.push(function(row, attrs) {
             attrs['data-text-filter'] = facts.map(function(fact) {
                 var value = row[fact], factType = dashboard.collection.$factType[fact];
-                if(factType === "ref") { return (value === null) ? '' : value.load().title; }
+                if(factType === "ref") {
+                    return (value === null) ? '' : value.load().title;
+                } else if(factType === "refList") {
+                    return (value === null) ? '' : value.map(function(ref) { return ref.load().title; }).join(' ');
+                }
                 return (value === null) ? '' : value.toString();
             }).join(' ').toLowerCase();
         });
