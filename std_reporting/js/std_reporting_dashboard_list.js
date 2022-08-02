@@ -450,6 +450,60 @@ RefColumn.prototype.renderCellInner = function(row) {
 
 // --------------------------------------------------------------------------
 
+var RefListColumn = makeColumnType({
+    type: "refList",
+    construct: function(collection, colspec) {
+        this.link = colspec.link;
+        this.delimiter = colspec.delimiter;
+        this.escapedTitles = O.refdict(
+            refColumnEscapedTitleFn(colspec.shortestTitle ? "shortestTitle" : "title")
+        );
+    }
+});
+
+RefListColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    if(value && value.length) {
+        var column = this;
+        var links = _.map(value, function(ref) {
+            var linkPath = column.link ? ref.load().url() : false;
+            var title = column.escapedTitles.get(ref);
+            if(column.delimiter) {
+                return linkPath ? '<a href="'+_.escape(linkPath)+'">'+title+'</a>' : title;
+            } else {
+                return {
+                    href: linkPath,
+                    title: title
+                };
+            }
+        });
+        if(this.delimiter) {
+            return links.join(this.delimiter);
+        } else {
+            return P.template("dashboard/list/display/reflist").render({ links: links });
+        }
+    } else {
+        return '';
+    }
+};
+
+RefListColumn.prototype.exportCell = function(row, xls) {
+    var value = row[this.fact];
+    if(value && value.length) {
+        var column = this;
+        var titles = _.map(value, function(ref) { return column.escapedTitles.get(ref); });
+        if(this.delimiter) {
+            xls.cell(titles.join(this.delimiter));
+        } else {
+            xls.cell(P.template("dashboard/list/export/reflist").render({ titles: titles }));
+        }
+    } else {
+        xls.cell();
+    }
+};
+
+// --------------------------------------------------------------------------
+
 var refPersonNameColumnFieldsFn = function(r) {
     var object = r.load();
     if(!object) { return null; }
