@@ -2,9 +2,9 @@
     $(document).ready(function() {
         var createDisplayForValue = function(value, title) {
             var html = [
-                '<div class="z__std_reporting_multiselect_display_item" id="'+value+'">',
-                    '<a href="#" class="z__std_reporting_multiselect_remove_item" role="button">X</a>&nbsp;',
+                '<div class="z__std_reporting_multiselect_display_item" id="'+value+'" data-title="'+title+'">',
                     title,
+                    '&nbsp;<a href="#" class="z__std_reporting_multiselect_remove_item" role="button">X</a>',
                 '</div>'
             ].join('');
             return $(html);
@@ -27,12 +27,15 @@
                         siblings(".z__std_reporting_multiselect_target").
                         first();
                     var source = target.
-                        siblings('.z__std_reporting_multiselect_source').
+                        siblings('.z__std_reporting_multiselect_list').
                         first();
 
                     target.
                         children('option[value='+value+']').
                         prop("selected", false).
+                        attr('data-value', value).
+                        val($(parent).attr('data-title')).
+                        text('').
                         appendTo($(source));
 
                     $(source).
@@ -50,23 +53,28 @@
                 });
         };
 
-        $('.z__std_reporting_multiselect_source').each(function() {
+        $('.z__std_reporting_multiselect_list').each(function() {
             $(this).children('option').each(function(index) {
                 $(this).attr('data-sort-index', index.toString());
             });
         });
 
-        $(".z__std_reporting_multiselect_source").on('change', function(e) {
+        $(".z__std_reporting_multiselect_source").on('input', function(e) {
             e.preventDefault();
-            if($(this).val()) {
+            var list = $(this).siblings(".z__std_reporting_multiselect_list").first();
+            var matchingItem = list.find('option[value="'+$(this).val()+'"]').first();
+            if(matchingItem && matchingItem.length) {
                 var target = $(this).siblings(".z__std_reporting_multiselect_target").first();
-
+                var title= $(matchingItem).val();
+                var value = matchingItem.data('value');
                 // Create display value
-                var displayValue = createDisplayForValue($(this).val(), getSelectedOption(this).text());
+                var displayValue = createDisplayForValue(value, title);
                 appendRemoveHandler(displayValue);
 
                 // Move actual value
-                getSelectedOption(this).
+                $(matchingItem).
+                    text(title).
+                    val(value).
                     prop("selected", true).
                     appendTo(target);
                 target.change();

@@ -15,17 +15,24 @@
         var lastSelector = '';
         var updateForFilters = function() {
             var selector = '';
+            var $selector = $('#z__std_reporting_list_filterable_table tbody tr');
 
             // Filter on text searches
             var textFilter = normaliseName($('#z__std_reporting_list_text_filter').val() || '').toLowerCase();
             var textFilterTerms = textFilter.split(" ");
             textFilterTerms.forEach(function(term) {
-                if(term !== "") { selector += '[data-text-filter*="'+term+'"]'; }
+                if(term !== "") {
+                    var selectorString = '[data-text-filter*="'+term+'"]';
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
+                }
             });
             // Filter on dropdowns
             $('.z__std_reporting_list_object_filter').each(function() {
                 if(this.value) {
-                    selector += '[data-'+this.getAttribute('data-fact')+'='+this.value+']';
+                    var selectorString = '[data-'+this.getAttribute('data-fact')+'='+this.value+']';
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
                 }
             });
 
@@ -37,14 +44,16 @@
                     var valueSelectors = _.map(multipleSelectValues, function(valueToSelect) {
                         return '[data-'+fact+'*='+valueToSelect+']';
                     });
-                    selector += valueSelectors.join((comparison === "INCLUDES") ? "," : "");
+                    var selectorString = valueSelectors.join((comparison === "INCLUDES") ? "," : "");
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
                 }
             });
 
             if(lastSelector === selector) { return; }
             if(selector) {
                 $('#z__std_reporting_list_filterable_table tbody tr').hide();
-                $('#z__std_reporting_list_filterable_table tbody tr'+selector).show();
+                $selector.show();
                 $('.z__std_reporting_export_form > :submit').val("Export (filtered)");
             } else {
                 $('#z__std_reporting_list_filterable_table tbody tr').show();
@@ -58,12 +67,12 @@
             _.debounce(updateForFilters, 150));
 
         // Update when user selects from an object list
-        $('.z__std_reporting_list_object_filter,.z__std_reporting_list_multiple_object_filter_select,.z__std_reporting_list_multiple_object_filter_operator input[type="radio"]').on('change', function() {
+        $('.z__std_reporting_list_object_filter').on('change', function() {
             var changedDropDown = this;
             // Find dropdowns to the right of this one
             var dropDownsOnRight = [];
             var seenThisDropDown = false;
-            $('.z__std_reporting_list_object_filter,.z__std_reporting_list_multiple_object_filter_select').each(function() {
+            $('.z__std_reporting_list_object_filter').each(function() {
                 if(seenThisDropDown) {
                     dropDownsOnRight.push(this);
                 } else if(changedDropDown === this) {
@@ -87,6 +96,9 @@
                     this.disabled = used[this.value] ? '' : 'disabled';
                 });
             });
+        });
+        $('.z__std_reporting_list_multiple_object_filter_select,.z__std_reporting_list_multiple_object_filter_operator input[type="radio"]').on('change', function() {
+            updateForFilters();
         });
 
         // Handle special case of select parameters overwriting each other during serialisation

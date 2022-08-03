@@ -17,6 +17,11 @@ template:dashboard:common:dashboard-page() {
         each(widgetsTop) { render(.) }
       </div>
     }
+    if(widgetsBottom) {
+      <div class="z__std_reporting_list_widgets_top">
+        each(widgetsBottom) { render(.) }
+      </div>
+    }
   }
 
   each(dashboard.$displays.above-table) { render(.) }

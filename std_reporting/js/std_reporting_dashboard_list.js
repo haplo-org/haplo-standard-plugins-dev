@@ -8,6 +8,7 @@
 var DashboardList = function() {
     this.columnGroups = [];
     this.$uiWidgetsTop = [];
+    this.$uiWidgetsBottom = [];
     this.$rowAttributeFns = [];
     this.$filterExportFns = [];
 };
@@ -136,6 +137,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
+        widgetsBottom: _.map(this.$uiWidgetsBottom, function(f) { return f(); }),
         groupHeaderRows: groupHeaderRows,
         columns: columns,
         rowsHTML: rowsHTML
@@ -297,8 +299,8 @@ P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard,
         }
         return query;
     });
-    // Add downdown filters to the list
-    dashboard.$uiWidgetsTop.push(function() {
+    // Display selected options below the filters to maximise width usage
+    dashboard.$uiWidgetsBottom.push(function() {
         // Obtain list of objects
         var objects = spec.objects || [];
         if(O.isRef(objects)) {
@@ -322,6 +324,7 @@ P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard,
             upperCaseFact: fact,
             placeholder: placeholder,
             objects: objects,
+            unsafeSelectId: "z__std_reporting_multiselect_source_"+fact.toLowerCase(),
             comparisonOptions: _.map(comparisonOptions, function(label, comparison) {
                 return {
                     label: label,
