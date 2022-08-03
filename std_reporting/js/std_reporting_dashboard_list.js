@@ -316,8 +316,8 @@ P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard,
         // Render!
         var i = P.locale().text("template");
         var comparisonOptions = {
-            "INCLUDES": i["Any"],
-            "INCLUDES ALL": i["All"]
+            "INCLUDES": i["Any of"],
+            "INCLUDES ALL": i["All of"]
         };
         return P.template("dashboard/list/widget_object_filter_multiple").deferredRender({
             fact: fact.toLowerCase(),

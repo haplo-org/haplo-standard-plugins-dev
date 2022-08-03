@@ -14,7 +14,6 @@ std:plugin:resources("list-filter.js" "filters.css" "multiselect.js")
       each(comparisonOptions) {
           <label> <input type="radio" name=concat("filterOperator-"^{fact}) value=value checked=if(selected) { "true" }> label </label>
       }
-      <span> i("of") </span>
     </div>
   </div>
 </div>

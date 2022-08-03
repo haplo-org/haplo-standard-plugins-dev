@@ -18,7 +18,7 @@ template:dashboard:common:dashboard-page() {
       </div>
     }
     if(widgetsBottom) {
-      <div class="z__std_reporting_list_widgets_top">
+      <div class="z__std_reporting_list_widgets_bottom">
         each(widgetsBottom) { render(.) }
       </div>
     }

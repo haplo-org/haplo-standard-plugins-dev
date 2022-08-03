@@ -2,22 +2,36 @@
 .z__std_reporting_list_multiple_object_filter_container {
     margin-right: 5px;
     border-top: 1px solid #eee;
+    display: inline-block;
 }
 
+.z__std_reporting_list_multiple_object_filter_container.active {
+    display: block;
+}
 .z__std_reporting_list_multiple_object_filter_select {
     display: none;
 }
+
+.z__std_reporting_multiselect_source::placeholder {
+    color: inherit;
+}
+.z__std_reporting_multiselect_source {
+    text-indent: 8px;
+    appearance: menulist;
+    -webkit-appearance: menulist;
+}
+
 .z__std_reporting_list_multiple_object_filter_operator {
     width: 100%;
     text-align: left;
-    display: inline;
+    display: none;
+}
+.z__std_reporting_list_multiple_object_filter_operator.active {
+    display: block;
 }
 
 .z__std_reporting_list_multiple_object_filter_operator label {
     display: inline;
-    margin-right: 10px;
-}
-.z__std_reporting_list_multiple_object_filter_operator span {
     margin-right: 10px;
 }
 
@@ -27,6 +41,7 @@
     border-radius: 5px;
     margin: 2px 2px 2px 0px;
     display: inline-block;
+    padding-left: 7px;
 }
 
 /* More a button than a link so no need to display specially */

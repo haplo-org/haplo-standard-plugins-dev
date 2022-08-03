@@ -46,6 +46,10 @@
                             return aInt - bInt;
                         }).
                         appendTo($(source));
+                    if(!target.val()) {
+                        parent.siblings('.z__std_reporting_list_multiple_object_filter_operator').removeClass('active');
+                        parent.parent().parent().removeClass('active');
+                    }
 
                     target.change();
                     source.change();
@@ -81,8 +85,10 @@
 
                 // Update UI with new display
                 var display = $(this).siblings(".z__std_reporting_multiselect_display").first();
+                display.find('.z__std_reporting_list_multiple_object_filter_operator').addClass('active');
                 displayValue.appendTo(display);
 
+                $(this).parent().addClass('active');
                 $(this).val('');
             }
         });
