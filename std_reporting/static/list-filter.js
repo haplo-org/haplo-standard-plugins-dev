@@ -15,12 +15,17 @@
         var lastSelector = '';
         var updateForFilters = function() {
             var selector = '';
+            var $selector = $('#z__std_reporting_list_filterable_table tbody tr');
 
             // Filter on text searches
             var textFilter = normaliseName($('#z__std_reporting_list_text_filter').val() || '').toLowerCase();
             var textFilterTerms = textFilter.split(" ");
             textFilterTerms.forEach(function(term) {
-                if(term !== "") { selector += '[data-text-filter*="'+term+'"]'; }
+                if(term !== "") {
+                    var selectorString = '[data-text-filter*="'+term+'"]';
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
+                }
             });
             // Filter on dropdowns
             $('.z__std_reporting_list_object_filter').each(function() {
@@ -34,14 +39,30 @@
                             comparison = '*='; // Match anywhere in list
                             break;
                     }
-                    selector += '[data-'+this.getAttribute('data-fact')+comparison+this.value+']';
+                    var selectorString = '[data-'+this.getAttribute('data-fact')+comparison+this.value+']';
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
+                }
+            });
+
+            $('.z__std_reporting_list_multiple_object_filter_container').each(function() {
+                var fact = this.getAttribute('data-fact');
+                var multipleSelectValues = $(this).children('.z__std_reporting_list_multiple_object_filter_select').first().val();
+                if(multipleSelectValues) {
+                    var comparison = $(this).find('input[name=filterOperator-'+fact+']:checked').first().val();
+                    var valueSelectors = _.map(multipleSelectValues, function(valueToSelect) {
+                        return '[data-'+fact+'*='+valueToSelect+']';
+                    });
+                    var selectorString = valueSelectors.join((comparison === "INCLUDES") ? "," : "");
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
                 }
             });
 
             if(lastSelector === selector) { return; }
             if(selector) {
                 $('#z__std_reporting_list_filterable_table tbody tr').hide();
-                $('#z__std_reporting_list_filterable_table tbody tr'+selector).show();
+                $selector.show();
                 $('.z__std_reporting_export_form > :submit').val("Export (filtered)");
             } else {
                 $('#z__std_reporting_list_filterable_table tbody tr').show();
@@ -97,9 +118,25 @@
                     this.disabled = used[this.value] ? '' : 'disabled';
                 });
             });
-
+        });
+        $('.z__std_reporting_list_multiple_object_filter_select,.z__std_reporting_list_multiple_object_filter_operator input[type="radio"]').on('change', function() {
+            updateForFilters();
         });
 
+        // Handle special case of select parameters overwriting each other during serialisation
+        // Adds hidden text element to the form a final parameter with all the values serialised ready for manipulation server-side
+        $('.z__std_reporting_export_form').parent('form').on('submit', function(e) {
+            var formSelector = $(this);
+            formSelector.find('.z__std_reporting_export_serialised_multiple_select').remove();
+            formSelector.find('.z__std_reporting_list_multiple_object_filter_select').each(function() {
+                var values = $(this).val();
+                if(values && values.length > 1) {
+                    $('<input type="text" name="'+this.getAttribute("name")+'-serialised" value="'+values.join(",")+'">').
+                        addClass("z__std_reporting_export_serialised_multiple_select").
+                        hide().
+                        appendTo(formSelector);
+                }
+            });
+        });
     });
-
 })(jQuery);

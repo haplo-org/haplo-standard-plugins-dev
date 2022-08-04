@@ -8,6 +8,7 @@
 var DashboardList = function() {
     this.columnGroups = [];
     this.$uiWidgetsTop = [];
+    this.$uiWidgetsBottom = [];
     this.$rowAttributeFns = [];
     this.$filterExportFns = [];
 };
@@ -136,6 +137,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
+        widgetsBottom: _.map(this.$uiWidgetsBottom, function(f) { return f(); }),
         groupHeaderRows: groupHeaderRows,
         columns: columns,
         rowsHTML: rowsHTML
@@ -260,6 +262,82 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
             upperCaseFact: fact,
             placeholder: placeholder,
             objects: objects
+        });
+    });
+});
+
+// --------------------------------------------------------------------------
+
+// Filter drop down widget
+P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard, spec) {
+    var fact = spec.fact, factType = dashboard.collection.$factType[fact];
+    if(!(fact && (factType === "refList"))) {
+        throw new Error("std:row_object_filter_multiple needs a fact specified, which must exist and be a refList.");
+    }
+    if(!(spec.defaultComparison && _.contains(["INCLUDES", "INCLUDES ALL"], spec.defaultComparison))) {
+        throw new Error("std:row_object_filter_multiple needs a defaultComparison specified, which must be either 'INCLUDES' or 'INCLUDES ALL'");
+    }
+    // Add attributes to the rows
+    var attrName = 'data-'+fact.toLowerCase();
+    dashboard.$rowAttributeFns.push(function(row, attrs) {
+        var value = row[fact];
+        if(value !== null) {
+            attrs[attrName] = value.toString();
+        }
+    });
+
+    dashboard.$filterExportFns.push(function(query, parameters) {
+        var comparison = parameters["filterOperator-"+fact];
+        if(parameters[fact+"-serialised"]) {
+            var values = _.map(parameters[fact+"-serialised"].split(","), function(refStr) { return O.ref(refStr); });
+            if(comparison === "INCLUDES") {
+                return query.or(function(sq) {
+                    _.each(values, function(ref) {
+                        sq.where(fact, comparison, ref);
+                    });
+                });
+            } else if(comparison === "INCLUDES ALL") {
+                return query.where(fact, comparison, values);
+            }
+        } else if(parameters[fact]) {
+            // If there's no serialised parameter then there can only be one value to query
+            return query.where(fact, "INCLUDES", O.ref(parameters[fact]));
+        }
+        return query;
+    });
+    // Display selected options below the filters to maximise width usage
+    dashboard.$uiWidgetsBottom.push(function() {
+        // Obtain list of objects
+        var objects = spec.objects || [];
+        if(O.isRef(objects)) {
+            objects = O.query().link(spec.objects, ATTR.Type).sortByTitle().execute();
+        } else if(typeof(objects) === "function") {
+            objects = objects();
+        }
+        // Placeholder defaults to description of fact
+        var placeholder = spec.placeholder;
+        if(!placeholder) {
+            placeholder = '-- '+dashboard.collection.$factDescription[fact]+' --';
+        }
+        // Render!
+        var i = P.locale().text("template");
+        var comparisonOptions = {
+            "INCLUDES": i["Any of"],
+            "INCLUDES ALL": i["All of"]
+        };
+        return P.template("dashboard/list/widget_object_filter_multiple").deferredRender({
+            fact: fact.toLowerCase(),
+            upperCaseFact: fact,
+            placeholder: placeholder,
+            objects: objects,
+            unsafeSelectId: "z__std_reporting_multiselect_source_"+fact.toLowerCase(),
+            comparisonOptions: _.map(comparisonOptions, function(label, comparison) {
+                return {
+                    label: label,
+                    value: comparison,
+                    selected: comparison === spec.defaultComparison
+                };
+            })
         });
     });
 });
