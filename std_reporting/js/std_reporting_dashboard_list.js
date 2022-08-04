@@ -266,7 +266,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
 P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard, spec) {
     var fact = spec.fact, factType = dashboard.collection.$factType[fact];
     if(!(fact && (factType === "refList"))) {
-        throw new Error("std:row_object_filter_multiple needs a fact specified, which must exist and be a ref.");
+        throw new Error("std:row_object_filter_multiple needs a fact specified, which must exist and be a refList.");
     }
     if(!(spec.defaultComparison && _.contains(["INCLUDES", "INCLUDES ALL"], spec.defaultComparison))) {
         throw new Error("std:row_object_filter_multiple needs a defaultComparison specified, which must be either 'INCLUDES' or 'INCLUDES ALL'");

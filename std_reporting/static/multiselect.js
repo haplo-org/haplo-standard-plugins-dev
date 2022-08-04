@@ -92,5 +92,20 @@
                 $(this).val('');
             }
         });
+
+        // Input/Datalists don't expand options the same way as <select>s
+        // This extends the input to slightly wider than the widest option in the list
+        $('.z__std_reporting_multiselect_source').each(function() {
+            var estimatedCharacterWidth = 8; // px
+            var datalist = $(this).siblings('.z__std_reporting_multiselect_list').first();
+            var maxLength = 0;
+            datalist.children("option").each(function() {
+                var value = $(this).val();
+                if(value && (value.length > maxLength)) {
+                    maxLength = value.length;
+                }
+            });
+            $(this).width((maxLength*estimatedCharacterWidth)+"px");
+        });
     });
 })(jQuery);
