@@ -98,7 +98,7 @@
         $('.z__std_reporting_multiselect_source').each(function() {
             var estimatedCharacterWidth = 8; // px
             var datalist = $(this).siblings('.z__std_reporting_multiselect_list').first();
-            var maxLength = 0;
+            var maxLength = this.getAttribute('placeholder');
             datalist.children("option").each(function() {
                 var value = $(this).val();
                 if(value && (value.length > maxLength)) {
