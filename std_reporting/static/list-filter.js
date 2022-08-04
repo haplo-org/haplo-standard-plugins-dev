@@ -25,7 +25,16 @@
             // Filter on dropdowns
             $('.z__std_reporting_list_object_filter').each(function() {
                 if(this.value) {
-                    selector += '[data-'+this.getAttribute('data-fact')+'='+this.value+']';
+                    var comparison;
+                    switch(this.getAttribute("data-fact-type")) {
+                        case "ref":
+                            comparison = '='; // Exact Match
+                            break;
+                        case "reflist":
+                            comparison = '*='; // Match anywhere in list
+                            break;
+                    }
+                    selector += '[data-'+this.getAttribute('data-fact')+comparison+this.value+']';
                 }
             });
 
@@ -70,7 +79,20 @@
                 if(!rows) { rows = $('#z__std_reporting_list_filterable_table tr:visible'); }
                 var used = {'':true}; // blank placeholder is always 'used' and should be selectable
                 var attribute = 'data-'+d.getAttribute('data-fact');
-                rows.each(function() { used[this.getAttribute(attribute)] = true; });
+                var factType = d.getAttribute("data-fact-type");
+                rows.each(function() {
+                    switch(factType) {
+                        case "ref":
+                            used[this.getAttribute(attribute)] = true; // Exact Match
+                            break;
+                        case "reflist": // Match anywhere in list
+                            var attributeValues = (this.getAttribute(attribute) || "").match(/[a-zA-Z0-9]{5}/g);
+                            _.each(attributeValues || [], function(refStr) {
+                                used[refStr] = true;
+                            });
+                            break;
+                    }
+                });
                 $('option', d).each(function() {
                     this.disabled = used[this.value] ? '' : 'disabled';
                 });

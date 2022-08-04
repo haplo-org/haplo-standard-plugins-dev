@@ -216,8 +216,8 @@ P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
 // Filter drop down widget
 P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
     var fact = spec.fact, factType = dashboard.collection.$factType[fact];
-    if(!(fact && (factType === "ref"))) {
-        throw new Error("std:row_object_filter needs a fact specified, which must exist and be a ref.");
+    if(!(fact && _.contains(["ref", "refList"], factType))) {
+        throw new Error("std:row_object_filter needs a fact specified, which must exist and be a ref or refList.");
     }
     // Add attributes to the rows
     var attrName = 'data-'+fact.toLowerCase();
@@ -230,7 +230,8 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
 
     dashboard.$filterExportFns.push(function(query, parameters) {
         if(parameters[fact]) {
-            return query.where(fact, "=", O.ref(parameters[fact]));
+            var comparison = (factType === "ref") ? "=" : "INCLUDES";
+            return query.where(fact, comparison, O.ref(parameters[fact]));
         }
         return query;
     });
@@ -251,6 +252,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         // Render!
         return P.template("dashboard/list/widget_object_filter").deferredRender({
             fact: fact.toLowerCase(),
+            factType: factType.toLowerCase(),
             upperCaseFact: fact,
             placeholder: placeholder,
             objects: objects
