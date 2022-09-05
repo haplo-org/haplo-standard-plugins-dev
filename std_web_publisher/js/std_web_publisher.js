@@ -107,6 +107,13 @@ P.$isPublicationOnRootForHostname = function(host) {
     });
 };
 
+P.$hostnameRequiresAuthentication = function(host) {
+    var publicationsOnHost = publications[host.toLowerCase()];
+    return !!publicationsOnHost && _.any(publicationsOnHost, function(publication) {
+        return publication._requiresAuthentication;
+    });
+};
+
 // --------------------------------------------------------------------------
 
 P.onLoad = function() {
@@ -215,6 +222,11 @@ Publication.prototype.featureImplemented = function(name) {
 Publication.prototype.serviceUser = function(serviceUserCode) {
     if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
     this._serviceUserCode = serviceUserCode;
+    return this;
+};
+Publication.prototype.requireAuthentication = function(requires) {
+    if(typeof(requires) !== "boolean") { throw new Error("requireAuthentication() must take a boolean value"); }
+    this._requiresAuthentication = requires;
     return this;
 };
 
@@ -449,9 +461,9 @@ Publication.prototype._getHandlerForRequest = function(method, path) {
 };
 
 Publication.prototype._handleRequest = function(method, path) {
-    if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
+    if(!(this._serviceUserCode || this._requiresAuthentication)) { throw new Error("serviceUser() must have been called during publication configuration to set a service user, or this publication must be configured to require authentication."); }
     var publication = this;
-    return O.impersonating(O.serviceUser(this._serviceUserCode), function() {
+    var handleRequest = function() {
         var response, errorRender, statusCode;
         if(HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING) {
             response = publication._handleRequest2(method, path);
@@ -512,7 +524,14 @@ Publication.prototype._handleRequest = function(method, path) {
             response.headers["Server"] = "Haplo Web Publisher";
         }
         return response;
-    });
+    };
+    if(this._serviceUserCode) {
+        return O.impersonating(O.serviceUser(this._serviceUserCode), handleRequest;
+    } else if(this._requiresAuthentication) {
+        return handleRequest();
+    } else {
+        return null; // 404
+    }
 };
 
 var PREVENT_DEVELOPMENT_INDEXING = O.PLUGIN_DEBUGGING_ENABLED && !O.application.config["std_web_publisher:allow_development_indexing"];
