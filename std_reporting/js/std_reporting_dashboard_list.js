@@ -163,10 +163,14 @@ DashboardList.prototype._respondWithExport = function() {
     var xls = O.generate.table.xlsx(this.specification.title);
     xls.newSheet(this.specification.title, true);
     _.each(columns, function(c) {
-        xls.cell(c.exportHeading);
-        // Blank heading cells required?
         var w = c.exportWidth;
-        while((--w) > 0) { xls.cell(''); }
+        if(w > 1) {
+            while((w--) > 0) {
+                xls.cell(c.exportHeadings.shift() || '');
+            }
+        } else {
+            xls.cell(c.exportHeading);
+        }
     });
     var query = this.select();
     var parameters = this.E.request.parameters;
@@ -531,6 +535,11 @@ var RefPersonNameColumn = makeColumnType({
     construct: function(collection, colspec) {
         this.link = colspec.link;
         this.objectFields = O.refdict(refPersonNameColumnFieldsFn);
+
+        var exportHeading = this.exportHeading || this.heading || "????";
+        this.exportHeadings = _.map(["last name", "first name", "title"], function(suffix) {
+            return exportHeading+" "+suffix;
+        });
     }
 });
 
