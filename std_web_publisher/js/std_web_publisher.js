@@ -526,7 +526,7 @@ Publication.prototype._handleRequest = function(method, path) {
         return response;
     };
     if(this._serviceUserCode) {
-        return O.impersonating(O.serviceUser(this._serviceUserCode), handleRequest;
+        return O.impersonating(O.serviceUser(this._serviceUserCode), handleRequest);
     } else if(this._requiresAuthentication) {
         return handleRequest();
     } else {
