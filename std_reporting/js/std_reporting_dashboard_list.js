@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
+var USE_VERBOSE_HEADINGS_ON_EXPORT = O.application.config["std:reporting:use-verbose-headings-for-multi-column-values-on-export"];
 
 var DashboardList = function() {
     this.columnGroups = [];
@@ -165,8 +166,9 @@ DashboardList.prototype._respondWithExport = function() {
     _.each(columns, function(c) {
         var w = c.exportWidth;
         if(w > 1) {
+            var exportHeadings = c.exportHeadings || [c.exportHeading];
             while((w--) > 0) {
-                xls.cell(c.exportHeadings.shift() || '');
+                xls.cell(exportHeadings.shift() || '');
             }
         } else {
             xls.cell(c.exportHeading);
@@ -535,11 +537,13 @@ var RefPersonNameColumn = makeColumnType({
     construct: function(collection, colspec) {
         this.link = colspec.link;
         this.objectFields = O.refdict(refPersonNameColumnFieldsFn);
-
-        var exportHeading = this.exportHeading || this.heading || "????";
-        this.exportHeadings = _.map(["last name", "first name", "title"], function(suffix) {
-            return exportHeading+" "+suffix;
-        });
+        if(USE_VERBOSE_HEADINGS_ON_EXPORT) {
+            var i = P.locale().text("template");
+            var exportHeading = this.exportHeading || this.heading || "????";
+            this.exportHeadings = _.map(["last name", "first name", "title"], function(suffix) {
+                return O.interpolateString(i["{heading} {suffix}"], { heading: exportHeading, suffix: suffix });
+            });
+        }
     }
 });
 
@@ -775,6 +779,18 @@ var JoinColumn = makeColumnType({
         this.columns = _.map(colspec.columns || [], function(c) {
             return makeColumn(collection, c);
         });
+        if(USE_VERBOSE_HEADINGS_ON_EXPORT) {
+            var exportHeadings = this.exportHeadings = [];
+            _.each(this.columns, function(c) {
+                if(c.exportHeadings) {
+                    _.each(c.exportHeadings, function(heading) {
+                        exportHeadings.push(heading);
+                    });
+                } else {
+                    exportHeadings.push(c.exportHeading || c.heading || "????");
+                }
+            });
+        }
     }
 });
 
@@ -851,6 +867,9 @@ var LinkedColumn = makeColumnType({
         this.link = colspec.link || function(row) {
             return row.object.url();
         };
+        if(USE_VERBOSE_HEADINGS_ON_EXPORT) {
+            this.exportHeadings = this.column.exportHeadings;
+        }
     }
 });
 
