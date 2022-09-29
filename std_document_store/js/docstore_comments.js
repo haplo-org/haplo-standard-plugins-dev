@@ -198,7 +198,6 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
     //Omitting these objects or specifying an empty list [] means that everyone has permission.
     //if no viewCommentsOtherUsers check privacy since the select filtering seems to break things
     if(!permissionsSpec.length) { return checkPrivacyPermissionsForRow(M, commentRow); }
-    //TODO: clean up the logic for this
     // deny if explicit action stated, otherwise treat matching specs that contain commentFlag rules but no matching commentFlag on the comment as deny permissions but only if all other parts of spec also match
     var shouldDeny = _.chain(permissionsSpec).
         clone().
@@ -215,10 +214,7 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
 
 var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime, editCommentsOtherUsers) {
     if(checkPermissions(M, 'editComments') && O.currentUser.id === commentRow.userId) {
-        // as below, will removing this cause issues?
-        // if(lastTransitionTime < commentRow.datetime) {
             return true;
-        // }
     } else if(editCommentsOtherUsers) {
         return checkAdditionalCommentPermissions(M, editCommentsOtherUsers, commentRow, checkPermissions);
     }
@@ -226,10 +222,7 @@ var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTr
 
 var currentUserCanViewComment = function(commentRow, M, checkPermissions, lastTransitionTime, viewCommentsOtherUsers) {
     if(O.currentUser.id === commentRow.userId) {
-        //will removing this break anything IRL? It seems to hinder viewing your own comments if there has been no change in state
-        // if(lastTransitionTime < commentRow.datetime) {
             return true;
-        // }
     } else {
         return checkAdditionalCommentPermissions(M, viewCommentsOtherUsers, commentRow, checkPermissions);
     }
