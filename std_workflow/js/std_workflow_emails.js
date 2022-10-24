@@ -89,6 +89,7 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 
 // --------------------------------------------------------------------------
 
+const REMOVE_TO_USER_FROM_CC_TEMPLATE = !!O.application.config["std_workflow:remove_to_user_from_cc_template"];
 const IS_ENTITY_NAME = /_(refMaybe|refList|ref|maybe|list)$/;
 const MATCH_ENTITY_SUFFIX = /(|_[a-zA-Z]+)$/;
 const ENTITY_SUFFIX_REPLACEMENTS = {
@@ -163,7 +164,8 @@ var sendEmail = function(specification, entities, M) {
         var ccTemplate = P.template("email/cc-header");
         view.$std_workflow = {
             unsafeOriginalEmailBody: firstBody,
-            sentUser: to[0]
+            sentUser: to[0],
+            removeToUser: REMOVE_TO_USER_FROM_CC_TEMPLATE
         };
         cc.forEach(function(user) {
             view.toUser = user;
