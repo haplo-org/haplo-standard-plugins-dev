@@ -48,11 +48,11 @@ P.Publication.prototype.isFileDownloadPermitted = function(fileOrIdentifier) {
 P.Publication.prototype._checkFileDownloadPermitted = function(fileOrIdentifier) {
     // Permissions for positive outcomes are cached
     var permitted = false;
-    if(permittedDownloadsCacheAge++ > MAX_PERMITTED_DOWNLOAD_CACHE_AGE) {
-        resetPermittedDownloadCache();
+    if(this.permittedDownloadsCacheAge++ > MAX_PERMITTED_DOWNLOAD_CACHE_AGE) {
+        this._resetPermittedDownloadCache();
     }
     var cacheKey = fileOrIdentifier.digest+'-'+fileOrIdentifier.fileSize;
-    var result = permittedDownloadsCache[cacheKey];
+    var result = this.permittedDownloadsCache[cacheKey];
     if(!result) {
         result = {
             allow: false,
@@ -61,7 +61,7 @@ P.Publication.prototype._checkFileDownloadPermitted = function(fileOrIdentifier)
         this._fileDownloadPermissionFunctions.forEach(function(fn) {
             fn(fileOrIdentifier, result);
         });
-        permittedDownloadsCache[cacheKey] = result;
+        this.permittedDownloadsCache[cacheKey] = result;
     }
     return (result.allow && !(result.deny)) ? result : null;
 };
@@ -122,20 +122,16 @@ var scaleForDimensions = function(d, spec, mul) {
 
 // --------------------------------------------------------------------------
 
-var permittedDownloadsCache,
-    permittedDownloadsCacheAge,
-    resetPermittedDownloadCache = function() {
-        permittedDownloadsCache = {};
-        permittedDownloadsCacheAge = 0;
-    };
 var MAX_PERMITTED_DOWNLOAD_CACHE_AGE = 1024;
-resetPermittedDownloadCache();
-
-// --------------------------------------------------------------------------
+P.Publication.prototype._resetPermittedDownloadCache = function() {
+    this.permittedDownloadsCache = {};
+    this.permittedDownloadsCacheAge = 0;
+};
 
 P.Publication.prototype._setupForFileDownloads = function() {
     this._fileThumbnailSize = DEFAULT_THUMBNAIL_SIZE;
     this._fileDownloadPermissionFunctions = [];
+    this._resetPermittedDownloadCache();
 };
 
 P.Publication.prototype._downloadFileChecksAndObserve = function(path, file, isThumbnail) {
