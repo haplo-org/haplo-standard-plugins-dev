@@ -124,14 +124,13 @@
                         $('div[data-uname]').each(function() {
                             if($('div[data-uname]',this).length) {
                                 containers.push(this);
-                            } else {
-                                // if not showing changes, need to hide if no comments
-                                if($('.z__docstore_comment_container',this).length === 0 && !showingChanges) {
-                                    $(this).hide();
-                                // if showing changes, need to un hide if has comments
-                                } else if ($('.z__docstore_comment_container',this).length !== 0 && showingChanges) {
-                                    $(this).show();
-                                }
+                            }
+                            // if not showing changes, need to hide if no comments
+                            if($('.z__docstore_comment_container',this).length === 0 && !showingChanges) {
+                                $(this).hide();
+                            // if showing changes, need to un hide if has comments
+                            } else if ($('.z__docstore_comment_container',this).length !== 0 && showingChanges) {
+                                $(this).show();
                             }
                         });
                         // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
