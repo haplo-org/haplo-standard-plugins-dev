@@ -54,6 +54,8 @@ const DEFAULT_COMMENT_IS_PRIVATE = !O.application.config["std_document_store:com
 //    editCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can edit the 
 //              comments of other users. Has an additional property @commenter@ avaliable to specify comment
 //                author role for more specific permissions - uses array value.
+//    alwaysEditOwnComments: true - OPTIONAL, when users can always edit their own comments, defaults to only
+//              allowing users to edit their own comments before the state changes
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
 
 // ----------------------------------------------------------------------------

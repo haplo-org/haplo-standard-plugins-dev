@@ -31,7 +31,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
             if(oldCommentQ.length) {
                 oldCommentRow = oldCommentQ[0];
-                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime, docstore.delegate);
+                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime, docstore.delegate, docstore.delegate.alwaysEditOwnComments);
             }
         }
         if(supersedesId && !userCanEditComment) {
@@ -153,7 +153,7 @@ var rowForClient = function(row, key, checkPermissions, lastTransitionTime, dele
             datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
             comment: row.comment,
             isPrivate: row.isPrivate,
-            currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime, delegate.editCommentsOtherUsers),
+            currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime, delegate.editCommentsOtherUsers, delegate.alwaysEditOwnComments),
             currentUserCanView: currentUserCanViewComment(row, key, checkPermissions, lastTransitionTime, delegate.viewCommentsOtherUsers),
             lastEditedBy: row.lastEditedBy ? O.user(row.lastEditedBy).name : undefined
         };
@@ -212,9 +212,11 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
     return shouldAllow && !shouldDeny;
 };
 
-var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime, editCommentsOtherUsers) {
+var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime, editCommentsOtherUsers, alwaysEditOwnComments) {
     if(checkPermissions(M, 'editComments') && O.currentUser.id === commentRow.userId) {
+        if(alwaysEditOwnComments || lastTransitionTime < commentRow.datetime) {
             return true;
+        }
     } else if(editCommentsOtherUsers) {
         return checkAdditionalCommentPermissions(M, editCommentsOtherUsers, commentRow, checkPermissions);
     }
