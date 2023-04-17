@@ -127,7 +127,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                             // This (.join(/)) isn't that useful unless we can pass all entities that can comment explicitly
                             // The only case in which it would be useful was if "commenter" had multiple roles in held by one person
                             _.each(commenterRoles, (newDisplayText, userId) => {
-                                users[userId] = newDisplayText.length > 1 ? newDisplayText.join("/") : newDisplayText[0];
+                                users[userId] = (newDisplayText.length > 1 && !obj.onlyDisplayFirstReplacementRoleName) ? newDisplayText.join("/") : newDisplayText[0];
                             });
                         }
                     }
