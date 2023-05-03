@@ -31,7 +31,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
             var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
             if(oldCommentQ.length) {
                 oldCommentRow = oldCommentQ[0];
-                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime, docstore.delegate, docstore.delegate.alwaysEditOwnComments);
+                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime, docstore.delegate.editCommentsOtherUsers, docstore.delegate.alwaysEditOwnComments);
             }
         }
         if(supersedesId && !userCanEditComment) {
@@ -126,8 +126,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                             });
                             // This (.join(/)) isn't that useful unless we can pass all entities that can comment explicitly
                             // The only case in which it would be useful was if "commenter" had multiple roles in held by one person
-                            _.each(commenterRoles, (newDisplayText, userId) => {
-                                users[userId] = (newDisplayText.length > 1 && !obj.onlyDisplayFirstReplacementRoleName) ? newDisplayText.join("/") : newDisplayText[0];
+                            _.each(commenterRoles, (roleNames, userId) => {
+                                users[userId] = _.uniq(roleNames).join("/");
                             });
                         }
                     }
