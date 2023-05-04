@@ -49,7 +49,13 @@ const DEFAULT_COMMENT_IS_PRIVATE = !O.application.config["std_document_store:com
 //    addComment: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can comment on the forms
 //    viewComments: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the comments
 //    viewCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the 
-//              comments of other users. Defaults to same value as viewComments.
+//              comments of other users. Defaults to same value as viewComments. Has an additional property
+//               @commenter@ avaliable to specify comment author role for more specific permissions - uses array value.
+//    editCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can edit the 
+//              comments of other users. Has an additional property @commenter@ avaliable to specify comment
+//                author role for more specific permissions - uses array value.
+//    alwaysEditOwnComments: true - OPTIONAL, when users can always edit their own comments, defaults to only
+//              allowing users to edit their own comments before the state changes
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
 
 // ----------------------------------------------------------------------------
@@ -588,6 +594,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
         var checkPermissions = function(M, action) {
             if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
+                action = "viewComments";
+            } else if((action === "viewCommenterName") && !spec.viewCommenterName) {
                 action = "viewComments";
             } else if(action === "viewPrivateComments") {
                 if(spec.viewPrivateComments) {

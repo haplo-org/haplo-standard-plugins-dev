@@ -50,7 +50,9 @@ var DocumentStore = P.DocumentStore = function(P, delegate) {
             comment:      { type:"text" },
             isPrivate:    { type:"boolean", nullable:true }, // may be null if private comments aren't enabled
             // supersededBy only set if the comment was edited
-            supersededBy: { type:"int", nullable:true}
+            supersededBy: { type:"int", nullable:true},
+            commentFlags: { type:"json", nullable:true},
+            lastEditedBy: { type:"int", nullable:true }
         });
         this.commentsTable = P.db[commentsDbName];
     }

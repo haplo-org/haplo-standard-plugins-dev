@@ -66,11 +66,14 @@
                 messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
             }
-            if(canEdit) {
-                var footer = $('<div class="z__docstore_comment_footer"></div>');
-                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
-                div.append(footer);
+            var footer = $('<div class="z__docstore_comment_footer"></div>');
+            if(comment.lastEditedBy) {
+                footer.append('<div class="z__docstore_last_edited_by"><i>Last edited by '+comment.lastEditedBy+'</i></div>');
             }
+            if(canEdit) {
+                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
+            }
+            div.append(footer);
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
                 if(existingComments.length) {
@@ -102,8 +105,10 @@
                     _.each(data.forms, function(elements, formId) {
                         _.each(elements, function(comments, uname) {
                             _.each(comments, function(comment) {
-                                displayComment(formId, uname, comment);
-                                hasCommentsToDisplay = true;
+                                if(comment.currentUserCanView) {
+                                    displayComment(formId, uname, comment);
+                                    hasCommentsToDisplay = true;
+                                }
                             });
                         });
                     });
@@ -119,14 +124,13 @@
                         $('div[data-uname]').each(function() {
                             if($('div[data-uname]',this).length) {
                                 containers.push(this);
-                            } else {
-                                // if not showing changes, need to hide if no comments
-                                if($('.z__docstore_comment_container',this).length === 0 && !showingChanges) {
-                                    $(this).hide();
-                                // if showing changes, need to un hide if has comments
-                                } else if ($('.z__docstore_comment_container',this).length !== 0 && showingChanges) {
-                                    $(this).show();
-                                }
+                            }
+                            // if not showing changes, need to hide if no comments
+                            if($('.z__docstore_comment_container',this).length === 0 && !showingChanges) {
+                                $(this).hide();
+                            // if showing changes, need to un hide if has comments
+                            } else if ($('.z__docstore_comment_container',this).length !== 0 && showingChanges) {
+                                $(this).show();
                             }
                         });
                         // Now go through the containers, and if there's nothing visible within the container, hide it entirely.
