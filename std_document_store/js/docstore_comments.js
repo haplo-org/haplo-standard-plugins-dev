@@ -93,7 +93,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         });
         //attempt to omit users (for name display) if deny is specified and spec is matched (no real use at the moment for this to be additive), otherwise allow all names to be viewed
         if(!checkPermissions(key, "viewCommenterName")) {
-            _.each(docstore.delegate.viewCommenterName, obj => {
+            _.each(docstore.delegate.viewCommenterName, function(obj) {
                 if(obj.action === "deny") {
                     var currentUserMatchesRoleMaybe = (!obj.roles || !obj.roles.length) ? true : key.hasAnyRole(O.currentUser, obj.roles);
                     var isSelectedMaybe = obj.selector ? key.selected(obj.selector) : true;
@@ -111,8 +111,8 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                                 }
                                 return commenterRoles;
                             };
-                            _.each(_.keys(users), k => {
-                                _.each(obj.commenter, commenterRole => {
+                            _.each(_.keys(users), function(k) {
+                                _.each(obj.commenter, function(commenterRole) {
                                     if(key.hasRole(O.securityPrincipal(parseInt(k)), commenterRole)) {
                                         if(obj.replacementRoleNames && obj.replacementRoleNames[commenterRole]) {
                                             setRoleNames(k, obj.replacementRoleNames[commenterRole]);
@@ -126,7 +126,7 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                             });
                             // This (.join(/)) isn't that useful unless we can pass all entities that can comment explicitly
                             // The only case in which it would be useful was if "commenter" had multiple roles in held by one person
-                            _.each(commenterRoles, (roleNames, userId) => {
+                            _.each(commenterRoles, function(roleNames, userId) {
                                 users[userId] = _.uniq(roleNames).join("/");
                             });
                         }
@@ -201,14 +201,19 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
     // deny if explicit action stated, otherwise treat matching specs that contain commentFlag rules but no matching commentFlag on the comment as deny permissions but only if all other parts of spec also match
     var shouldDeny = _.chain(permissionsSpec).
         clone().
-        filter(v => ((v.action === "deny") || (!!v.commentFlags ? hasValidSelectorOrRole(v, commentRow) && !checkCommentFlags(v, commentRow) : false))).
+        filter(function(v) {
+            return ((v.action === "deny") ||
+                (!!v.commentFlags ? hasValidSelectorOrRole(v, commentRow) && !checkCommentFlags(v, commentRow) : false));
+        }).
         value();
     var shouldAllow = _.chain(permissionsSpec).
         clone().
         difference(shouldDeny).
-        any(v => hasValidSelectorOrRole(v, commentRow) && checkCommentFlags(v, commentRow) && checkPrivacyPermissionsForRow(M, commentRow)).
+        any(function(v) {
+            return hasValidSelectorOrRole(v, commentRow) && checkCommentFlags(v, commentRow) && checkPrivacyPermissionsForRow(M, commentRow);
+        }).
         value();
-    shouldDeny = _.any(shouldDeny, d => hasValidSelectorOrRole(d, commentRow));
+    shouldDeny = _.any(shouldDeny, function(d) { return hasValidSelectorOrRole(d, commentRow); });
     return shouldAllow && !shouldDeny;
 };
 
