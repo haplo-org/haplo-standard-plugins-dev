@@ -315,6 +315,14 @@ P.globalTemplateFunction("M:entity-list", function(entityName) {
     templateFunctionRenderList(this, M.entities[entityName+"_list"]);
 });
 
+P.globalTemplateFunction("M:entity-attribute", function(entityName, attributeName) {
+    var M = this.view.M;
+    var entity = M.entities[entityName+'_maybe'];
+    if(entity && attributeName in ATTR) {
+        templateFunctionRenderList(this, entity.every(ATTR[attributeName]));
+    }
+});
+
 var templateFunctionRenderList = function(t, items) {
     var strings = _.map(_.compact(items), function(item) {
         if(typeof(item) === "string") {
