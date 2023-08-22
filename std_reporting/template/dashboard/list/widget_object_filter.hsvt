@@ -1,8 +1,8 @@
 std:plugin:resources("list-filter.js" "filters.css")
 
 <div class="z__std_reporting_list_object_filter_container">
-  if(label) { <label for="z__std_reporting_list_object_filter"> label </label> }
-  <select class="z__std_reporting_list_object_filter" data-fact=fact data-fact-type=factType name=upperCaseFact>
+  if(label) { <label for=unsafeAttributeValue(unsafeSelectId)> label </label> }
+  <select id=unsafeAttributeValue(unsafeSelectId) class="z__std_reporting_list_object_filter" data-fact=fact data-fact-type=factType name=upperCaseFact>
     <option value=""> placeholder </option>
     each(objects) {
       <option value=ref> title </option>

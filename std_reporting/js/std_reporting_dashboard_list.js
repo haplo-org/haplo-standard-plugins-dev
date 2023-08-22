@@ -280,6 +280,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
             fact: fact.toLowerCase(),
             factType: factType.toLowerCase(),
             upperCaseFact: fact,
+            unsafeSelectId: "z__std_reporting_list_object_filter_"+fact.toLowerCase(),
             label: label,
             placeholder: placeholder,
             objects: objects
