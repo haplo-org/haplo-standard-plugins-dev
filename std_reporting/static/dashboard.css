@@ -92,6 +92,12 @@ table.z__std_reporting_dashboard_table_no_wrapping tr:not(:hover) td {
     width: 120px;
 }
 
+.z__std_reporting_list_widgets_top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+}
+
 .z__std_reporting_list_widgets_top input, select {
     margin-right: 8px;
 }
