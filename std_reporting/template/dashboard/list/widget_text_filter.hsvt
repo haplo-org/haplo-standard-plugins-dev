@@ -1,7 +1,10 @@
-std:plugin:resources("list-filter.js")
+std:plugin:resources("list-filter.js" "filters.css")
 
-<input
+<div class="z__std_reporting_list_text_filter_container">
+  if(label) { <label for="z__std_reporting_list_text_filter"> label </label> }
+  <input
     id="z__std_reporting_list_text_filter"
-    placeholder=if(placeholder) { placeholder } else { i("Search") }
+    placeholder=placeholder
     type="search"
->
+  >
+</div>

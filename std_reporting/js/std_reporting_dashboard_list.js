@@ -191,6 +191,7 @@ DashboardList.prototype._respondWithExport = function() {
 };
 
 // --------------------------------------------------------------------------
+var DISPLAY_FILTER_LABELS = O.application.config["std_reporting:display_list_filter_labels"] || false;
 
 // Search widget
 P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
@@ -210,8 +211,16 @@ P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
             }).join(' ').toLowerCase();
         });
         // Needs a search widget rendered
+        var i = P.locale().text("template");
+        var view = {};
+        if(DISPLAY_FILTER_LABELS) {
+            view.label = spec.label || i["Search"];
+            view.placeholder = spec.placeholder || "";
+        } else {
+            view.placeholder = spec.placeholder || i["Search"];
+        }
         dashboard.$uiWidgetsTop.push(function() {
-            return P.template("dashboard/list/widget_text_filter").deferredRender(spec);
+            return P.template("dashboard/list/widget_text_filter").deferredRender(view);
         });
     }
     _.each(spec.facts || [], function(f) { dashboard.$rowTextFilterFacts.push(f); });
@@ -250,16 +259,29 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         } else if(typeof(objects) === "function") {
             objects = objects();
         }
-        // Placeholder defaults to description of fact
-        var placeholder = spec.placeholder;
-        if(!placeholder) {
-            placeholder = '-- '+dashboard.collection.$factDescription[fact]+' --';
+        var label, placeholder = spec.placeholder;
+        if(DISPLAY_FILTER_LABELS) {
+            // Label defaults to description of fact
+            label = spec.label;
+            if(!label) {
+                label = dashboard.collection.$factDescription[fact];
+            }
+            if(!placeholder) {
+                placeholder = '--';
+            }
+        } else {
+            // Placeholder defaults to description of fact
+            if(!placeholder) {
+                placeholder = '-- '+dashboard.collection.$factDescription[fact]+' --';
+            }
         }
         // Render!
         return P.template("dashboard/list/widget_object_filter").deferredRender({
             fact: fact.toLowerCase(),
             factType: factType.toLowerCase(),
             upperCaseFact: fact,
+            unsafeSelectId: "z__std_reporting_list_object_filter_"+fact.toLowerCase(),
+            label: label,
             placeholder: placeholder,
             objects: objects
         });
