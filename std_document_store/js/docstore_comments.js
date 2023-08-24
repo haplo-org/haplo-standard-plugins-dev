@@ -197,7 +197,7 @@ var checkAdditionalCommentPermissions = function(M, permissionsSpec, commentRow,
     };
     //Omitting these objects or specifying an empty list [] means that everyone has permission.
     //if no viewCommentsOtherUsers check privacy since the select filtering seems to break things
-    if(!permissionsSpec.length) { return checkPrivacyPermissionsForRow(M, commentRow); }
+    if(!(permissionsSpec && permissionsSpec.length)) { return checkPrivacyPermissionsForRow(M, commentRow); }
     // deny if explicit action stated, otherwise treat matching specs that contain commentFlag rules but no matching commentFlag on the comment as deny permissions but only if all other parts of spec also match
     var shouldDeny = _.chain(permissionsSpec).
         clone().
