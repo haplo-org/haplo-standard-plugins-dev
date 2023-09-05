@@ -1,4 +1,4 @@
-pageTitle("Timeline: " M.title)
+pageTitle("Full info: " M.title)
 backLink(M.url)
 
 <p> "Work type: " workUnit.workType </p>
