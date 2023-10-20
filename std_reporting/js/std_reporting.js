@@ -402,6 +402,7 @@ var dateToDayPart = function(f) {
 // Comparison value are only called if a & b are non-null
 var factValueComparisonFunctions = {
     "ref": function(a,b) { return a == b; }, // Refs can't be compared with === or !== .
+    "refList": function(a,b) { return O.labelList(a) == O.labelList(b); }, // Convert to labelLists for comparison
     "labelList": function(a,b) { return a == b; }, // LabelLists can't be compared with === or !== .
     "json": function(a,b) { return _.isEqual(a,b); }, // deep comparison of nested JS objects
     "datetime": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch

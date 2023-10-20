@@ -109,7 +109,9 @@ P.respond("GET", "/do/reporting/admin/collection-fact-lookup", [
             } else if(typeof(value) === "string") {
                 e.string = value;
             } else if(typeof(value) === "object") {
-                if(value instanceof $LabelList) {
+                var isLabelList = value instanceof $LabelList;
+                var isRefList = Array.isArray(value) && value.every(function(item) { return item instanceof $Ref; });
+                if(isLabelList || isRefList) {
                     e.refList = value;
                 } else {
                     try {
