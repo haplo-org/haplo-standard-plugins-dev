@@ -800,6 +800,7 @@ P.implementService("std:reporting:update_required", function(collectionName, upd
 // --------------------------------------------------------------------------
 
 // TODO: Change frequency of rebuild all collections scheduled to weekly. Or make it configurable for dev systems?
+var DISABLE_ALL_NIGHTLY_REBUILDS = O.application.config["std:reporting:disable-nightly-rebuild:ALL"];
 
 var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
     console.log("Rebuilding all collections to check that other plugins have been keeping their facts up to date.");
@@ -820,7 +821,7 @@ var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
 P.hook('hScheduleDailyMidnight', function(response, year, month, dayOfMonth, hour, dayOfWeek) {
     // In production applications, rebuild every collection each night so that incorrect
     // invalidation doesn't cause reporting to be out of date for more than a day.
-    if(!O.PLUGIN_DEBUGGING_ENABLED) {
+    if(!O.PLUGIN_DEBUGGING_ENABLED && !DISABLE_ALL_NIGHTLY_REBUILDS) {
         rebuildAllToCheckFactsHaveBeenKeptUpToDate();
     }
 });
