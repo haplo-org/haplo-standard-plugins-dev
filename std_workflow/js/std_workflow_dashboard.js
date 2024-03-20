@@ -216,6 +216,19 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         }, "dashboard/dashboard-states");
     });
 
+    // --------------------------------------------------------------------------
+
+    // Dashboard display as deferred
+
+    P.implementService("std:dashboard:states:deferred:"+workflow.fullName, function(E) {
+        var dashboard = (new Dashboard()).setup(E);
+        return P.template("dashboard/dashboard-states").deferredRender({
+            layout: spec.layout,
+            spec: dashboard.spec,
+            dashboard: dashboard
+        });
+    });
+
     // ----------------------------------------------------------------------
 
     // Export dashboard counts
