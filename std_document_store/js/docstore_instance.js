@@ -261,6 +261,21 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     };
 };
 
+// Return a copy of the document with values replaced by display names where appropriate
+DocumentInstance.prototype._makeDocumentView = function(document) {
+    var delegate = this.store.delegate;
+    var key = this.key;
+    var forms = this.forms;
+    _.each(forms, function(form) {
+        var formInstance = form.instance(document);
+        if(delegate.prepareFormInstance) {
+            delegate.prepareFormInstance(key, form, formInstance, "document");
+        }
+        document = formInstance.makeView(document);
+    });
+    return document;
+};
+
 DocumentInstance.prototype.__defineGetter__("lastCommittedDocumentHTML", function() {
     return this._renderDocument(this.lastCommittedDocument);
 });
@@ -274,6 +289,13 @@ DocumentInstance.prototype.__defineGetter__("currentDocumentHTML",       functio
 DocumentInstance.prototype.deferredRenderCurrentDocument = function() {
     return this._renderDocument(this.currentDocument, true);
 };
+
+DocumentInstance.prototype.__defineGetter__("lastCommittedDocumentView", function() {
+    return this._makeDocumentView(this.lastCommittedDocument);
+});
+DocumentInstance.prototype.__defineGetter__("currentDocumentView",       function() {
+    return this._makeDocumentView(this.currentDocument);
+});
 
 // ----------------------------------------------------------------------------
 
