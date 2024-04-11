@@ -16,8 +16,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
     var showDebugTools = function() {
         return (O.PLUGIN_DEBUGGING_ENABLED &&
             O.currentAuthenticatedUser &&
-            O.currentAuthenticatedUser.isSuperUser &&
-            O.currentAuthenticatedUser.id === 3 && // SUPPORT only for now
+            O.currentAuthenticatedUser.canUseTestingTools &&
             O.currentAuthenticatedUser.data["std:enable_debugging"]);
     };
 
@@ -49,7 +48,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                 plugin.respond("GET,POST", spec.path+'/debug', [
                     {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
                 ], function(E, workUnit) {
-                    if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+                    if(!O.currentUser.canUseTestingTools && !showDebugTools()) { O.stop("Not permitted."); }
                     E.setResponsiblePlugin(P);  // take over as source of templates, etc
                     var M = workflow.instance(workUnit);
                     var instance = docstore.instance(M);
@@ -82,7 +81,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                     {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true},
                     {pathElement:1, as:"int"}
                 ], function(E, workUnit, requestedVersion) {
-                    if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+                    if(!O.currentUser.canUseTestingTools && !showDebugTools()) { O.stop("Not permitted."); }
                     E.setResponsiblePlugin(P);  // take over as source of templates, etc
                     var M = workflow.instance(workUnit);
                     var instance = docstore.instance(M);
@@ -123,7 +122,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                 plugin.respond("GET,POST", spec.path+'/debug/form', [
                     {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
                 ], function(E, workUnit) {
-                    if(!O.currentUser.isSuperUser && !showDebugTools()) { O.stop("Not permitted."); }
+                    if(!O.currentUser.canUseTestingTools && !showDebugTools()) { O.stop("Not permitted."); }
                     E.setResponsiblePlugin(P); // take over as source of templates, etc
                     var M = workflow.instance(workUnit);
                     var instance = docstore.instance(M);
