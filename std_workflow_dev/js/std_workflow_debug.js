@@ -24,8 +24,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
     var showDebugTools = function() {
         return (O.PLUGIN_DEBUGGING_ENABLED &&
             O.currentAuthenticatedUser &&
-            O.currentAuthenticatedUser.isSuperUser &&
-            O.currentAuthenticatedUser.id === 3 && // SUPPORT only for now
+            O.currentAuthenticatedUser.canUseTestingTools &&
             O.currentAuthenticatedUser.data["std:enable_debugging"]);
     };
 
@@ -55,7 +54,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                 adminPanel.link(98, "/do/workflow-dev/workflow-notifications/"+this.workUnit.id, "Notifications");
 
                 if(!showDebugTools()) {
-                    if(O.currentUser.isSuperUser) {
+                    if(O.currentUser.canUseTestingTools) {
                         adminPanel.link(99, "/do/workflow-dev/debug/debug-mode/enable/"+this.workUnit.id, "Enable debug mode");
                     }
                 } else {
@@ -133,7 +132,7 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
             {pathElement:1, as:"workUnit", optional: true, allUsers:true} // used for redirect
         ], function(E, option, workUnit) {
             // superusers only
-            if(!O.currentAuthenticatedUser.isSuperUser) { return; }
+            if(!O.currentAuthenticatedUser.canUseTestingTools) { return; }
             if(E.request.method === "POST") {
                 var M, workflow = workUnit ? workflows.getWorkflow(workUnit.workType) : undefined;
                 if(workflow) { M = workflow.instance(workUnit); }
