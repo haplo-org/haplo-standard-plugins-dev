@@ -704,4 +704,28 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         instance.handleEditDocument(E, adminEditor);
     });
 
+    workflow.implementWorkflowService("std:document_store:current_document", function(M, name) {
+        if(name !== docstore.delegate.name) { return; }
+        var instance = docstore.instance(M);
+        return instance.currentDocument;
+    });
+
+    workflow.implementWorkflowService("std:document_store:current_document_view", function(M, name) {
+        if(name !== docstore.delegate.name) { return; }
+        var instance = docstore.instance(M);
+        return instance.currentDocumentView;
+    });
+
+    workflow.implementWorkflowService("std:document_store:last_committed_document", function(M, name) {
+        if(name !== docstore.delegate.name) { return; }
+        var instance = docstore.instance(M);
+        return instance.lastCommittedDocument;
+    });
+
+    workflow.implementWorkflowService("std:document_store:last_committed_document_view", function(M, name) {
+        if(name !== docstore.delegate.name) { return; }
+        var instance = docstore.instance(M);
+        return instance.lastCommittedDocumentView;
+    });
+
 });
