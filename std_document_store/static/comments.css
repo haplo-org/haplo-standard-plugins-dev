@@ -66,6 +66,15 @@
 .z__docstore_comment_enter_ui {
     background: #ececec;
 }
+
+.z__docstore_comment_enter_submitting {
+    cursor: default;
+}
+
+.z__docstore_comment_enter_submitting img {
+    border-radius: 10px;
+}
+
 .z__docstore_comment_container {
     background: #eee;
     padding: 1px 4px 4px 4px;
