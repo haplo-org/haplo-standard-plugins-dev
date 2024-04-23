@@ -175,7 +175,10 @@
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
-                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Save comment"></div></div>';
+                commentBoxHtml += '<div class="z__docstore_comment_enter_controls">'+
+                    '<a href="#" class="z__docstore_comment_enter_cancel">cancel</a> '+
+                    '<input class="z__docstore_comment_enter_submit" type="submit" value="Save comment">'+
+                    '</div></div>';
                 var commentBox = $(commentBoxHtml);
 
                 var element = $(that).parents('[data-uname]').first();
@@ -225,6 +228,24 @@
                 $(element).find(".z__docstore_comment_footer").show();
             };
 
+            // Lock the comment enter UI but keep it onscreen while request is pending
+            var toggleCommentControls = function(that, active) {
+                var element = $(that).parents('[data-uname]').first();
+                $('.z__docstore_comment_enter_ui textarea', element).attr('disabled', !active);
+                $('.z__docstore_comment_enter_ui input[type=checkbox]', element).attr('disabled', !active);
+                $('.z__docstore_comment_enter_cancel', element).toggle(active);
+                $('.z__docstore_comment_enter_submit', element).toggle(active);
+                if(active) {
+                    $('.z__docstore_comment_enter_submitting', element).remove();
+                } else {
+                    $('.z__docstore_comment_enter_controls', element).append(
+                        '<span class="z__docstore_comment_enter_submitting">'+
+                            'Submitting... '+Haplo.html.spinner+
+                        '</span>'
+                    );
+                }
+            };
+
             // Cancel making comment
             $('#z__docstore_body').on('click', 'a.z__docstore_comment_enter_cancel', function(evt) {
                 evt.preventDefault();
@@ -234,20 +255,22 @@
             // Submit a comment
             $('#z__docstore_body').on('click', '.z__docstore_comment_enter_ui input[type=submit]', function(evt) {
                 evt.preventDefault();
+                var that = this;
                 var element = $(this).parents('[data-uname]').first();
                 var comment = $.trim($('textarea', element).val());
                 var isPrivate = addPrivateCommentOnly ||
                     (privateCommentsEnabled && element.find("#commment_is_private").first().is(":checked"));
                 var commentToSupersede = $(this).parents('.z__docstore_comment_enter_ui').first()[0].getAttribute('data-commentid');
-                restoreCommentControls(this, commentToSupersede);
+                toggleCommentControls(this, false);
 
                 if(comment || commentToSupersede) {
                     var formId = element.parents('.z__docstore_form_display').first()[0].id,
-                        uname = element[0].getAttribute('data-uname');
+                        uname = element[0].getAttribute('data-uname'),
+                        token = $('#z__docstore_comments_configuration input[name=__]')[0].value;   // CSRF token
                     $.ajax(commentServerUrl, {
                         method: "POST",
                         data: {
-                            __: $('#z__docstore_comments_configuration input[name=__]')[0].value,   // CSRF token
+                            __: token,
                             version: displayedVersion,
                             form: formId,
                             uname: uname,
@@ -259,10 +282,16 @@
                         success: function(data) {
                             if(data.result !== "success") {
                                 window.alert("Failed to add comment");
+                                toggleCommentControls(that, true);
                                 return;
                             }
                             userNameLookup[data.comment.uid] = data.commentUserName;
+                            restoreCommentControls(that, commentToSupersede);
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
+                        },
+                        error: function(data) {
+                            window.alert("Failed to add comment, please try again.\nIf the problem persists, try refreshing the page before re-adding your comment.");
+                            toggleCommentControls(that, true);
                         }
                     });
                 }

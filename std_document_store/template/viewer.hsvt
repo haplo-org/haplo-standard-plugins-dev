@@ -13,6 +13,7 @@ if(showChanges) {
 }
 
 if(requiresComments) {
+    template:std:resource:plugin_adaptor()
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system
     <div id="z__docstore_comments_configuration"
