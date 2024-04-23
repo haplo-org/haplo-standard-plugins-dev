@@ -263,6 +263,7 @@
                 var commentToSupersede = $(this).parents('.z__docstore_comment_enter_ui').first()[0].getAttribute('data-commentid');
                 toggleCommentControls(this, false);
 
+            window.setTimeout(function() { // TESTING - delay request to display submitting UI
                 if(comment || commentToSupersede) {
                     var formId = element.parents('.z__docstore_form_display').first()[0].id,
                         uname = element[0].getAttribute('data-uname'),
@@ -296,6 +297,7 @@
                         }
                     });
                 }
+            }, 1000); // TESTING - TODO REMOVE
             });
 
             // Reflect privacy of comment
