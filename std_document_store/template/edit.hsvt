@@ -1,6 +1,7 @@
 std:plugin:resources("edit.css" "viewer.css")
 
 if(viewComments) {
+    template:std:resource:plugin_adaptor()
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system for viewing _only_of comments
     <div id="z__docstore_comments_configuration"

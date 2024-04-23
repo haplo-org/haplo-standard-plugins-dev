@@ -1,3 +1,4 @@
+/*global Haplo */
 
 // TODO I18N: client side localisation of docstore comments
 
