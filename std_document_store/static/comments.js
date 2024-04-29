@@ -295,6 +295,8 @@
                             toggleCommentControls(that, true);
                         }
                     });
+                } else {
+                    restoreCommentControls(that, commentToSupersede);
                 }
             });
 
