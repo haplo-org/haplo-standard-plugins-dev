@@ -59,6 +59,14 @@
                 }
             });
 
+            $('.z__std_reporting_list_exact_text_filter').each(function() {
+                if(this.value) {
+                    var selectorString = '[data-'+this.getAttribute('data-fact')+'='+this.value+']';
+                    selector += selectorString;
+                    $selector = $selector.filter(selectorString);
+                }
+            });
+
             if(lastSelector === selector) { return; }
             if(selector) {
                 $('#z__std_reporting_list_filterable_table tbody tr').hide();
@@ -120,6 +128,9 @@
             });
         });
         $('.z__std_reporting_list_multiple_object_filter_select,.z__std_reporting_list_multiple_object_filter_operator input[type="radio"]').on('change', function() {
+            updateForFilters();
+        });
+        $('.z__std_reporting_list_exact_text_filter').on('change', function() {
             updateForFilters();
         });
 

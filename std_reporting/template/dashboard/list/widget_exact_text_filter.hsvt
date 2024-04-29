@@ -1,0 +1,11 @@
+std:plugin:resources("list-filter.js" "filters.css")
+
+<div class="z__std_reporting_list_exact_text_filter_container">
+  if(label) { <label for=unsafeAttributeValue(unsafeSelectId)> label </label> }
+  <select id=unsafeAttributeValue(unsafeSelectId) class="z__std_reporting_list_exact_text_filter" data-fact=fact name=upperCaseFact>
+    <option value=""> placeholder </option>
+    each(options) {
+      <option value=value> title </option>
+    }
+  </select>
+</div>
