@@ -366,6 +366,65 @@ P.registerReportingFeature("std:row_object_filter_multiple", function(dashboard,
 
 // --------------------------------------------------------------------------
 
+// Filter drop down widget - exact string value
+P.registerReportingFeature("std:row_exact_text_filter", function(dashboard, spec) {
+    var fact = spec.fact, factType = dashboard.collection.$factType[fact];
+    if(!(fact && factType === "text")) {
+        throw new Error("std:row_exact_text_filter needs a fact specified, which must exist and be a string.");
+    }
+    // Add attributes to the rows
+    var attrName = 'data-'+fact.toLowerCase();
+    dashboard.$rowAttributeFns.push(function(row, attrs) {
+        var value = row[fact];
+        if(value !== null) {
+            attrs[attrName] = value.toString();
+        }
+    });
+
+    dashboard.$filterExportFns.push(function(query, parameters) {
+        if(parameters[fact]) {
+            return query.where(fact, "=", parameters[fact]);
+        }
+        return query;
+    });
+    // Add dropdown filters to the list
+    dashboard.$uiWidgetsTop.push(function() {
+        // Obtain list of options
+        var options = spec.options || [];
+        if(typeof(options) === "function") {
+            options = options();
+        }
+        var label, placeholder = spec.placeholder;
+        if(DISPLAY_FILTER_LABELS) {
+            // Label defaults to description of fact
+            label = spec.label;
+            if(!label) {
+                label = dashboard.collection.$factDescription[fact];
+            }
+            if(!placeholder) {
+                placeholder = '--';
+            }
+        } else {
+            // Placeholder defaults to description of fact
+            if(!placeholder) {
+                placeholder = '-- '+dashboard.collection.$factDescription[fact]+' --';
+            }
+        }
+        // Render!
+        return P.template("dashboard/list/widget_exact_text_filter").deferredRender({
+            fact: fact.toLowerCase(),
+            factType: factType.toLowerCase(),
+            upperCaseFact: fact,
+            unsafeSelectId: "z__std_reporting_list_exact_text_filter_"+fact.toLowerCase(),
+            label: label,
+            placeholder: placeholder,
+            options: options
+        });
+    });
+});
+
+// --------------------------------------------------------------------------
+
 var CELL_STYLE_TO_ATTRS = {
     success: ' class="z__std_workflow_success"',
     error: ' class="z__std_workflow_date_error"',
