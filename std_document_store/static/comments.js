@@ -163,7 +163,7 @@
                 $.ajax(commentFormUrl, {
                     data: {
                         id: commentId,
-                        private: isPrivate
+                        private: (isPrivate !== false) ? 't' : undefined
                     },
                     success: function(html, textStatus, jqXHR) {
                         if(textStatus !== "success") {

@@ -625,10 +625,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var i = P.locale().text("template");
             var M = workflow.instance(workUnit);
             var config = {
-                privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
+                privateCommentsEnabled: !!spec.viewPrivateComments,
                 addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
                 addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", i["Private comment"]),
             };
+            var isPrivate = E.request.parameters.private;
             var commentId = ("id" in E.request.parameters) ?
                 parseInt(E.request.parameters.id, 10) : undefined;
             var text = '';
@@ -642,7 +643,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             E.render({
                 commentId: commentId,
                 text: text,
-                isPrivate: E.request.parameters.private,
+                isPrivate: isPrivate,
                 config: config
             }, "comment_form");
         });
