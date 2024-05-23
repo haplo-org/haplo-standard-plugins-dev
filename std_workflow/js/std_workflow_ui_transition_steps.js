@@ -192,7 +192,7 @@ P.registerWorkflowFeature("std:transition-choice-step", function(workflow, spec)
                 return spec.title;
             } else {
                 let i = P.locale().text("template");
-                return i["Decision"];
+                return M._getTextMaybe(["transition-choice-step-title"], [M.state]) || i["Decision"];
             }
         },
         url: function(M, stepsUI) {
@@ -222,7 +222,8 @@ P.respond("GET,POST", "/do/workflow/choose-transition", [
         return E.response.redirect(stepsUI.nextRedirect());
     }
     var ui = new P.TransitionUI(M, transition);
-    ui.options = _.map(M.transitions.list, function(transition) {
+    ui.options = _.compact(_.map(M.transitions.list, function(transition) {
+        if(transition.isBypass) { return; }
         return {
             // static/steps.js relies on this exact form of the URL
             action: "/do/workflow/choose-transition/"+M.workUnit.id+"?transition="+transition.name,
@@ -230,6 +231,6 @@ P.respond("GET,POST", "/do/workflow/choose-transition", [
             notes: transition.notes,
             indicator: transition.indicator
         };
-    });
+    }));
     E.render(ui, "steps/choose-transition");
 });
