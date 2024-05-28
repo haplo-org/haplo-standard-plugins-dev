@@ -198,6 +198,16 @@ P.registerWorkflowFeature("std:transition-choice-step", function(workflow, spec)
         url: function(M, stepsUI) {
             return "/do/workflow/choose-transition/"+M.workUnit.id;
         },
+        skipped: function(M, stepsUI) {
+            let transitionsWithoutBypass = _.filter(M.transitions.list, function(t) {
+                return !t.isBypass;
+            });
+            if(transitionsWithoutBypass.length === 1) {
+                // If there is only one non-bypass transition available, skip to avoid
+                // a confusing page with only one option.
+                return true;
+            }
+        },
         complete: function(M, stepsUI) {
             return !!stepsUI.requestedTransition;
         }
