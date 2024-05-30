@@ -174,7 +174,7 @@
                         // but an expired session will redirect to the authentication screen
                         // Check for headers before displaying to ensure login page isn't inserted
                         if(html.indexOf('<head>') !== -1) {
-                            window.alert("Failed to load comment form. Your session may have expired. Please login and try again");
+                            window.alert("Failed to load comment form. Your session may have expired. Please login and try again.");
                             return;
                         }
                         var commentBox = $(html);
@@ -289,7 +289,24 @@
                         },
                         error: function(data) {
                             window.alert("Failed to add comment, please try again.\nIf the problem persists, try re-adding your comment after refreshing the page.");
-                            toggleCommentControls(that, true);
+                            // Hide the element and attempt to fetch a comment form with a fresh token
+                            $(that).parents('.z__docstore_comment_enter_ui').hide();
+                            showAddComment(that, commentToSupersede || undefined, undefined, isPrivate);
+                            window.setTimeout(function() {
+                                var commentForms = $('.z__docstore_comment_enter_ui', element);
+                                if(commentForms.length > 1) {
+                                    // If successfully retrieved, copy text over and remove the old element
+                                    var oldComment = commentForms[0];
+                                    var oldCommentText = $('textarea', oldComment).val();
+                                    var newComment = commentForms[1];
+                                    $('textarea', newComment).val(oldCommentText);
+                                    $(oldComment).remove();
+                                } else {
+                                    // If unsuccessful, keep the original on-screen for copying input
+                                    $(that).parents('.z__docstore_comment_enter_ui').show();
+                                    toggleCommentControls(that, true);
+                                }
+                            }, 100);
                         }
                     });
                 } else {
