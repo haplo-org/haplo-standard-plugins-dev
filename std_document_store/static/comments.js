@@ -170,6 +170,13 @@
                             window.alert("Failed to load comment form");
                             return;
                         }
+                        // The comment form handler returns a plain <div>
+                        // but an expired session will redirect to the authentication screen
+                        // Check for headers before displaying to ensure login page isn't inserted
+                        if(html.indexOf('<head>') !== -1) {
+                            window.alert("Failed to load comment form. Your session may have expired. Please login and try again");
+                            return;
+                        }
                         var commentBox = $(html);
                         var element = $(that).parents('[data-uname]').first();
                         var existingComments = $('.z__docstore_comment_container', element);
@@ -178,7 +185,6 @@
                         } else {
                             element.append(commentBox);
                         }
-                        return commentBox;
                     }
                 });
             };
