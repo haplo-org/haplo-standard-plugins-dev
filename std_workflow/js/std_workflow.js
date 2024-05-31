@@ -79,7 +79,6 @@ var Transitions = P.Transitions = function(M) {
     var state = M.state;
     var stateDefinition = M.$states[state];
     var definitions = stateDefinition.transitions || [];
-
     for(var i = 0; i < definitions.length; ++i) {
         var d = definitions[i];
         var name = d[0];
@@ -92,7 +91,7 @@ var Transitions = P.Transitions = function(M) {
         }
         // Don't allow workflows to resolve the destination to a state which wasn't in the list
         if(-1 === d.indexOf(destination, 1)) {
-            throw new Error("Bad workflow destination resolution");
+            throw new Error("Bad workflow destination resolution. Expected destination: "+destination+". Allowed destinations: ["+d+"]");
         }
         var isBypass = M.isBypassTransition(name);
         var filterResult = isBypass ?
