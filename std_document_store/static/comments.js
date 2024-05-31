@@ -227,6 +227,13 @@
                         var newToken = $('input[name=__]', html)[0].value;
                         var element = $(that).parents('[data-uname]').first();
                         $('input[name=__]', element)[0].value = newToken;
+                        // Reenable the control once the token is updated
+                        toggleCommentControls(that, true);
+                    },
+                    error: function(data) {
+                        // Reenable the control even if unsuccessful
+                        // so they can try triggering the refresh again
+                        toggleCommentControls(that, true);
                     }
                 });
             };
@@ -308,9 +315,6 @@
                             window.alert("Failed to add comment, please try again.\nIf the problem persists, try re-adding your comment after refreshing the page.");
                             // Attempt to fetch a fresh comment form and use to refresh the token
                             refreshAddCommentToken(that);
-                            window.setTimeout(function() {
-                                toggleCommentControls(that, true);
-                            }, 1000);
                         }
                     });
                 } else {
