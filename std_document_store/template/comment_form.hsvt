@@ -1,0 +1,21 @@
+std:layout:none()
+
+<div class=["z__docstore_comment_enter_ui" if(isPrivate){"z__docstore_private_comment"}]
+  data-commentid=commentId>
+  std:form:token()
+  <span>
+    <textarea rows="4"> text </textarea>
+  </span>
+  if(config.privateCommentsEnabled) {
+    <label>
+      unless(config.addPrivateCommentOnly) {
+        <input type="checkbox" id="commment_is_private" name="private" value="yes" checked=if(isPrivate){ "checked" }>
+      }
+      config.addPrivateCommentLabel
+    </label>
+  }
+  <div class="z__docstore_comment_enter_controls">
+    <a href="#" class="z__docstore_comment_enter_cancel">i("cancel")</a>
+    <input class="z__docstore_comment_enter_submit" type="submit" value=i("Save comment")>
+  </div>
+</div>

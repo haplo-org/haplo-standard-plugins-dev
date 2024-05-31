@@ -13,6 +13,7 @@
             onlyViewingCommentsForForm = configDiv.getAttribute('data-onlyform'),
             canAddComment = !!configDiv.getAttribute('data-add'),
             commentServerUrl = configDiv.getAttribute('data-url'),
+            commentFormUrl = configDiv.getAttribute('data-comments-form-url'),
             isViewer = !!configDiv.getAttribute('data-isviewer'),
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
@@ -158,47 +159,43 @@
             });
 
             var showAddComment = function(that, commentId, text, isPrivate) {
-                var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                if(privateCommentsEnabled && (isPrivate !== false)) {
-                    // if isPrivate is true or undefined, so that we get private comments by default, set private class
-                    commentBoxHtml += ' z__docstore_private_comment"';
-                } else {
-                    commentBoxHtml += '"';
-                }
-                if(commentId) { commentBoxHtml += 'data-commentid="'+commentId+'"'; }
-                commentBoxHtml += '><span><textarea rows="4">'+(text ? _.escape(text) : '')+'</textarea></span>';
-                if(privateCommentsEnabled) {
-                    commentBoxHtml += '<label>';
-                    if(!addPrivateCommentOnly) {
-                        commentBoxHtml += '<input type="checkbox" id="commment_is_private" name="private" value="yes"';
-                        commentBoxHtml += (isPrivate !== false) ? 'checked="checked">' : '>';
+                // Request a fresh comment form from the server, inc. valid form token
+                $.ajax(commentFormUrl, {
+                    data: {
+                        id: commentId,
+                        private: (isPrivate !== false) ? 't' : undefined
+                    },
+                    success: function(html, textStatus, jqXHR) {
+                        if(textStatus !== "success") {
+                            window.alert("Failed to load comment form");
+                            return;
+                        }
+                        // The comment form handler returns a plain <div>
+                        // but an expired session will redirect to the authentication screen
+                        // Check for headers before displaying to ensure login page isn't inserted
+                        if(html.indexOf('<head>') !== -1) {
+                            window.alert("Failed to load comment form. Your session may have expired. Please login and try again.");
+                            return;
+                        }
+                        var commentBox = $(html);
+                        var element = $(that).parents('[data-uname]').first();
+                        var existingComments = $('.z__docstore_comment_container', element);
+                        if(existingComments.length) {
+                            existingComments.first().before(commentBox);
+                        } else {
+                            element.append(commentBox);
+                        }
                     }
-                    commentBoxHtml += _.escape(addPrivateCommentLabel);
-                    commentBoxHtml += '</label>';
-                }
-                commentBoxHtml += '<div class="z__docstore_comment_enter_controls">'+
-                    '<a href="#" class="z__docstore_comment_enter_cancel">cancel</a> '+
-                    '<input class="z__docstore_comment_enter_submit" type="submit" value="Save comment">'+
-                    '</div></div>';
-                var commentBox = $(commentBoxHtml);
-
-                var element = $(that).parents('[data-uname]').first();
-                var existingComments = $('.z__docstore_comment_container', element);
-                if(existingComments.length) {
-                    existingComments.first().before(commentBox);
-                } else {
-                    element.append(commentBox);
-                }
-                return commentBox;
+                });
             };
 
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
-                var commentBox = showAddComment(this, undefined, undefined, defaultCommentIsPrivate);
+                showAddComment(this, undefined, undefined, defaultCommentIsPrivate);
                 $(this).hide(); // hide button to avoid
                 var element = $(this).parents('[data-uname]').first();
                 $(element).find(".z__docstore_comment_footer").hide();
-                window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
+                window.setTimeout(function() { $('textarea',$(element)).focus(); }, 100);
             });
 
             $('#z__docstore_body').on('click', '.z__docstore_edit_comment_link', function(evt) {
@@ -209,12 +206,12 @@
                 }).join("\n");
                 var isPrivate = commentContainer.hasClass('z__docstore_private_comment');
                 var commentToSupersede = commentContainer[0].getAttribute('data-commentid');
-                var commentBox = showAddComment(this, commentToSupersede, text, isPrivate);
+                showAddComment(this, commentToSupersede, text, isPrivate);
                 commentContainer.hide(); // hide comment
                 var element = $(this).parents('[data-uname]').first();
                 $(element).find(".z__docstore_add_comment_button").hide();
                 $(element).find(".z__docstore_comment_footer").hide();
-                window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
+                window.setTimeout(function() { $('textarea',$(element)).focus(); }, 100);
             });
 
             var restoreCommentControls = function(that, toSupersede) {
@@ -267,7 +264,7 @@
                 if(comment || commentToSupersede) {
                     var formId = element.parents('.z__docstore_form_display').first()[0].id,
                         uname = element[0].getAttribute('data-uname'),
-                        token = $('#z__docstore_comments_configuration input[name=__]')[0].value;   // CSRF token
+                        token = $('input[name=__]', element)[0].value;   // CSRF token
                     $.ajax(commentServerUrl, {
                         method: "POST",
                         data: {
@@ -291,8 +288,25 @@
                             displayComment(formId, uname, data.comment, true /* at top, so reverse ordered by date to match viewing */);
                         },
                         error: function(data) {
-                            window.alert("Failed to add comment, please try again.\nIf the problem persists, try refreshing the page before re-adding your comment.");
-                            toggleCommentControls(that, true);
+                            window.alert("Failed to add comment, please try again.\nIf the problem persists, try re-adding your comment after refreshing the page.");
+                            // Hide the element and attempt to fetch a comment form with a fresh token
+                            $(that).parents('.z__docstore_comment_enter_ui').hide();
+                            showAddComment(that, commentToSupersede || undefined, undefined, isPrivate);
+                            window.setTimeout(function() {
+                                var commentForms = $('.z__docstore_comment_enter_ui', element);
+                                if(commentForms.length > 1) {
+                                    // If successfully retrieved, copy text over and remove the old element
+                                    var oldComment = commentForms[0];
+                                    var oldCommentText = $('textarea', oldComment).val();
+                                    var newComment = commentForms[1];
+                                    $('textarea', newComment).val(oldCommentText);
+                                    $(oldComment).remove();
+                                } else {
+                                    // If unsuccessful, keep the original on-screen for copying input
+                                    $(that).parents('.z__docstore_comment_enter_ui').show();
+                                    toggleCommentControls(that, true);
+                                }
+                            }, 100);
                         }
                     });
                 } else {

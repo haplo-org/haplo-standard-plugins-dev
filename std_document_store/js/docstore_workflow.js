@@ -525,6 +525,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showCurrent: true,
             viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
+            commentsFormUrl: delegate.enablePerElementComments ? spec.path+"/comments-form/"+M.workUnit.id : undefined,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-draft-warning-text:"+
                 spec.name) || i["This is a draft version"]
         });
@@ -564,6 +565,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
             viewComments: delegate.enablePerElementComments && (can(M, O.currentUser, spec, 'viewCommentsOtherUsers') || can(M, O.currentUser, spec, 'addComment')),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
+            commentsFormUrl: delegate.enablePerElementComments ? spec.path+"/comments-form/"+M.workUnit.id : undefined,
             hideCommentsByDefault: delegate.enablePerElementComments ? M.selected(spec.hideCommentsByDefault||DEFAULT_HIDE_COMMENTS_WHEN) : true,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name),
@@ -614,6 +616,36 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         ], function(E, workUnit) {
             var M = workflow.instance(workUnit);
             O.service("std:document_store:comments:respond", E, docstore, M, checkPermissions);
+        });
+
+        plugin.respond("GET", spec.path+'/comments-form', [
+            {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+        ], function(E, workUnit) {
+            E.setResponsiblePlugin(P);  // take over as source of templates, etc
+            var i = P.locale().text("template");
+            var M = workflow.instance(workUnit);
+            var config = {
+                privateCommentsEnabled: !!spec.viewPrivateComments,
+                addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
+                addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", i["Private comment"]),
+            };
+            var isPrivate = E.request.parameters.private;
+            var commentId = ("id" in E.request.parameters) ?
+                parseInt(E.request.parameters.id, 10) : undefined;
+            var text = '';
+            if(commentId) {
+                var oldCommentQ = docstore.commentsTable.select().where("id", "=", commentId);
+                if(oldCommentQ.length) {
+                    var oldCommentRow = oldCommentQ[0];
+                    text = oldCommentRow.comment;
+                }
+            }
+            E.render({
+                commentId: commentId,
+                text: text,
+                isPrivate: isPrivate,
+                config: config
+            }, "comment_form");
         });
 
     }

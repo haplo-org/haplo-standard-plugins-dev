@@ -21,6 +21,7 @@ if(requiresComments) {
         data-view=if(options.viewComments){"1"}
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
+        data-comments-form-url=options.commentsFormUrl
         data-isviewer="1"
         data-showcomments=currentParams.comment
         data-filter=currentParams.filter
@@ -31,7 +32,6 @@ if(requiresComments) {
         data-privatecommentmessage=options.privateCommentMessage
         data-addprivatecommentonly=if(options.addPrivateCommentOnly){"1"}
     >
-        std:form:token()
     </div>
 }
 
