@@ -79,6 +79,7 @@ var Transitions = P.Transitions = function(M) {
     var state = M.state;
     var stateDefinition = M.$states[state];
     var definitions = stateDefinition.transitions || [];
+
     for(var i = 0; i < definitions.length; ++i) {
         var d = definitions[i];
         var name = d[0];
