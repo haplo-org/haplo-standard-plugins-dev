@@ -92,7 +92,7 @@ var Transitions = P.Transitions = function(M) {
         }
         // Don't allow workflows to resolve the destination to a state which wasn't in the list
         if(-1 === d.indexOf(destination, 1)) {
-            throw new Error("Bad workflow destination resolution");
+            throw new Error("Bad workflow destination resolution. Expected destination: "+destination+". Allowed destinations: ["+d+"]");
         }
         var isBypass = M.isBypassTransition(name);
         var filterResult = isBypass ?
