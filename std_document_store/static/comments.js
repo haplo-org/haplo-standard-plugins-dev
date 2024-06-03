@@ -214,6 +214,30 @@
                 window.setTimeout(function() { $('textarea',$(element)).focus(); }, 100);
             });
 
+            var refreshAddCommentToken = function(that) {
+                // Request a fresh comment form from the server, inc. valid form token
+                $.ajax(commentFormUrl, {
+                    data: {},
+                    success: function(html, textStatus, jqXHR) {
+                        if(textStatus !== "success" || html.indexOf('<head>') !== -1) {
+                            window.alert("Failed to refresh comment form. Your session may have expired. Please login and try again.");
+                            return;
+                        }
+                        // Apply the fresh token to the existing add comment form
+                        var newToken = $('input[name=__]', html)[0].value;
+                        var element = $(that).parents('[data-uname]').first();
+                        $('input[name=__]', element)[0].value = newToken;
+                        // Reenable the control once the token is updated
+                        toggleCommentControls(that, true);
+                    },
+                    error: function(data) {
+                        // Reenable the control even if unsuccessful
+                        // so they can try triggering the refresh again
+                        toggleCommentControls(that, true);
+                    }
+                });
+            };
+
             var restoreCommentControls = function(that, toSupersede) {
                 var element = $(that).parents('[data-uname]').first();
                 $('.z__docstore_comment_enter_ui', element).remove();
@@ -289,24 +313,8 @@
                         },
                         error: function(data) {
                             window.alert("Failed to add comment, please try again.\nIf the problem persists, try re-adding your comment after refreshing the page.");
-                            // Hide the element and attempt to fetch a comment form with a fresh token
-                            $(that).parents('.z__docstore_comment_enter_ui').hide();
-                            showAddComment(that, commentToSupersede || undefined, undefined, isPrivate);
-                            window.setTimeout(function() {
-                                var commentForms = $('.z__docstore_comment_enter_ui', element);
-                                if(commentForms.length > 1) {
-                                    // If successfully retrieved, copy text over and remove the old element
-                                    var oldComment = commentForms[0];
-                                    var oldCommentText = $('textarea', oldComment).val();
-                                    var newComment = commentForms[1];
-                                    $('textarea', newComment).val(oldCommentText);
-                                    $(oldComment).remove();
-                                } else {
-                                    // If unsuccessful, keep the original on-screen for copying input
-                                    $(that).parents('.z__docstore_comment_enter_ui').show();
-                                    toggleCommentControls(that, true);
-                                }
-                            }, 100);
+                            // Attempt to fetch a fresh comment form and use to refresh the token
+                            refreshAddCommentToken(that);
                         }
                     });
                 } else {
