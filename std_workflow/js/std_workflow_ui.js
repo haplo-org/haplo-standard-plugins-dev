@@ -324,7 +324,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
     }
 
     if(transition) {
-        M._setPendingTransition(transition);
+        M._setPendingTransition(transition, requestedTarget);
     }
 
     try {

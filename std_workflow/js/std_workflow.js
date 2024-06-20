@@ -439,11 +439,13 @@ WorkflowInstanceBase.prototype = {
         return this;
     },
 
-    _setPendingTransition: function(transition) {
+    _setPendingTransition: function(transition, target) {
         if(transition !== undefined) {
             this.pendingTransition = transition;
+            this.pendingTarget = target;
         } else {
             delete this.pendingTransition;
+            delete this.pendingTarget;
         }
         // Transitions may need to be recalculated as different selectors will match
         delete this.$transitions;
