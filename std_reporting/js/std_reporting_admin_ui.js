@@ -132,8 +132,23 @@ P.respond("GET", "/do/reporting/admin/collection-fact-lookup", [
         });
     });
     E.render({
+        ref: refStr,
         object: object,
         collection: collection,
         factsAtTimes: factsAtTimes
     }, "admin/collection-fact-lookup");
+});
+
+
+// --------------------------------------------------------------------------
+
+P.respond("POST", "/do/reporting/admin/collection-fact-update", [
+    {parameter:"collection", as:"string", validate:validCollectionName},
+    {parameter:"ref", as:"string"}
+], function(E, name, refStr) {
+    CanAdminReporting.enforce();
+    var collection = P.getCollection(name);
+    var ref = O.ref(refStr);
+    O.service("std:reporting:update_required", collection.name, [ref]);
+    E.response.redirect("/do/reporting/admin");
 });

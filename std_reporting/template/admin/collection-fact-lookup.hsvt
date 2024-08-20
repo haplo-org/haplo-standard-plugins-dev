@@ -3,6 +3,14 @@ backLink("/do/reporting/admin/collection-facts/" collection.name)
 
 <p> "Entries: " factsAtTimes.length </p>
 
+<div>
+  <form method="POST" action="/do/reporting/admin/collection-fact-update"> std:form:token()
+    <input type="hidden" name="collection" value=collection.name>
+    <input type="hidden" name="ref" value=ref>
+    <input type="submit" value="Recalculate">
+  </form>
+</div>
+
 each(factsAtTimes) {
   <div style="border:1px solid #ddd; background:#eee; margin:8px 0; padding:4px 8px">
     <div>
