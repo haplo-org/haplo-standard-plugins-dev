@@ -150,5 +150,5 @@ P.respond("POST", "/do/reporting/admin/collection-fact-update", [
     var collection = P.getCollection(name);
     var ref = O.ref(refStr);
     O.service("std:reporting:update_required", collection.name, [ref]);
-    E.response.redirect("/do/reporting/admin");
+    E.response.redirect("/do/reporting/admin/collection-fact-lookup/"+name+"?ref="+refStr);
 });
