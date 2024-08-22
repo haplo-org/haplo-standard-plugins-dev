@@ -454,7 +454,8 @@ FactUpdater.prototype.updateFacts = function(object) {
 };
 
 FactUpdater.prototype._updateFactsSingleRow = function(object) {
-    var collection = this.collection;
+    var collection = this.collection,
+        changes = false;
 
     var q = collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null);
     var existingRow = q.length ? q[0] : undefined;
@@ -468,7 +469,15 @@ FactUpdater.prototype._updateFactsSingleRow = function(object) {
     this.serviceNames.forEach(function(serviceName) {
         O.service(serviceName, object, row, collection);
     });
-    return this._conditionalUpdateOfRow(row, existingRow);
+    var changesInRow = this._conditionalUpdateOfRow(row, existingRow);
+    if(changesInRow) {
+        changes = true;
+    }
+    // Safety check: clean up any other existing rows
+    for(var i = 1; i < q.length; i++) {
+        this.invalidate(q[i]);
+    }
+    return changes;
 };
 
 FactUpdater.prototype._updateFactsWithAdditionalKeys = function(object) {
