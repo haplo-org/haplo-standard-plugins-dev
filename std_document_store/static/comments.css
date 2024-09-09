@@ -116,6 +116,7 @@
 .z__docstore_comment_container p {
     padding: 0px 4px;
     margin: 2px 0;
+    overflow-wrap: break-word;
 }
 
 .z__docstore_comment_previous_version {
