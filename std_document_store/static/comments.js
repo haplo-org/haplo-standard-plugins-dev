@@ -143,6 +143,9 @@
                             }
                         });
                     }
+                },
+                error: function(data) {
+                    window.alert("Failed to load comments. Please refresh the page and try again.");
                 }
             });
         }
@@ -158,7 +161,7 @@
                 $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment<span></span></a></div>');
             });
 
-            var showAddComment = function(that, commentId, text, isPrivate) {
+            var showAddComment = function(that, commentId, text, isPrivate, successCallback) {
                 // Request a fresh comment form from the server, inc. valid form token
                 $.ajax(commentFormUrl, {
                     data: {
@@ -185,17 +188,23 @@
                         } else {
                             element.append(commentBox);
                         }
+                        // Only hide add buttons etc. on success
+                        successCallback(that);
+                    },
+                    error: function(data) {
+                        window.alert("Failed to load comment form. Your session may have expired. Please login and try again.");
                     }
                 });
             };
 
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
-                showAddComment(this, undefined, undefined, defaultCommentIsPrivate);
-                $(this).hide(); // hide button to avoid
-                var element = $(this).parents('[data-uname]').first();
-                $(element).find(".z__docstore_comment_footer").hide();
-                window.setTimeout(function() { $('textarea',$(element)).focus(); }, 100);
+                showAddComment(this, undefined, undefined, defaultCommentIsPrivate, function(that) {
+                    $(that).hide(); // hide button to avoid duplicates
+                    var element = $(that).parents('[data-uname]').first();
+                    $(element).find(".z__docstore_comment_footer").hide();
+                    $('textarea',$(element)).focus();
+                });
             });
 
             $('#z__docstore_body').on('click', '.z__docstore_edit_comment_link', function(evt) {
@@ -206,12 +215,14 @@
                 }).join("\n");
                 var isPrivate = commentContainer.hasClass('z__docstore_private_comment');
                 var commentToSupersede = commentContainer[0].getAttribute('data-commentid');
-                showAddComment(this, commentToSupersede, text, isPrivate);
-                commentContainer.hide(); // hide comment
-                var element = $(this).parents('[data-uname]').first();
-                $(element).find(".z__docstore_add_comment_button").hide();
-                $(element).find(".z__docstore_comment_footer").hide();
-                window.setTimeout(function() { $('textarea',$(element)).focus(); }, 100);
+                showAddComment(this, commentToSupersede, text, isPrivate, function(that) {
+                    var commentContainer = $($(that).parents('.z__docstore_comment_container').first());
+                    commentContainer.hide(); // hide comment
+                    var element = $(that).parents('[data-uname]').first();
+                    $(element).find(".z__docstore_add_comment_button").hide();
+                    $(element).find(".z__docstore_comment_footer").hide();
+                    $('textarea',$(element)).focus();
+                });
             });
 
             var refreshAddCommentToken = function(that) {
