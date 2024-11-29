@@ -33,13 +33,14 @@ DashboardList.prototype.columns = function(priority, columns) {
 };
 
 DashboardList.prototype.hasColumnBasedOnFact = function(fact) {
-    var groups = this.columnGroups;
-    for(var i = groups.length - 1; i >= 0; --i) {
-        var cols = groups[i].columns;
-        for(var j = cols.length - 1; j >= 0; --j) {
-            if(cols[j].fact === fact) {
-                return true;
-            }
+    var accumulator = this.columnGroups.slice();
+    while(accumulator.length > 0) {
+        var entry = accumulator.pop();
+        if(entry.fact === fact) { return true; }
+        else if("columns" in entry) {
+            // Lists of columns are nested between groups and types of columns
+            // e.g. join, but we can read each column on the top of the stack.
+            accumulator.push.apply(accumulator, entry.columns);
         }
     }
     return false;
@@ -73,8 +74,18 @@ DashboardList.prototype._makeRenderableColumnList = function() {
     if("$removeColumnsBasedOnFact" in this) {
         var removes = this.$removeColumnsBasedOnFact;
         columns = _.filter(columns, function(column) {
-            var cfact = column.fact;
-            return !(cfact && (-1 !== removes.indexOf(cfact)));
+            var accumulator = [column];
+            while(accumulator.length > 0) {
+                var col = accumulator.shift();
+                if(col.fact && -1 !== removes.indexOf(col.fact)) {
+                    return false;
+                } else if("columns" in col) {
+                    // Columns may be still be nested due to certain types of
+                    // column e.g. join, but we can read each column in order.
+                    accumulator.splice.apply(accumulator, [0, 0].concat(col.columns));
+                }
+            }
+            return true;
         });
     }
     columns.forEach(function(c) { c._prepare(dashboard); });
