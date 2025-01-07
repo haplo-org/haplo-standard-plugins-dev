@@ -232,7 +232,7 @@ Serialiser.prototype.encode = function(object) {
                 }
                 if(x) {
                     vs.extension = {
-                        desc: x.desc,
+                        desc: descLookup[x.desc] || x.desc,
                         groupId: x.groupId
                     };
                 }
