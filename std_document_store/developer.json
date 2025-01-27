@@ -1,3 +1,4 @@
 {
+  "syntaxCheckGlobalsServer": ["oForms"],
   "syntaxCheckGlobalsBrowser": ["oFormsChanges"]
 }

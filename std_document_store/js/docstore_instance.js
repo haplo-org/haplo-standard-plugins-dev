@@ -193,24 +193,61 @@ DocumentInstance.prototype.addInitialCommittedDocument = function(document, user
 
 // ----------------------------------------------------------------------------
 
+DocumentInstance.prototype._filterFormsBySpec = function(unfilteredForms, document, context) {
+    var delegate = this.store.delegate;
+    var dsInstance = this;
+    var key = this.key;
+    var conditionName;
+    switch(context) {
+        case "form":
+            conditionName = "inForm"; break;
+        case "document":
+            conditionName = "inDocument"; break;
+        default:
+            conditionName = "include"; break;
+    }
+    return _.filter(unfilteredForms, function(form) {
+        var condition = form.specification && form.specification[conditionName];
+        if(condition !== undefined) {
+            var formInstance = form.instance(document || this.currentDocument);
+            formInstance.externalData(dsInstance._formExternalData());
+            if(delegate.prepareFormInstance) {
+                delegate.prepareFormInstance(key, form, formInstance, context);
+            }
+            formInstance._externalData = formInstance.getExternalData();
+            var include = oForms._evaluateConditionalStatement(condition, document || this.currentDocument, formInstance);
+            if(!include) {
+                return false;
+            }
+        }
+        return true;
+    });
+};
+
 DocumentInstance.prototype._displayForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
     var unfilteredForms = this.store._formsForKey(key, this, document);
-    if(!delegate.shouldDisplayForm) { return unfilteredForms; }
-    return _.filter(unfilteredForms, function(form) {
-        return (delegate.shouldDisplayForm(key, form, document || this.currentDocument));
-    });
+    if(delegate.shouldDisplayForm) {
+        var filteredForms = _.filter(unfilteredForms, function(form) {
+            return (delegate.shouldDisplayForm(key, form, document || this.currentDocument));
+        });
+        return this._filterFormsBySpec(filteredForms, document, "document");
+    }
+    return this._filterFormsBySpec(unfilteredForms, document, "document");
 };
 
 DocumentInstance.prototype._editForms = function(document) {
     var delegate = this.store.delegate;
     var key = this.key;
     var unfilteredForms = this.store._formsForKey(key, this, document);
-    if(!delegate.shouldEditForm) { return unfilteredForms; }
-    return _.filter(unfilteredForms, function(form) {
-        return (delegate.shouldEditForm(key, form, document || this.currentDocument));
-    });
+    if(delegate.shouldEditForm) {
+        var filteredForms = _.filter(unfilteredForms, function(form) {
+            return (delegate.shouldEditForm(key, form, document || this.currentDocument));
+        });
+        return this._filterFormsBySpec(filteredForms, document, "form");
+    }
+    return this._filterFormsBySpec(unfilteredForms, document, "form");
 };
 
 // Render as document
