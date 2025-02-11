@@ -203,9 +203,11 @@ P.registerReportingFeature("std:row_text_filter", function(dashboard, spec) {
             attrs['data-text-filter'] = facts.map(function(fact) {
                 var value = row[fact], factType = dashboard.collection.$factType[fact];
                 if(factType === "ref") {
-                    return (value === null) ? '' : value.load().title;
+                    return (value === null || value.load() === null) ? '' : value.load().title;
                 } else if(factType === "refList") {
-                    return (value === null) ? '' : value.map(function(ref) { return ref.load().title; }).join(' ');
+                    return (value === null) ? '' : value.map(function(ref) {
+                        return ref.load() ? ref.load().title : '';
+                    }).join(' ');
                 }
                 return (value === null) ? '' : value.toString();
             }).join(' ').toLowerCase();
@@ -513,7 +515,8 @@ var SimpleColumn = makeColumnType({type:"simple"});
 
 var refColumnEscapedTitleFn = function(property) {
     return function(r) {
-        return _.escape(r.load()[property]);
+        var object = r.load();
+        return _.escape(object ? object[property] : '');
     };
 };
 
@@ -530,7 +533,8 @@ var RefColumn = makeColumnType({
 RefColumn.prototype.renderCellInner = function(row) {
     var value = row[this.fact];
     if(value) {
-        var linkPath = this.link ? row[this.fact].load().url() : false;
+        var object = value.load();
+        var linkPath = (this.link && object) ? object.url() : false;
         return linkPath ? '<a href="'+_.escape(linkPath)+'">'+this.escapedTitles.get(value)+'</a>' :
                           this.escapedTitles.get(value);
     } else {
@@ -556,7 +560,8 @@ RefListColumn.prototype.renderCellInner = function(row) {
     if(value && value.length) {
         var column = this;
         var links = _.map(value, function(ref) {
-            var linkPath = column.link ? ref.load().url() : false;
+            var object = ref.load();
+            var linkPath = (column.link && object) ? object.url() : false;
             var title = column.escapedTitles.get(ref);
             if(column.delimiter) {
                 return linkPath ? '<a href="'+_.escape(linkPath)+'">'+title+'</a>' : title;
@@ -897,7 +902,9 @@ var AttributeColumn = makeColumnType({
 AttributeColumn.prototype._getValueAsStringMaybe = function(row) {
     var value = row[this.fact];
     if(!value) { return null; }
-    return ""+(value.load().first(this.desc) || "");  // value might not have toString() function
+    var object = value.load();
+    if(!object) { return null; }
+    return ""+(object.first(this.desc) || "");  // value might not have toString() function
 };
 
 AttributeColumn.prototype.renderCellInner = function(row) {
