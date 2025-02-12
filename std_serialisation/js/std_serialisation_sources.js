@@ -41,6 +41,10 @@ P.implementService("std:serialiser:discover-sources", function(source) {
             });
         },
         apply(serialiser, object, serialised) {
+            let user = O.user(object.ref);
+            if(user && user.tags.username) {
+                serialised.username = user.tags.username;
+            }
         }
     });
 });
