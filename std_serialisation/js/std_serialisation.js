@@ -178,7 +178,7 @@ Serialiser.prototype.encode = function(object) {
             b = ref.getBehaviourExactMaybe(),
             s = {
                 ref: ref.toString(),
-                title: l.title
+                title: l && l.title
             };
         if(b) { s.behaviour = b; }
         let c = labelLookup.get(ref);
@@ -250,7 +250,7 @@ Serialiser.prototype.encode = function(object) {
                             }
                         } else {
                             let o = v.load();
-                            vs.title = o.title;
+                            vs.title = o && o.title;
                         }
                         break;
 
