@@ -278,6 +278,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         // user for editing and the form is complete.
         if(!(stepsUI.data["std:document_store:has_interaction"]||{})[spec.path]) {
             return false;
+        } else if (spec.postDecisionForm){
+            // If the form is displayed after a transition is selected,
+            // check whether the previous interaction was for the same transition
+            // If the decision has been changed require interacting with the form again
+            let interactionTransition = stepsUI.data["std:document_store:interaction_transition"] || {};
+            return stepsUI.requestedTransition === interactionTransition[spec.path];
         }
         var instance = docstore.instance(M);
         return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
@@ -415,8 +421,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var stepsUI = M.transitionStepsUI;
             if(!stepsUI.unused) {
                 var hasInteraction = stepsUI.data["std:document_store:has_interaction"] || {};
+                var interactionTransition = stepsUI.data["std:document_store:interaction_transition"] || {};
                 hasInteraction[spec.path] = true;
+                interactionTransition[spec.path] = stepsUI.requestedTransition;
                 stepsUI.data["std:document_store:has_interaction"] = hasInteraction;
+                stepsUI.data["std:document_store:interaction_transition"] = interactionTransition;
                 stepsUI.saveData();
             }
         }
