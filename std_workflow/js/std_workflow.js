@@ -837,6 +837,7 @@ implementFunctionList('getActionableBy');
 implementFunctionList('hasRole');
 implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
+implementFunctionList('timelineEntryDisplayName');
 implementFunctionList('modifyFlags');
 implementFunctionList('modifySendEmail');
 implementFunctionList('findEntityRootObjectRefWhenUnknown');
