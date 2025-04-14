@@ -209,6 +209,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             }
         }
         if(view) {
+            view.username = this._call('$timelineEntryDisplayName', entry) || entry.user.name;
             return P.template('timeline/entry-layout').deferredRender(view);
         }
     },
