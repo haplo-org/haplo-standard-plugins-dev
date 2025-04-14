@@ -165,7 +165,7 @@ DocumentViewer.prototype.__defineGetter__("sidebarHTML", function() {
 // ----------------------------------------------------------------------------
 
 DocumentViewer.prototype.__defineGetter__("_viewerForms", function() {
-    return this.instance._displayForms(this.document);
+    return this.instance._displayForms(this.document, this.version);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {

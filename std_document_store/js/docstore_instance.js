@@ -193,7 +193,7 @@ DocumentInstance.prototype.addInitialCommittedDocument = function(document, user
 
 // ----------------------------------------------------------------------------
 
-DocumentInstance.prototype._filterFormsBySpec = function(unfilteredForms, document, context) {
+DocumentInstance.prototype._filterFormsBySpec = function(unfilteredForms, document, context, version) {
     var delegate = this.store.delegate;
     var dsInstance = this;
     var key = this.key;
@@ -210,7 +210,7 @@ DocumentInstance.prototype._filterFormsBySpec = function(unfilteredForms, docume
         var condition = form.specification && form.specification[conditionName];
         if(condition !== undefined) {
             var formInstance = form.instance(document || this.currentDocument);
-            formInstance.externalData(dsInstance._formExternalData());
+            formInstance.externalData(dsInstance._formExternalData(version));
             if(delegate.prepareFormInstance) {
                 delegate.prepareFormInstance(key, form, formInstance, context);
             }
@@ -224,7 +224,7 @@ DocumentInstance.prototype._filterFormsBySpec = function(unfilteredForms, docume
     });
 };
 
-DocumentInstance.prototype._displayForms = function(document) {
+DocumentInstance.prototype._displayForms = function(document, version) {
     var delegate = this.store.delegate;
     var key = this.key;
     var unfilteredForms = this.store._formsForKey(key, this, document);
@@ -232,9 +232,9 @@ DocumentInstance.prototype._displayForms = function(document) {
         var filteredForms = _.filter(unfilteredForms, function(form) {
             return (delegate.shouldDisplayForm(key, form, document || this.currentDocument));
         });
-        return this._filterFormsBySpec(filteredForms, document, "document");
+        return this._filterFormsBySpec(filteredForms, document, "document", version);
     }
-    return this._filterFormsBySpec(unfilteredForms, document, "document");
+    return this._filterFormsBySpec(unfilteredForms, document, "document", version);
 };
 
 DocumentInstance.prototype._editForms = function(document) {
@@ -257,7 +257,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     var dsInstance = this;
     var key = this.key;
     var sections = [];
-    var forms = this._displayForms(document);
+    var forms = this._displayForms(document, version);
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
