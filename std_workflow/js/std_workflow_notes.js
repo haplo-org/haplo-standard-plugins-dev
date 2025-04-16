@@ -27,6 +27,7 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
         return P.template("timeline/note").deferredRender({
             M: M,
             showEditLink: !(M.workUnit.closed) && entry.user.id === O.currentUser.id,
+            username: M._call('$timelineEntryDisplayName', entry, entry.user) || entry.user.name,
             entry: entry
         });
     });

@@ -1,7 +1,7 @@
 switch(entry.data.action) {
     i("{} took the task over from {previous}")
-      { <i> entry.user.name </i> } previous { <i> previousUser.name </i> }
+      { <i> username </i> } previous { <i> previousUsername </i> }
 } delegate {
     i("{} delegated the task to {current}")
-        { <i> entry.user.name </i> } current { <i> newUser.name </i> }
+        { <i> username </i> } current { <i> newUsername </i> }
 }

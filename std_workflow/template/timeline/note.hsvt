@@ -1,5 +1,5 @@
 i("{} added a {kind}note:")
-  { <i> entry.user.name </i> }
+  { <i> username </i> }
   kind { if(entry.data.private) { <b> NAME("std:workflow:notes-private-adjective" "private") </b> " " } }
 
 <div class=[
