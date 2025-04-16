@@ -27,7 +27,7 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
         return P.template("timeline/note").deferredRender({
             M: M,
             showEditLink: !(M.workUnit.closed) && entry.user.id === O.currentUser.id,
-            username: M._call('$timelineEntryDisplayName', entry, entry.user) || entry.user.name,
+            username: M._call('$timelineEntryDisplayName', entry, O.currentUser, entry.user) || entry.user.name,
             entry: entry
         });
     });
@@ -94,6 +94,7 @@ var notesDeferredRenderForNotificationEmail = function(toUser) {
         where("action","=","NOTE").
         where("datetime",">",(new XDate()).addHours(0 - MAX_NOTIFICATION_NOTE_AGE_IN_HOURS)).order("datetime",true);
     var notesForEmail = [];
+    var M = this; // for scope
     _.each(notes, function(entry) {
         var isPrivate = entry.data["private"];
         if(userCanSeePrivateNotes || !isPrivate) {
@@ -101,7 +102,7 @@ var notesDeferredRenderForNotificationEmail = function(toUser) {
                 text: entry.data.text,
                 datetime: entry.datetime,
                 isPrivate: isPrivate,
-                author: entry.user.name
+                author: M._call("$timelineEntryDisplayName", entry, toUser, entry.user) || entry.user.name
             });
         }
     });

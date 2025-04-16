@@ -209,7 +209,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             }
         }
         if(view) {
-            view.username = this._call('$timelineEntryDisplayName', entry, entry.user) || entry.user.name;
+            view.username = this._call('$timelineEntryDisplayName', entry, O.currentUser, entry.user) || entry.user.name;
             return P.template('timeline/entry-layout').deferredRender(view);
         }
     },
@@ -246,9 +246,9 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                 let newUser = O.securityPrincipal(entry.data.newActionableUser);
                 return P.template("timeline/shared-role-action").deferredRender({
                     entry: entry,
-                    username: this._call('$timelineEntryDisplayName', entry, entry.user) || entry.user.name,
-                    previousUsername: this._call('$timelineEntryDisplayName', entry, previousUser) || previousUser.name,
-                    newUsername: this._call('$timelineEntryDisplayName', entry, newUser) || newUser.name
+                    username: this._call('$timelineEntryDisplayName', entry, O.currentUser, entry.user) || entry.user.name,
+                    previousUsername: this._call('$timelineEntryDisplayName', entry, O.currentUser, previousUser) || previousUser.name,
+                    newUsername: this._call('$timelineEntryDisplayName', entry, O.currentUser, newUser) || newUser.name
                 });
         }
         return O.serviceMaybe("__std:workflow:fallback-timeline-entry-deferrred__", this, entry);
