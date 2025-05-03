@@ -806,6 +806,11 @@ P.implementService("std:reporting:update_required", function(collectionName, upd
     $StdReporting.signalUpdatesRequired();
 });
 
+P.implementService("std:reporting:get_all_collection_names", function() {
+    P.ensureCollectionsDiscovered();
+    return _.map(P._collections, function(collection) { return collection.name; });
+});
+
 // --------------------------------------------------------------------------
 
 // TODO: Change frequency of rebuild all collections scheduled to weekly. Or make it configurable for dev systems?
