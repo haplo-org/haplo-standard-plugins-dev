@@ -139,6 +139,26 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     this.showChanges = currentParams.changes && this.showChangesFrom;
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
+    if(delegate.showTransitionInDocument) {
+        if(!this.version) { return; }
+        let submitted = new XDate(this.version);
+        let M = this.instance.key;
+        let timelineQuery = M.timelineSelect().order("datetime", true).
+            where("datetime", ">=", submitted).
+            or((sq) => {
+                _.each(delegate.showTransitionInDocument, (state) => {
+                    sq.where("previousState", "=", state);
+                });
+            });
+        let timelineEntry = timelineQuery.length ? timelineQuery[0] : undefined;
+        if(timelineEntry) {
+            this.transitionDeferredRender = P.template("std:ui:choose:selected-item").deferredRender({
+                label: M.getTextMaybe("transition:"+timelineEntry.action),
+                indicator: M.getTextMaybe("transition-indicator:"+timelineEntry.action, "transition-indicator"),
+                notes: M.getTextMaybe("transition-notes:"+timelineEntry.action)
+            });
+        }
+    }
     if(delegate.getAdditionalUIForViewer) {
         this.additionalUI = delegate.getAdditionalUIForViewer(this.instance.key, this.instance, this.document);
     }
